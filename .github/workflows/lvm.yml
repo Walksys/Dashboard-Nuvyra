@@ -12,6 +12,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Become Root
+        run: |
+          sudo -i
+
       - name: Update System
         run: |
           sudo apt update
