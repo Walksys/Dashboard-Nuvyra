@@ -1,0 +1,88 @@
+name: Ubuntu 22 KVM Cockpit Tailscale
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Update System
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+
+      - name: Install Required Packages
+        run: |
+          sudo apt install -y \
+            curl \
+            wget \
+            git \
+            unzip \
+            cockpit \
+            cockpit-machines \
+            qemu-kvm \
+            libvirt-daemon-system \
+            libvirt-clients \
+            bridge-utils \
+            virt-manager \
+            openssh-server
+
+      - name: Configure SSH
+        run: |
+          CONFIG_FILE="/etc/ssh/sshd_config"
+
+          sudo sed -i '/^PermitRootLogin/d' "$CONFIG_FILE"
+          sudo sed -i '/^PasswordAuthentication/d' "$CONFIG_FILE"
+
+          echo "PermitRootLogin yes" | sudo tee -a "$CONFIG_FILE"
+          echo "PasswordAuthentication yes" | sudo tee -a "$CONFIG_FILE"
+
+          sudo systemctl restart ssh
+
+          echo "root:${{ secrets.ROOT_PASSWORD }}" | sudo chpasswd
+
+      - name: Enable Services
+        run: |
+          sudo systemctl enable --now cockpit.socket
+          sudo systemctl enable --now libvirtd
+          sudo systemctl enable --now ssh
+
+      - name: Configure Permissions
+        run: |
+          sudo usermod -aG libvirt,kvm $USER
+          sudo rm -f /etc/cockpit/disallowed-users
+          sudo systemctl restart cockpit
+
+      - name: Install Tailscale
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+
+      - name: Start Tailscale
+        run: |
+          sudo tailscale up \
+            --auth-key=${{ secrets.TS_AUTHKEY }} \
+            --advertise-exit-node
+
+      - name: Show Access Info
+        run: |
+          echo "================================="
+          echo "Ubuntu 22.04 Setup Complete"
+          echo "Cockpit URL:"
+          echo "https://YOUR-TAILSCALE-IP:9090"
+          echo ""
+          echo "SSH:"
+          echo "ssh root@YOUR-TAILSCALE-IP"
+          echo "================================="
+
+      - name: Keep Runner Alive
+        run: |
+          echo "Runner Active..."
+          while true; do
+            sleep 300
+          done
