@@ -1,0 +1,51 @@
+{
+  "name": "mpanel",
+  "version": "1.0.0",
+  "description": "Mpanel - High-Performance Game & Application Server Web Management Panel in Node.js",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "build": "node bin/build.js",
+    "createuser": "node bin/createuser.js",
+    "menu": "bash menu.sh",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop mpanel",
+    "pm2:restart": "pm2 restart mpanel",
+    "pm2:logs": "pm2 logs mpanel"
+  },
+  "keywords": [
+    "mpanel",
+    "game-server",
+    "minecraft",
+    "nodejs",
+    "python",
+    "docker",
+    "sftp",
+    "panel"
+  ],
+  "author": "Mpanel Team",
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "axios": "^1.7.9",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dockerode": "^4.0.4",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "qrcode": "^1.5.4",
+    "speakeasy": "^2.0.0",
+    "sqlite3": "^5.1.7",
+    "ssh2": "^1.16.0",
+    "unzipper": "^0.12.3",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
