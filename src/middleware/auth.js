@@ -46,7 +46,7 @@ function requireAdmin(req, res, next) {
 function requireServerAccess(requiredPermission = null) {
   return async (req, res, next) => {
     try {
-      const serverId = req.params.serverId || req.params.id;
+      const serverId = req.params.serverId || req.params.id || req.body?.serverId || req.query?.serverId;
       if (!serverId) {
         return res.status(400).json({ success: false, error: 'Server ID parameter required.' });
       }

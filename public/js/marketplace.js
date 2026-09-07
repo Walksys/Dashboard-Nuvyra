@@ -127,7 +127,7 @@ class MarketplaceController {
           </div>
         </div>
 
-        <!-- 5 Dedicated Category Tabs ("sab alg alg") -->
+        <!-- Dedicated Category Tabs ("sab alg alg") -->
         <div class="glass-panel p-2 rounded-2xl border border-white/10 flex flex-wrap gap-2">
           <button onclick="marketplace.switchCategory('plugin')" id="cat-btn-plugin" class="cat-pill flex-1 min-w-[120px] px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'plugin' ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="puzzle" class="w-4 h-4"></i> Plugins
@@ -146,6 +146,9 @@ class MarketplaceController {
           </button>
           <button onclick="marketplace.switchCategory('world')" id="cat-btn-world" class="cat-pill flex-1 min-w-[120px] px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'world' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="globe" class="w-4 h-4"></i> World Installer
+          </button>
+          <button onclick="marketplace.switchCategory('playit')" id="cat-btn-playit" class="cat-pill flex-1 min-w-[130px] px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'playit' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
+            <i data-lucide="network" class="w-4 h-4 text-indigo-400"></i> Playit.gg Tunnel
           </button>
         </div>
 
@@ -176,7 +179,8 @@ class MarketplaceController {
         datapack: 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20',
         resourcepack: 'bg-amber-600 text-white shadow-lg shadow-amber-500/20',
         modpack: 'bg-rose-600 text-white shadow-lg shadow-rose-500/20',
-        world: 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
+        world: 'bg-teal-500 text-white shadow-lg shadow-teal-500/20',
+        playit: 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
       };
       activeBtn.className = `cat-pill flex-1 min-w-[120px] px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${colors[category] || 'bg-cyan-500 text-white'}`;
     }
@@ -190,6 +194,8 @@ class MarketplaceController {
       await this.renderInstalledView();
     } else if (this.activeTab === 'world') {
       await this.renderWorldsMarketplaceView();
+    } else if (this.activeTab === 'playit') {
+      await this.renderPlayitView();
     } else {
       await this.renderBrowseView();
     }
@@ -211,6 +217,29 @@ class MarketplaceController {
 
     container.innerHTML = `
       <div class="space-y-6">
+        <!-- Playit.gg Featured Hero Banner -->
+        <div class="glass-panel p-5 rounded-3xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0 shadow-lg shadow-indigo-500/20">
+              <i data-lucide="network" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 px-2.5 py-0.5 rounded-full border border-indigo-500/30">Free Port Forwarding</span>
+                <span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono font-semibold">Official Plugin</span>
+                <span class="text-[10px] text-slate-400 font-mono">playit.gg</span>
+              </div>
+              <h4 class="text-sm font-bold text-white mt-0.5">Playit.gg — Global Minecraft Server Tunnel</h4>
+              <p class="text-[11px] text-slate-300">Allow players to join without port forwarding or static public IP. Free .joinmc.link domain.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <button onclick="marketplace.switchCategory('playit')" class="btn-cyber-purple w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-500/20">
+              <i data-lucide="zap" class="w-3.5 h-3.5"></i> Playit Tunnel Manager
+            </button>
+          </div>
+        </div>
+
         <!-- Search & Filter Controls Toolbar -->
         <div class="glass-panel p-5 rounded-2xl border border-white/10 space-y-4">
           <div class="flex items-center justify-between pb-2 border-b border-white/5">
@@ -953,7 +982,7 @@ class MarketplaceController {
           </div>
         </div>
 
-        <!-- 5 Category Tabs ("sab alg alg") -->
+        <!-- Category Tabs ("sab alg alg") -->
         <div class="glass-panel p-2 rounded-2xl border border-white/10 flex flex-wrap gap-2">
           <button onclick="marketplace.switchCategory('plugin')" id="cat-btn-plugin" class="cat-pill flex-1 min-w-[120px] px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'plugin' ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="puzzle" class="w-4 h-4"></i> Plugins
@@ -972,6 +1001,9 @@ class MarketplaceController {
           </button>
           <button onclick="marketplace.switchCategory('world')" id="cat-btn-world" class="cat-pill flex-1 min-w-[120px] px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'world' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="globe" class="w-4 h-4"></i> World Installer
+          </button>
+          <button onclick="marketplace.switchCategory('playit')" id="cat-btn-playit" class="cat-pill flex-1 min-w-[130px] px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'playit' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
+            <i data-lucide="network" class="w-4 h-4 text-indigo-400"></i> Playit.gg Tunnel
           </button>
         </div>
 
@@ -1306,6 +1338,545 @@ class MarketplaceController {
         if (window.lucide) lucide.createIcons();
       }
     }
+  }
+
+  // Render Playit.gg Zero-Port Tunnel Manager View
+  async renderPlayitView() {
+    const container = document.getElementById('marketplace-view-content');
+    if (!container) return;
+
+    if (!this.currentServerId) {
+      container.innerHTML = `
+        <div class="glass-panel p-12 rounded-3xl border border-white/10 text-center space-y-4 max-w-lg mx-auto">
+          <div class="w-16 h-16 rounded-3xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-xl shadow-indigo-500/20">
+            <i data-lucide="network" class="w-8 h-8"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white">Select a Target Server</h3>
+          <p class="text-xs text-slate-300">
+            Please select a Minecraft server from the selector above to manage its Playit.gg tunnel.
+          </p>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="glass-panel p-12 rounded-3xl border border-white/10 text-center space-y-3">
+        <div class="animate-spin inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+        <p class="text-sm font-semibold text-slate-300">Detecting Playit.gg Tunnel & Status...</p>
+      </div>
+    `;
+
+    try {
+      const res = await app.api(`/api/marketplace/playit/status?serverId=${this.currentServerId}`);
+      if (!res.success || !res.status) {
+        throw new Error(res.error || 'Failed to retrieve Playit tunnel status');
+      }
+      this.renderPlayitContent(container, res.status);
+    } catch (err) {
+      container.innerHTML = `
+        <div class="glass-panel p-10 rounded-3xl border border-rose-500/30 text-center space-y-4 max-w-xl mx-auto">
+          <div class="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+            <i data-lucide="alert-circle" class="w-7 h-7"></i>
+          </div>
+          <h4 class="text-lg font-bold text-white">Failed to Load Playit Tunnel Status</h4>
+          <p class="text-xs text-rose-300">${this.escapeHtml(err.message)}</p>
+          <button onclick="marketplace.renderPlayitView()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-bold">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 inline mr-1"></i> Try Again
+          </button>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
+  // Render Playit Details, Connection Domain, Claim Link, & Settings
+  renderPlayitContent(container, status) {
+    const isInstalled = Boolean(status.installed);
+    const hasSecretKey = Boolean(status.hasSecretKey);
+    const statusType = status.status; // 'active' | 'needs_claim' | 'installed' | 'not_installed'
+    const tunnelDomain = status.tunnelDomain;
+    const claimUrl = status.claimUrl;
+    const jar = status.jar;
+
+    let statusBadge = '';
+    if (statusType === 'active') {
+      statusBadge = `
+        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-lg shadow-emerald-500/10">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Tunnel Online & Active
+        </span>
+      `;
+    } else if (statusType === 'needs_claim') {
+      statusBadge = `
+        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 shadow-lg shadow-amber-500/10">
+          <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Claim Required
+        </span>
+      `;
+    } else if (isInstalled) {
+      statusBadge = `
+        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5">
+          <i data-lucide="info" class="w-3.5 h-3.5"></i> Installed (Waiting for Server Start)
+        </span>
+      `;
+    } else {
+      statusBadge = `
+        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-white/10 flex items-center gap-1.5">
+          <i data-lucide="circle" class="w-3.5 h-3.5"></i> Not Installed
+        </span>
+      `;
+    }
+
+    const defaultTargetType = (this.serverData?.jar_type && ['fabric', 'forge', 'neoforge', 'quilt'].includes(this.serverData.jar_type.toLowerCase())) ? 'mod' : 'plugin';
+
+    container.innerHTML = `
+      <div class="space-y-6 animate-fade-in">
+        <!-- Hero Header Card -->
+        <div class="glass-panel p-6 rounded-3xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/70 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0 shadow-xl shadow-indigo-500/20">
+              <i data-lucide="network" class="w-7 h-7"></i>
+            </div>
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-indigo-300 bg-indigo-500/20 px-3 py-0.5 rounded-full border border-indigo-500/30">
+                  Zero Port Forwarding
+                </span>
+                <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                  Official Latest Release
+                </span>
+                ${statusBadge}
+              </div>
+              <h3 class="text-2xl font-black text-white flex items-center gap-2">
+                Playit.gg Tunnel Manager
+              </h3>
+              <p class="text-xs text-slate-300 max-w-xl">
+                Allow anyone in the world to join your Minecraft server without port forwarding, static IPs, router access, or VPNs.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
+            <button onclick="marketplace.renderPlayitView()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 shadow transition flex items-center gap-1.5">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Status
+            </button>
+            ${isInstalled ? `
+              <button onclick="marketplace.uninstallPlayit()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition flex items-center gap-1.5">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Uninstall
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+        ${tunnelDomain ? `
+          <!-- Active Public Domain Banner (No Port Forwarding Address) -->
+          <div class="glass-panel p-6 rounded-3xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/40 via-slate-900/80 to-indigo-950/30 shadow-2xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-400">Public Player Connection Address</span>
+              </div>
+              <span class="text-[11px] text-slate-300 font-mono">Ready for Minecraft Java / Bedrock</span>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-950/80 p-4 rounded-2xl border border-emerald-500/20">
+              <div class="space-y-0.5 text-center md:text-left">
+                <div class="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Direct Join Domain</div>
+                <div class="text-xl sm:text-2xl font-mono font-black tracking-wide select-all text-emerald-300">
+                  ${this.escapeHtml(tunnelDomain)}
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button onclick="marketplace.copyAddress('${this.escapeHtml(tunnelDomain)}')" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+                  <i data-lucide="copy" class="w-4 h-4"></i> Copy IP Address
+                </button>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+              Share this domain with your players! They can paste it directly into their Minecraft client server address bar.
+            </p>
+          </div>
+        ` : ''}
+
+        ${claimUrl ? `
+          <!-- Claim Required Alert Card -->
+          <div class="glass-panel p-6 rounded-3xl border border-amber-500/50 bg-gradient-to-r from-amber-950/50 via-slate-900/90 to-amber-950/20 shadow-2xl space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-base font-bold text-white">Playit Account Claim Required</h4>
+                <p class="text-xs text-amber-200/90">
+                  Your server generated a claim URL. Link this tunnel to your free Playit.gg account to unlock your public address.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              <a href="${claimUrl}" target="_blank" rel="noopener noreferrer" class="btn-cyber-purple px-6 py-3 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 shadow-xl shadow-indigo-500/20">
+                <i data-lucide="external-link" class="w-4 h-4"></i> Click Here to Claim Tunnel on Playit.gg
+              </a>
+              <button onclick="marketplace.renderPlayitView()" class="px-4 py-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 transition flex items-center justify-center gap-2">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Check Status After Claiming
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400 font-mono">
+              Claim URL: <a href="${claimUrl}" target="_blank" class="text-indigo-400 underline break-all">${this.escapeHtml(claimUrl)}</a>
+            </p>
+          </div>
+        ` : ''}
+
+        <!-- Main Configuration & Setup Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Left Column: Installation & Status Card (7 cols) -->
+          <div class="lg:col-span-7 glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+              <div class="flex items-center gap-2">
+                <i data-lucide="box" class="w-4 h-4 text-indigo-400"></i>
+                <h4 class="text-sm font-bold text-white uppercase tracking-wider">Plugin Installation & State</h4>
+              </div>
+              <span class="text-[11px] font-mono text-slate-400">Target Server #${this.currentServerId}</span>
+            </div>
+
+            ${isInstalled && jar ? `
+              <!-- Installed Jar Details -->
+              <div class="bg-slate-900/70 p-4 rounded-2xl border border-white/10 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                      <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <h5 class="text-xs font-bold text-white font-mono">${this.escapeHtml(jar.fileName)}</h5>
+                      <p class="text-[11px] text-slate-400 font-mono">Located in /${this.escapeHtml(jar.directory)} (${(jar.size / (1024 * 1024)).toFixed(2)} MB)</p>
+                    </div>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Installed</span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-white/5">
+                  <button onclick="marketplace.installPlayit()" id="playit-install-btn" class="btn-cyber px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reinstall / Update Plugin
+                  </button>
+                  <button onclick="marketplace.uninstallPlayit()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition flex items-center gap-1.5">
+                    <i data-lucide="trash" class="w-3.5 h-3.5"></i> Remove Plugin
+                  </button>
+                </div>
+              </div>
+            ` : `
+              <!-- Install Option Box -->
+              <div class="bg-slate-900/70 p-5 rounded-2xl border border-indigo-500/20 space-y-4">
+                <div>
+                  <h5 class="text-sm font-bold text-white">1-Click Official Playit.gg Installation</h5>
+                  <p class="text-xs text-slate-300 mt-1">
+                    Downloads the official <code>playit-minecraft-plugin.jar</code> (Latest Release) directly into your server directory.
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">Target Directory</label>
+                    <select id="playit-target-type" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs">
+                      <option value="plugin" ${defaultTargetType === 'plugin' ? 'selected' : ''}>plugins/ (Paper, Purpur, Spigot, Velocity)</option>
+                      <option value="mod" ${defaultTargetType === 'mod' ? 'selected' : ''}>mods/ (Fabric, Forge, NeoForge)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">Optional Secret Key</label>
+                    <input type="text" id="playit-install-secret" placeholder="Paste playit secret key (optional)" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs font-mono">
+                  </div>
+                </div>
+
+                <button onclick="marketplace.installPlayit()" id="playit-install-btn" class="btn-cyber-purple w-full py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-xl shadow-indigo-500/20">
+                  <i data-lucide="download" class="w-4 h-4"></i> Install Playit.gg Plugin
+                </button>
+              </div>
+            `}
+
+            <!-- Server Startup Reminder Notice -->
+            <div class="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 flex items-start gap-3">
+              <i data-lucide="lightbulb" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
+              <div class="text-xs text-slate-300 space-y-1">
+                <p class="font-bold text-white">Important: Restart or Start Server to Activate</p>
+                <p class="text-[11px] text-slate-400">
+                  After installing the plugin or updating your secret key, restart your Minecraft server from the Server Console. The plugin initializes its tunnel during startup.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Secret Key Configuration & Account Linking (5 cols) -->
+          <div class="lg:col-span-5 glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+              <div class="flex items-center gap-2">
+                <i data-lucide="key" class="w-4 h-4 text-cyan-400"></i>
+                <h4 class="text-sm font-bold text-white uppercase tracking-wider">Secret Key Configuration</h4>
+              </div>
+              ${hasSecretKey ? `
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Configured</span>
+              ` : `
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-white/10">Unset</span>
+              `}
+            </div>
+
+            <div class="space-y-3">
+              <p class="text-xs text-slate-300 leading-relaxed">
+                If you manage your tunnels through a Playit.gg account, copy your <strong>Secret Key</strong> from <a href="https://playit.gg/manage" target="_blank" class="text-indigo-400 underline font-semibold">playit.gg/manage</a> and paste it below.
+              </p>
+
+              ${hasSecretKey ? `
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                  <div class="space-y-0.5">
+                    <span class="text-[10px] font-bold uppercase text-slate-400">Current Saved Key:</span>
+                    <p class="text-xs font-mono text-emerald-300">${this.escapeHtml(status.secretKey)}</p>
+                  </div>
+                  <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+              ` : ''}
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">Enter Secret Key</label>
+                <div class="relative">
+                  <input type="password" id="playit-secret-input" placeholder="Paste playit secret key..." class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs font-mono pr-10">
+                  <button type="button" onclick="const i=document.getElementById('playit-secret-input'); i.type = i.type === 'password' ? 'text' : 'password';" class="absolute right-3 top-2.5 text-slate-400 hover:text-white text-xs">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button onclick="marketplace.configurePlayit()" id="playit-save-secret-btn" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow">
+                <i data-lucide="save" class="w-4 h-4"></i> Save & Bind Key to playit.toml
+              </button>
+            </div>
+
+            <!-- Quick Info / Links -->
+            <div class="pt-3 border-t border-white/5 space-y-2">
+              <a href="https://playit.gg/manage" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition text-xs text-slate-200">
+                <span class="flex items-center gap-2">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-indigo-400"></i> Open Playit Dashboard
+                </span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+              </a>
+              <a href="https://playit.gg/support" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition text-xs text-slate-200">
+                <span class="flex items-center gap-2">
+                  <i data-lucide="help-circle" class="w-3.5 h-3.5 text-cyan-400"></i> Playit Help & Docs
+                </span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Step Setup Guide & Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div class="glass-panel p-5 rounded-2xl border border-white/10 space-y-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">1</div>
+            <h5 class="text-xs font-bold text-white">1-Click Install</h5>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              Mpanel installs the official Playit plugin into your server plugins or mods directory automatically.
+            </p>
+          </div>
+
+          <div class="glass-panel p-5 rounded-2xl border border-white/10 space-y-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">2</div>
+            <h5 class="text-xs font-bold text-white">Start Your Server</h5>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              Launch your server. The plugin boots and automatically builds an encrypted tunnel with Playit's global network.
+            </p>
+          </div>
+
+          <div class="glass-panel p-5 rounded-2xl border border-white/10 space-y-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">3</div>
+            <h5 class="text-xs font-bold text-white">Connect & Play</h5>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              Get your custom <code class="text-emerald-300">*.joinmc.link</code> domain above and share it with your friends!
+            </p>
+          </div>
+        </div>
+
+        <!-- Native Linux System CLI (playit package) Box -->
+        <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <i data-lucide="terminal" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h5 class="text-xs font-bold text-white uppercase tracking-wider">Native Linux System Tunnel (playit CLI)</h5>
+                <p class="text-[11px] text-slate-400">Run Playit directly as a background Linux system daemon (ideal for VPS, Bedrock, and non-plugin servers)</p>
+              </div>
+            </div>
+
+            ${status.systemCli && status.systemCli.installed ? `
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shrink-0">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> CLI Installed (${status.systemCli.version || 'Active'})
+              </span>
+            ` : `
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-white/10 flex items-center gap-1.5 shrink-0">
+                <i data-lucide="circle" class="w-3.5 h-3.5"></i> CLI Not Installed
+              </span>
+            `}
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="font-bold text-slate-300">Ubuntu / Debian One-Liner Install Command:</span>
+              <button onclick="marketplace.copyAddress('curl -SsL https://packages.playit.gg/keys/playit.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/playit.gpg >/dev/null && sudo chmod 0644 /usr/share/keyrings/playit.gpg && sudo curl -fsSL -o /etc/apt/sources.list.d/playit.list https://packages.playit.gg/repo-files/playit-debian.list && sudo apt update && sudo apt install -y playit')" class="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Commands
+              </button>
+            </div>
+            <pre class="bg-slate-950/90 p-3.5 rounded-xl border border-white/10 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed select-all">curl -SsL https://packages.playit.gg/keys/playit.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/playit.gpg >/dev/null
+sudo chmod 0644 /usr/share/keyrings/playit.gpg
+sudo curl -fsSL -o /etc/apt/sources.list.d/playit.list https://packages.playit.gg/repo-files/playit-debian.list
+sudo apt update
+sudo apt install -y playit</pre>
+            <p class="text-[10px] text-slate-400">
+              💡 You can also install it anytime via Mpanel CLI: <code>./menu.sh playit</code> or <code>bash menu.sh</code> (Option 8).
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async installPlayit() {
+    if (!this.currentServerId) {
+      app.toast('Please select a server first.', 'warning');
+      return;
+    }
+
+    const targetSelect = document.getElementById('playit-target-type');
+    const secretInput = document.getElementById('playit-install-secret');
+    const targetType = targetSelect ? targetSelect.value : (this.activeTab === 'mod' ? 'mod' : 'plugin');
+    const secretKey = secretInput ? secretInput.value.trim() : '';
+
+    const btn = document.getElementById('playit-install-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full mr-1.5"></span> Installing Playit Plugin...`;
+    }
+
+    try {
+      const res = await app.api('/api/marketplace/playit/install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serverId: this.currentServerId,
+          targetType,
+          secretKey: secretKey || undefined
+        })
+      });
+
+      app.toast(res.message || 'Playit.gg plugin installed successfully! Start/restart your server to launch the tunnel.', 'success');
+      await this.renderPlayitView();
+    } catch (err) {
+      app.toast(`Installation failed: ${err.message}`, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i> Install Playit.gg Plugin`;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+  }
+
+  async configurePlayit() {
+    if (!this.currentServerId) {
+      app.toast('Please select a server first.', 'warning');
+      return;
+    }
+
+    const input = document.getElementById('playit-secret-input');
+    const secretKey = input ? input.value.trim() : '';
+    if (!secretKey) {
+      app.toast('Please enter your Playit secret key.', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('playit-save-secret-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full mr-1.5"></span> Saving...`;
+    }
+
+    try {
+      const res = await app.api('/api/marketplace/playit/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serverId: this.currentServerId,
+          secretKey
+        })
+      });
+
+      app.toast(res.message || 'Secret key configured successfully!', 'success');
+      if (input) input.value = '';
+      await this.renderPlayitView();
+    } catch (err) {
+      app.toast(`Failed to save secret key: ${err.message}`, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> Save & Bind Key to playit.toml`;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+  }
+
+  async uninstallPlayit() {
+    if (!this.currentServerId) return;
+
+    if (!confirm('Are you sure you want to uninstall Playit.gg and remove its plugin & config from this server?')) {
+      return;
+    }
+
+    try {
+      const res = await app.api('/api/marketplace/playit/uninstall', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serverId: this.currentServerId })
+      });
+
+      app.toast(res.message || 'Playit.gg uninstalled successfully.', 'success');
+      await this.renderPlayitView();
+    } catch (err) {
+      app.toast(`Uninstall failed: ${err.message}`, 'error');
+    }
+  }
+
+  copyAddress(text) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        app.toast(`Copied address: ${text}`, 'success');
+      }).catch(() => {
+        this.copyAddressFallback(text);
+      });
+    } else {
+      this.copyAddressFallback(text);
+    }
+  }
+
+  copyAddressFallback(text) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.style.position = 'fixed';
+    el.style.opacity = '0';
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    try {
+      document.execCommand('copy');
+      app.toast(`Copied address: ${text}`, 'success');
+    } catch (e) {
+      app.toast(`Could not copy address: ${text}`, 'error');
+    }
+    document.body.removeChild(el);
   }
 
   closeModal(modalId) {

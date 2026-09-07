@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true });
 const marketplaceService = require('../services/marketplaceService');
 const worldService = require('../services/worldService');
 const curseforgeService = require('../services/curseforgeService');
+const playitService = require('../services/playitService');
 const { authenticate, requireServerAccess } = require('../middleware/auth');
 const { logActivity } = require('../services/activityService');
 
@@ -189,5 +190,115 @@ router.post('/uninstall', authenticate, requireServerAccess('files.write'), asyn
   }
 });
 
-module.exports = router;
+// -----------------------------------------------------------------------------
+// PLAYIT.GG TUNNEL INTEGRATION ROUTES
+// -----------------------------------------------------------------------------
 
+// Playit Tunnel Status
+router.get('/playit/status', authenticate, async (req, res) => {
+  try {
+    const serverId = req.params.serverId || req.query.serverId;
+    if (!serverId) {
+      return res.status(400).json({ success: false, error: 'Server ID is required.' });
+    }
+    const status = playitService.getStatus(serverId);
+    res.json({ success: true, status });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Playit Install
+router.post('/playit/install', authenticate, requireServerAccess('files.write'), async (req, res) => {
+  try {
+    const serverId = req.params.serverId || req.body.serverId;
+    if (!serverId) {
+      return res.status(400).json({ success: false, error: 'Server ID is required.' });
+    }
+
+    const result = await playitService.install(serverId, req.body);
+    logActivity(
+      req.user.id,
+      serverId,
+      'PLAYIT_INSTALL',
+      'Installed Playit.gg tunnel plugin',
+      req
+    );
+
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Playit Configure Secret Key
+router.post('/playit/configure', authenticate, requireServerAccess('files.write'), async (req, res) => {
+  try {
+    const serverId = req.params.serverId || req.body.serverId;
+    const { secretKey } = req.body;
+
+    if (!serverId) {
+      return res.status(400).json({ success: false, error: 'Server ID is required.' });
+    }
+
+    const result = playitService.configure(serverId, { secretKey });
+    logActivity(
+      req.user.id,
+      serverId,
+      'PLAYIT_CONFIGURE',
+      'Configured Playit.gg tunnel secret key',
+      req
+    );
+
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Playit Uninstall
+router.post('/playit/uninstall', authenticate, requireServerAccess('files.delete'), async (req, res) => {
+  try {
+    const serverId = req.params.serverId || req.body.serverId;
+    if (!serverId) {
+      return res.status(400).json({ success: false, error: 'Server ID is required.' });
+    }
+
+    const result = playitService.uninstall(serverId);
+    logActivity(
+      req.user.id,
+      serverId,
+      'PLAYIT_UNINSTALL',
+      'Uninstalled Playit.gg tunnel plugin',
+      req
+    );
+
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/playit/uninstall', authenticate, requireServerAccess('files.delete'), async (req, res) => {
+  try {
+    const serverId = req.params.serverId || req.body.serverId || req.query.serverId;
+    if (!serverId) {
+      return res.status(400).json({ success: false, error: 'Server ID is required.' });
+    }
+
+    const result = playitService.uninstall(serverId);
+    logActivity(
+      req.user.id,
+      serverId,
+      'PLAYIT_UNINSTALL',
+      'Uninstalled Playit.gg tunnel plugin',
+      req
+    );
+
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+module.exports = router;
