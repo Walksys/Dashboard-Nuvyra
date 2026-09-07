@@ -1,7 +1,7 @@
 # 🎮 Mpanel - Full Node.js Game & App Server Web Management Panel
 
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
-[![Version](https://img.shields.io/badge/release-v2.0.0-blue.svg)](https://github.com/nobita329/Mpanel/releases/tag/v2.0.0)
+[![Version](https://img.shields.io/badge/release-v2.1.0-blue.svg)](https://github.com/nobita329/Mpanel/releases/tag/v2.1.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Theme: Full Black](https://img.shields.io/badge/Theme-Full%20Black%20OLED-black.svg)](#-theme--customization-engine)
 
@@ -62,6 +62,20 @@
 - **Auto-Save & Reset**:
   - Debounced auto-save on slider dragging and a one-click **"Reset to Default"** action.
 
+### 5. 🌐 Playit.gg Zero-Port Tunnel Integration
+- **Addon Marketplace 1-Click Install**: Installs the latest official `playit-minecraft-plugin.jar` automatically into `plugins/` (Paper, Purpur, Spigot, Velocity) or `mods/` (Fabric, Forge, NeoForge).
+- **Live Status & Address Detection**: Scans logs to detect claim URLs and public player connection domains (e.g. `*.gl.joinmc.link`).
+- **Secret Key Binding**: Configures `secret_key` directly into `playit.toml`.
+- **Native Linux System Daemon (playit CLI)**:
+  ```bash
+  curl -SsL https://packages.playit.gg/keys/playit.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/playit.gpg >/dev/null
+  sudo chmod 0644 /usr/share/keyrings/playit.gpg
+  sudo curl -fsSL -o /etc/apt/sources.list.d/playit.list https://packages.playit.gg/repo-files/playit-debian.list
+  sudo apt update
+  sudo apt install -y playit
+  ```
+  Or 1-click via Mpanel CLI: `./menu.sh playit` (or interactive `menu.sh` Option 8).
+
 ---
 
 ## 📦 Supported Runtimes & Environments
@@ -97,6 +111,7 @@ Direct shortcuts available:
 - `./menu.sh pm2` - PM2 Process Management menu (Start, Stop, Restart, Logs, Autostart)
 - `./menu.sh update` - Git pull and rebuild dependencies
 - `./menu.sh status` - Check port listening status (`3001`, `3003`, `3004`) and database
+- `./menu.sh playit` - Install native Playit.gg zero-port tunnel CLI
 - `./menu.sh uninstall` - Safely remove or clean Mpanel
 
 ### 2. Manual CLI Setup

@@ -259,6 +259,54 @@ uninstall_mpanel() {
     read -n 1 -s -r -p "Press any key to return to menu..."
 }
 
+# 8. Install Playit.gg System Tunnel (playit CLI)
+install_playit_cli() {
+    echo -e "${CYAN}======================================================${NC}"
+    echo -e "${WHITE}      🌐 Installing Playit.gg System CLI (Native)     ${NC}"
+    echo -e "${CYAN}======================================================${NC}"
+    echo ""
+
+    if command -v playit &> /dev/null; then
+        PLAYIT_VER=$(playit version 2>/dev/null || echo "installed")
+        echo -e "${GREEN}✅ Playit CLI is already installed (${PLAYIT_VER})!${NC}"
+        echo ""
+        read -p "Do you want to reinstall/update Playit CLI? (y/n): " reinstall_choice
+        if [[ ! "$reinstall_choice" =~ ^[Yy]$ ]]; then
+            return
+        fi
+    fi
+
+    echo -e "${CYAN}🔑 1/4 Adding Playit.gg GPG Keyring...${NC}"
+    curl -SsL https://packages.playit.gg/keys/playit.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/playit.gpg >/dev/null
+    sudo chmod 0644 /usr/share/keyrings/playit.gpg
+
+    echo -e "${CYAN}📦 2/4 Adding Playit APT Repository...${NC}"
+    sudo curl -fsSL -o /etc/apt/sources.list.d/playit.list https://packages.playit.gg/repo-files/playit-debian.list
+
+    echo -e "${CYAN}🔄 3/4 Updating Package Lists...${NC}"
+    sudo apt update
+
+    echo -e "${CYAN}🚀 4/4 Installing Playit.gg CLI...${NC}"
+    sudo apt install -y playit
+
+    if command -v playit &> /dev/null; then
+        echo ""
+        echo -e "${GREEN}======================================================${NC}"
+        echo -e "${GREEN}  🎉 Playit CLI installed successfully!               ${NC}"
+        echo -e "${GREEN}  Version: $(playit version 2>/dev/null || echo 'Latest')                      ${NC}"
+        echo -e "${GREEN}======================================================${NC}"
+        echo -e "${WHITE}Usage commands:${NC}"
+        echo -e " • Run agent:    ${CYAN}playit${NC}"
+        echo -e " • Start daemon: ${CYAN}playit start${NC}"
+        echo -e " • Check status: ${CYAN}playit status${NC}"
+    else
+        echo -e "${RED}❌ Failed to install Playit CLI. Please check your system logs.${NC}"
+    fi
+
+    echo ""
+    read -n 1 -s -r -p "Press any key to return to menu..."
+}
+
 # Main Interactive Menu Loop
 main_menu() {
     while true; do
@@ -270,9 +318,10 @@ main_menu() {
         echo -e "  ${CYAN}[5]${NC} 🐞 Start in Foreground (Debug Mode)"
         echo -e "  ${CYAN}[6]${NC} 📊 Check System & Port Status"
         echo -e "  ${CYAN}[7]${NC} 🗑️  Uninstall Mpanel"
+        echo -e "  ${CYAN}[8]${NC} 🌐 Install Playit.gg System Tunnel (playit CLI)"
         echo -e "  ${CYAN}[0]${NC} 🚪 Exit"
         echo ""
-        read -p "Please select an option [0-7]: " choice
+        read -p "Please select an option [0-8]: " choice
 
         case $choice in
             1) install_mpanel ;;
@@ -282,12 +331,13 @@ main_menu() {
             5) start_foreground ;;
             6) status_check ;;
             7) uninstall_mpanel ;;
+            8) install_playit_cli ;;
             0)
                 echo -e "${GREEN}Goodbye!${NC}"
                 exit 0
                 ;;
             *)
-                echo -e "${RED}Invalid selection. Please choose 0-7.${NC}"
+                echo -e "${RED}Invalid selection. Please choose 0-8.${NC}"
                 sleep 1
                 ;;
         esac
@@ -307,6 +357,8 @@ elif [ "$1" == "pm2" ]; then
     pm2_menu
 elif [ "$1" == "status" ]; then
     status_check
+elif [ "$1" == "playit" ] || [ "$1" == "playit-cli" ]; then
+    install_playit_cli
 else
     main_menu
 fi
