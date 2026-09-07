@@ -5,6 +5,8 @@ const { query } = require('../database/db');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { uploadBranding } = require('../middleware/upload');
 const imagesConfig = require('../config/images');
+const config = require('../config/config');
+const wallpaperService = require('../services/wallpaperService');
 const { logActivity } = require('../services/activityService');
 
 // Get Public Settings (Accessible by all users and guests)
@@ -24,6 +26,34 @@ router.get('/public', async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to load public settings.' });
   }
+});
+
+// Browse 4K Wallpapers from 4kwallpapers.com with categories, search, and pagination
+router.get('/wallpapers', async (req, res) => {
+  try {
+    const category = req.query.category || 'all';
+    const page = parseInt(req.query.page || '1', 10);
+    const searchQuery = req.query.query || req.query.q || '';
+
+    const data = await wallpaperService.getWallpapers({
+      category,
+      page,
+      query: searchQuery
+    });
+
+    res.json(data);
+  } catch (err) {
+    console.error('Wallpaper route error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch wallpapers.' });
+  }
+});
+
+// Get Categories for 4K Wallpapers
+router.get('/categories', (req, res) => {
+  res.json({
+    success: true,
+    categories: wallpaperService.getCategories()
+  });
 });
 
 // Get All Settings (Admin only)
@@ -68,7 +98,9 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       'panel_music_volume',
       'transparency_bar',
       'blur_bar',
-      'registration_enabled'
+      'registration_enabled',
+      'theme_mode',
+      'auto_save_enabled'
     ];
 
     for (const [key, value] of Object.entries(updates)) {
@@ -89,6 +121,43 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
   }
 });
 
+// Reset Theme & Customization to Default (Admin only)
+router.post('/reset', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const dt = config.DEFAULT_THEME;
+    const defaults = {
+      panel_bg: dt.wallpaper,
+      panel_bg_type: 'image',
+      panel_bg_category: dt.wallpaperCategory || 'black-dark',
+      transparency_bar: String(dt.transparency ?? 18),
+      blur_bar: String(dt.blur ?? 16),
+      theme_mode: 'dark',
+      panel_name: config.DEFAULT_PANEL_NAME || 'Mpanel',
+      favicon_name: config.DEFAULT_PANEL_NAME || 'Mpanel',
+      panel_logo: dt.logo || '/assets/mpanel-logo.svg',
+      favicon_logo: dt.favicon || '/assets/favicon.svg'
+    };
+
+    for (const [key, value] of Object.entries(defaults)) {
+      await query.run(
+        'INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP',
+        [key, String(value)]
+      );
+    }
+
+    logActivity(req.user.id, null, 'SETTINGS_RESET', 'Reset panel theme and customization to defaults', req);
+
+    res.json({
+      success: true,
+      message: 'Panel theme reset to default successfully!',
+      defaults
+    });
+  } catch (err) {
+    console.error('Settings reset error:', err);
+    res.status(500).json({ success: false, error: 'Failed to reset settings.' });
+  }
+});
+
 // Upload Branding Media (Logo, Favicon, Background image/video, Music)
 router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file'), async (req, res) => {
   try {
@@ -98,6 +167,7 @@ router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file')
 
     const fileUrl = `/uploads/branding/${req.file.filename}`;
     const fileType = req.body.type; // 'logo' | 'favicon' | 'background' | 'music'
+    const isVideo = /\.(mp4|webm|mkv|mov)$/i.test(req.file.originalname);
 
     if (fileType) {
       const keyMap = {
@@ -112,6 +182,13 @@ router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file')
           'INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP',
           [settingKey, fileUrl]
         );
+
+        if (fileType === 'background') {
+          await query.run(
+            'INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP',
+            ['panel_bg_type', isVideo ? 'video' : 'image']
+          );
+        }
       }
     }
 
@@ -120,7 +197,8 @@ router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file')
       url: fileUrl,
       fileName: req.file.filename,
       originalName: req.file.originalname,
-      size: req.file.size
+      size: req.file.size,
+      isVideo
     });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to upload branding asset.' });
@@ -128,4 +206,5 @@ router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file')
 });
 
 module.exports = router;
+
 

@@ -207,7 +207,7 @@ class AdminManager {
     const modalContainer = document.getElementById('modal-container');
     modalContainer.innerHTML = `
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass-panel w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl space-y-5">
+        <div class="glass-panel w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl space-y-5">
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 class="text-lg font-black text-white flex items-center gap-2">
               <i data-lucide="server" class="w-5 h-5 text-cyan-400"></i> Deploy New Server Instance
@@ -226,7 +226,7 @@ class AdminManager {
                   <input type="radio" name="create_srv_type" value="minecraft" checked onchange="admin.onServerTypeChange('minecraft')" class="accent-cyan-400">
                   <i data-lucide="box" class="w-6 h-6 text-cyan-400"></i>
                   <span class="text-xs font-bold text-white">Minecraft</span>
-                  <span class="text-[10px] text-slate-400 text-center">Java / Bedrock (mcjars.app)</span>
+                  <span class="text-[10px] text-slate-400 text-center">Paper, Purpur, Forge, Fabric...</span>
                 </label>
                 <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-purple-400 transition">
                   <input type="radio" name="create_srv_type" value="nodejs" onchange="admin.onServerTypeChange('nodejs')" class="accent-purple-400">
@@ -255,65 +255,226 @@ class AdminManager {
               </div>
             </div>
 
-            <!-- Minecraft MCJars Integration Box (Shown for Minecraft) -->
-            <div id="mcjars-config-box" class="glass-card p-4 rounded-2xl border border-cyan-500/30 space-y-3">
-              <div class="flex items-center justify-between">
-                <h4 class="text-xs font-bold text-cyan-300 flex items-center gap-2">
-                  <i data-lucide="download-cloud" class="w-4 h-4"></i> MCJars.app Software & Version Selector
-                </h4>
-                <a href="https://mcjars.app" target="_blank" class="text-[10px] text-cyan-400 hover:underline">mcjars.app</a>
+            <!-- Minecraft Version Changer & Software Selector with Icons -->
+            <div id="mcjars-config-box" class="glass-card p-5 rounded-2xl border border-cyan-500/30 space-y-4 bg-gradient-to-br from-cyan-950/20 via-slate-900/40 to-slate-900/80">
+              <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                  </span>
+                  <div>
+                    <h4 class="text-xs font-bold text-white flex items-center gap-2">
+                      Minecraft Version Changer & Software Selector
+                    </h4>
+                    <p class="text-[10px] text-slate-400">Choose your server engine and version with automatic Java runtime matching</p>
+                  </div>
+                </div>
+                <a href="https://mcjars.app" target="_blank" class="text-[10px] font-mono text-cyan-400 hover:underline">mcjars.app</a>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">Jar Software Type</label>
-                  <select id="mc-jar-type" onchange="admin.onMcTypeChange(this.value)" class="w-full glass-input px-3 py-2 rounded-xl text-xs">
+
+              <!-- Engine Cards with Icons -->
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-300 mb-2 flex items-center justify-between">
+                  <span>Select Server Engine:</span>
+                  <span class="text-[10px] text-slate-400">Click to select engine</span>
+                </label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <!-- Paper -->
+                  <div onclick="admin.selectDeployEngine('paper')" data-type="paper" class="deploy-engine-card group relative p-3 rounded-xl border border-cyan-400 bg-cyan-950/40 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400 cursor-pointer transition">
+                    <span class="deploy-card-check absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">Paper</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-cyan-300 font-medium">Recommended</span>
+                  </div>
+
+                  <!-- Purpur -->
+                  <div onclick="admin.selectDeployEngine('purpur')" data-type="purpur" class="deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition">
+                    <span class="deploy-card-check hidden absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-purple-500/20 text-purple-300">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">Purpur</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-purple-300 font-medium">Popular</span>
+                  </div>
+
+                  <!-- Fabric -->
+                  <div onclick="admin.selectDeployEngine('fabric')" data-type="fabric" class="deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition">
+                    <span class="deploy-card-check hidden absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-amber-500/20 text-amber-300">
+                        <i data-lucide="box" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">Fabric</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-amber-300 font-medium">Fast Modding</span>
+                  </div>
+
+                  <!-- Forge -->
+                  <div onclick="admin.selectDeployEngine('forge')" data-type="forge" class="deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition">
+                    <span class="deploy-card-check hidden absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-orange-500/20 text-orange-300">
+                        <i data-lucide="tool" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">Forge</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-orange-300 font-medium">Classic Mods</span>
+                  </div>
+
+                  <!-- NeoForge -->
+                  <div onclick="admin.selectDeployEngine('neoforge')" data-type="neoforge" class="deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition">
+                    <span class="deploy-card-check hidden absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-rose-500/20 text-rose-300">
+                        <i data-lucide="flame" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">NeoForge</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-rose-300 font-medium">Next-Gen</span>
+                  </div>
+
+                  <!-- Vanilla -->
+                  <div onclick="admin.selectDeployEngine('vanilla')" data-type="vanilla" class="deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition">
+                    <span class="deploy-card-check hidden absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300">
+                        <i data-lucide="compass" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">Vanilla</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-emerald-300 font-medium">Official</span>
+                  </div>
+
+                  <!-- Spigot -->
+                  <div onclick="admin.selectDeployEngine('spigot')" data-type="spigot" class="deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition">
+                    <span class="deploy-card-check hidden absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-blue-500/20 text-blue-300">
+                        <i data-lucide="cpu" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">Spigot</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-blue-300 font-medium">Standard</span>
+                  </div>
+
+                  <!-- Folia -->
+                  <div onclick="admin.selectDeployEngine('folia')" data-type="folia" class="deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition">
+                    <span class="deploy-card-check hidden absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-cyan-500 text-black flex items-center gap-0.5">
+                      <i data-lucide="check" class="w-2.5 h-2.5"></i> ACTIVE
+                    </span>
+                    <div class="flex items-center gap-2 mb-1.5">
+                      <div class="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-300">
+                        <i data-lucide="grid" class="w-4 h-4"></i>
+                      </div>
+                      <div class="font-bold text-xs text-white">Folia</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-indigo-300 font-medium">Multi-Thread</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- More Engines Dropdown -->
+              <div class="pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] text-slate-400 whitespace-nowrap">Or choose other engine:</span>
+                  <select id="mc-jar-type" onchange="admin.selectDeployEngine(this.value)" class="glass-input px-3 py-1.5 rounded-xl text-xs w-full">
                     <optgroup label="Server Forks (Optimized)">
                       <option value="paper" selected>Paper (Recommended)</option>
                       <option value="purpur">Purpur (Optimized & Features)</option>
                       <option value="pufferfish">Pufferfish (High-Performance)</option>
                       <option value="folia">Folia (Multi-threaded Regionized)</option>
+                      <option value="leaves">Leaves (Vanilla Parity)</option>
+                      <option value="leaf">Leaf (Balanced)</option>
+                      <option value="divinemc">DivineMC (Optimized Purpur)</option>
                       <option value="spigot">Spigot (Classic)</option>
                       <option value="vanilla">Vanilla (Official Mojang)</option>
                       <option value="craftbukkit">CraftBukkit</option>
-                      <option value="glowstone">Glowstone</option>
                     </optgroup>
                     <optgroup label="Modded Platforms">
                       <option value="fabric">Fabric (Fast Mod Loader)</option>
                       <option value="forge">Forge (Classic Modding)</option>
                       <option value="neoforge">NeoForge (Modern Forge)</option>
                       <option value="quilt">Quilt (Modular Mod Loader)</option>
+                      <option value="legacyfabric">Legacy Fabric (Old MC)</option>
                     </optgroup>
                     <optgroup label="Hybrid (Mods + Plugins)">
                       <option value="mohist">Mohist (Forge + Plugins)</option>
                       <option value="arclight">Arclight (Forge/Fabric + Plugins)</option>
                       <option value="magma">Magma (Forge + Spigot)</option>
-                      <option value="spongeforge">SpongeForge</option>
-                      <option value="spongevanilla">SpongeVanilla</option>
+                      <option value="youer">Youer (NeoForge + Spigot)</option>
                     </optgroup>
                     <optgroup label="Proxies">
                       <option value="velocity">Velocity (Next-Gen Proxy)</option>
                       <option value="bungeecord">BungeeCord (Standard Proxy)</option>
                       <option value="waterfall">Waterfall (Paper Proxy)</option>
-                      <option value="travertine">Travertine</option>
-                    </optgroup>
-                    <optgroup label="Bedrock & Cross-Play">
-                      <option value="bedrock">Bedrock Dedicated Server (BDS)</option>
-                      <option value="geyser">Geyser Standalone (Java+Bedrock)</option>
-                      <option value="nukkit">NukkitX (Java Bedrock Core)</option>
-                      <option value="powernukkit">PowerNukkit</option>
                     </optgroup>
                   </select>
                 </div>
+              </div>
+
+              <!-- Quick Pick Version Buttons (Dynamic A to Z Auto) -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                    <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i> Quick Select Minecraft Version (A to Z Auto):
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="deploy-ver-filter" placeholder="Filter A-Z..." oninput="admin.filterDeployQuickVersions(this.value)" class="glass-input px-2 py-0.5 rounded-lg text-[10px] w-24">
+                    <button type="button" onclick="admin.toggleDeploySortOrder()" id="deploy-sort-btn" class="text-[10px] px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300 hover:text-cyan-300 border border-white/5 flex items-center gap-1 transition">
+                      <i data-lucide="arrow-down-up" class="w-2.5 h-2.5"></i> A-Z
+                    </button>
+                  </div>
+                </div>
+                <div id="deploy-quick-versions-container" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                  <!-- Populated dynamically with all versions from A to Z -->
+                </div>
+              </div>
+
+              <!-- Version Dropdown & Auto-matched Java indicator -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">Minecraft Version</label>
-                  <select id="mc-jar-version" class="w-full glass-input px-3 py-2 rounded-xl text-xs">
-                    <option value="1.21.4">1.21.4 (Latest)</option>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                    <span>Minecraft Version</span>
+                    <span id="deploy-version-count" class="text-[10px] text-slate-400">All available</span>
+                  </label>
+                  <select id="mc-jar-version" onchange="admin.onDeployVersionChange(this.value)" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono text-cyan-300">
+                    <option value="1.21.4" selected>1.21.4 (Latest Stable)</option>
                     <option value="1.20.4">1.20.4</option>
                     <option value="1.19.4">1.19.4</option>
+                    <option value="1.18.2">1.18.2</option>
                     <option value="1.16.5">1.16.5</option>
                     <option value="1.12.2">1.12.2</option>
                     <option value="1.8.8">1.8.8</option>
+                    <option value="1.7.10">1.7.10</option>
                   </select>
+                </div>
+                <div class="flex flex-col justify-end">
+                  <div class="glass-card p-2 rounded-xl border border-white/10 flex items-center gap-2">
+                    <div id="deploy-java-tag" class="flex items-center gap-1.5 text-xs font-mono">
+                      <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+                      <span class="text-emerald-400 font-semibold">Auto-matched Java 21</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -351,7 +512,188 @@ class AdminManager {
     `;
 
     this.populateDockerImages('minecraft');
+    this.initDeployVersionChanger();
     if (window.lucide) lucide.createIcons();
+  }
+
+  initDeployVersionChanger() {
+    this.deployVersions = [];
+    this.deployVerFilter = '';
+    this.deploySortOrder = 'desc';
+    this.selectDeployEngine('paper', true);
+  }
+
+  async selectDeployEngine(typeId, fetchVersions = true) {
+    const hiddenType = document.getElementById('mc-jar-type');
+    if (hiddenType) hiddenType.value = typeId;
+
+    document.querySelectorAll('.deploy-engine-card').forEach(card => {
+      const isThis = card.getAttribute('data-type') === typeId;
+      if (isThis) {
+        card.className = 'deploy-engine-card group relative p-3 rounded-xl border border-cyan-400 bg-cyan-950/40 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400 cursor-pointer transition';
+        const checkBadge = card.querySelector('.deploy-card-check');
+        if (checkBadge) checkBadge.classList.remove('hidden');
+      } else {
+        card.className = 'deploy-engine-card group relative p-3 rounded-xl border border-white/10 glass-card hover:border-cyan-500/40 hover:bg-white/5 cursor-pointer transition';
+        const checkBadge = card.querySelector('.deploy-card-check');
+        if (checkBadge) checkBadge.classList.add('hidden');
+      }
+    });
+
+    if (fetchVersions) {
+      await this.onMcTypeChange(typeId);
+    }
+  }
+
+  renderDeployQuickVersionPills() {
+    const container = document.getElementById('deploy-quick-versions-container');
+    if (!container) return;
+
+    let list = (this.deployVersions || []).map(v => typeof v === 'object' ? v.version : v);
+    if (list.length === 0) {
+      list = ['1.21.4', '1.21.1', '1.20.4', '1.20.1', '1.19.4', '1.18.2', '1.16.5', '1.12.2', '1.7.10'];
+    }
+
+    if (this.deployVerFilter) {
+      const q = this.deployVerFilter.toLowerCase();
+      list = list.filter(v => v.toLowerCase().includes(q));
+    }
+
+    if (this.deploySortOrder === 'asc') {
+      list = [...list].reverse();
+    }
+
+    if (list.length === 0) {
+      container.innerHTML = `<span class="text-[11px] text-slate-500 py-1">No versions matching "${this.deployVerFilter}"</span>`;
+      return;
+    }
+
+    const currentVer = document.getElementById('mc-jar-version')?.value || '1.21.4';
+
+    container.innerHTML = list.map(v => {
+      const isSelected = currentVer === v;
+      return `
+        <button type="button" onclick="admin.quickPickDeployVersion('${v}')" data-ver="${v}" class="deploy-ver-pill px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition ${isSelected ? 'bg-cyan-500 text-black font-bold shadow-lg shadow-cyan-500/30 ring-1 ring-cyan-300' : 'bg-slate-800/80 hover:bg-slate-700 hover:text-cyan-300 text-slate-300 border border-white/5'}">
+          ${v}
+        </button>
+      `;
+    }).join('');
+
+    if (window.lucide) lucide.createIcons();
+  }
+
+  filterDeployQuickVersions(val) {
+    this.deployVerFilter = val.trim();
+    this.renderDeployQuickVersionPills();
+  }
+
+  toggleDeploySortOrder() {
+    this.deploySortOrder = this.deploySortOrder === 'desc' ? 'asc' : 'desc';
+    const btn = document.getElementById('deploy-sort-btn');
+    if (btn) {
+      btn.innerHTML = `<i data-lucide="arrow-down-up" class="w-2.5 h-2.5"></i> ${this.deploySortOrder === 'asc' ? 'A-Z' : 'Latest'}`;
+      if (window.lucide) lucide.createIcons();
+    }
+    this.renderDeployQuickVersionPills();
+  }
+
+  quickPickDeployVersion(ver) {
+    const sel = document.getElementById('mc-jar-version');
+    if (sel) {
+      let found = false;
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === ver) {
+          sel.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        const opt = document.createElement('option');
+        opt.value = ver;
+        opt.innerText = ver;
+        opt.selected = true;
+        sel.appendChild(opt);
+      }
+      this.onDeployVersionChange(ver);
+    }
+    this.renderDeployQuickVersionPills();
+  }
+
+  onDeployVersionChange(version) {
+    this.autoMatchDeployJava(version);
+    this.renderDeployQuickVersionPills();
+  }
+
+  autoMatchDeployJava(version) {
+    if (!version) return;
+    const match = version.match(/^(\d+)\.(\d+)(?:\.(\d+))?/);
+    let targetJava = 'ghcr.io/pterodactyl/yolks:java_21';
+
+    if (match) {
+      const major = parseInt(match[1], 10);
+      const minor = parseInt(match[2], 10);
+      const patch = parseInt(match[3] || '0', 10);
+
+      if (major === 1) {
+        if (minor >= 21) {
+          targetJava = 'ghcr.io/pterodactyl/yolks:java_21';
+        } else if (minor === 20 && patch >= 5) {
+          targetJava = 'ghcr.io/pterodactyl/yolks:java_21';
+        } else if (minor >= 18) {
+          targetJava = 'ghcr.io/pterodactyl/yolks:java_17';
+        } else if (minor === 17) {
+          targetJava = 'ghcr.io/pterodactyl/yolks:java_17';
+        } else {
+          targetJava = 'ghcr.io/pterodactyl/yolks:java_8';
+        }
+      } else if (major >= 26) {
+        targetJava = 'ghcr.io/pterodactyl/yolks:java_25';
+      }
+    }
+
+    const javaSelect = document.getElementById('srv-docker-image');
+    if (javaSelect) {
+      javaSelect.value = targetJava;
+    }
+
+    const tag = document.getElementById('deploy-java-tag');
+    if (tag) {
+      const label = targetJava.includes('java_21') ? 'Java 21' :
+                    targetJava.includes('java_17') ? 'Java 17' :
+                    targetJava.includes('java_8')  ? 'Java 8'  :
+                    targetJava.includes('java_25') ? 'Java 25' :
+                    targetJava.includes('java_16') ? 'Java 16' : 'Java';
+      tag.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i> <span class="text-emerald-400 font-semibold">Auto-matched ${label}</span>`;
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
+  async onMcTypeChange(type) {
+    const sel = document.getElementById('mc-jar-version');
+    const countTag = document.getElementById('deploy-version-count');
+    if (countTag) countTag.innerText = 'Loading...';
+
+    try {
+      const data = await app.api(`/api/mcjars/types/${type}/versions`);
+      if (sel && data.versions && data.versions.length > 0) {
+        this.deployVersions = data.versions;
+        if (countTag) countTag.innerText = `${data.versions.length} versions`;
+        sel.innerHTML = data.versions.map(v => `<option value="${v.version}">${v.version} ${v.version === '1.21.4' ? '(Latest Stable)' : ''}</option>`).join('');
+        const firstVer = data.versions[0].version;
+        sel.value = firstVer;
+        this.onDeployVersionChange(firstVer);
+      }
+    } catch (e) {
+      if (countTag) countTag.innerText = 'Default versions';
+      const fallbacks = ['1.21.4', '1.20.4', '1.19.4', '1.18.2', '1.16.5', '1.12.2', '1.8.8', '1.7.10'];
+      this.deployVersions = fallbacks.map(v => ({ version: v }));
+      if (sel) {
+        sel.innerHTML = fallbacks.map(v => `<option value="${v}">${v}</option>`).join('');
+        this.onDeployVersionChange('1.21.4');
+      }
+    }
+    this.renderDeployQuickVersionPills();
   }
 
   populateDockerImages(type) {
@@ -359,12 +701,12 @@ class AdminManager {
     if (!select) return;
 
     const mcImages = [
-      { label: 'Java 25 (ghcr.io/pterodactyl/yolks:java_25)', value: 'ghcr.io/pterodactyl/yolks:java_25' },
       { label: 'Java 21 (ghcr.io/pterodactyl/yolks:java_21)', value: 'ghcr.io/pterodactyl/yolks:java_21' },
       { label: 'Java 17 (ghcr.io/pterodactyl/yolks:java_17)', value: 'ghcr.io/pterodactyl/yolks:java_17' },
+      { label: 'Java 8 (ghcr.io/pterodactyl/yolks:java_8)', value: 'ghcr.io/pterodactyl/yolks:java_8' },
+      { label: 'Java 25 (ghcr.io/pterodactyl/yolks:java_25)', value: 'ghcr.io/pterodactyl/yolks:java_25' },
       { label: 'Java 16 (ghcr.io/pterodactyl/yolks:java_16)', value: 'ghcr.io/pterodactyl/yolks:java_16' },
-      { label: 'Java 11 (ghcr.io/pterodactyl/yolks:java_11)', value: 'ghcr.io/pterodactyl/yolks:java_11' },
-      { label: 'Java 8 (ghcr.io/pterodactyl/yolks:java_8)', value: 'ghcr.io/pterodactyl/yolks:java_8' }
+      { label: 'Java 11 (ghcr.io/pterodactyl/yolks:java_11)', value: 'ghcr.io/pterodactyl/yolks:java_11' }
     ];
 
     const nodeImages = [
@@ -400,16 +742,10 @@ class AdminManager {
       else mcBox.classList.add('hidden');
     }
     this.populateDockerImages(type);
-  }
-
-  async onMcTypeChange(type) {
-    try {
-      const data = await app.api(`/api/mcjars/types/${type}/versions`);
-      const sel = document.getElementById('mc-jar-version');
-      if (sel && data.versions) {
-        sel.innerHTML = data.versions.map(v => `<option value="${v.version}">${v.version}</option>`).join('');
-      }
-    } catch (e) {}
+    if (type === 'minecraft') {
+      const verSel = document.getElementById('mc-jar-version');
+      this.autoMatchDeployJava(verSel?.value || '1.21.4');
+    }
   }
 
   async handleCreateServer(e) {

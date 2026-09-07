@@ -95,13 +95,18 @@ class App {
   }
 
   applyBrandingAndTheme(s) {
+    if (!s) return;
+
     if (s.panel_name) {
-      document.getElementById('tab-title').innerText = s.panel_name;
-      document.getElementById('header-panel-name').innerText = s.panel_name;
+      const tabTitle = document.getElementById('tab-title');
+      if (tabTitle) tabTitle.innerText = s.panel_name;
+      const headerTitle = document.getElementById('header-panel-name');
+      if (headerTitle) headerTitle.innerText = s.panel_name;
     }
 
     if (s.favicon_name) {
-      document.getElementById('tab-title').innerText = s.favicon_name;
+      const tabTitle = document.getElementById('tab-title');
+      if (tabTitle) tabTitle.innerText = s.favicon_name;
     }
 
     if (s.panel_logo) {
@@ -114,29 +119,50 @@ class App {
       if (fav) fav.href = s.favicon_logo;
     }
 
-    // Apply Background
+    // Theme Mode (Dark / Light)
+    const isLight = s.theme_mode === 'light';
+    if (isLight) {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    }
+
+    // Apply Background (Image or Video)
     if (s.panel_bg) {
-      if (s.panel_bg_type === 'video') {
-        const vid = document.getElementById('wallpaper-video');
-        vid.src = s.panel_bg;
+      const isVideo = s.panel_bg_type === 'video' || /\.(mp4|webm|mkv|mov)($|\?)/i.test(s.panel_bg);
+      const vid = document.getElementById('wallpaper-video');
+      const wallLayer = document.getElementById('wallpaper-layer');
+
+      if (isVideo && vid) {
+        if (vid.src !== s.panel_bg) {
+          vid.src = s.panel_bg;
+        }
         vid.classList.remove('hidden');
-        document.getElementById('wallpaper-layer').style.backgroundImage = 'none';
+        if (wallLayer) wallLayer.style.backgroundImage = 'none';
+        vid.play().catch(() => {});
       } else {
-        const vid = document.getElementById('wallpaper-video');
-        vid.classList.add('hidden');
+        if (vid) {
+          vid.classList.add('hidden');
+          vid.pause();
+        }
+        if (wallLayer) wallLayer.style.backgroundImage = '';
         document.documentElement.style.setProperty('--panel-bg', `url('${s.panel_bg}')`);
       }
     }
 
-    // Apply Transparency slider (0 to 100)
+    // Apply Transparency slider (0 to 100%)
     if (s.transparency_bar !== undefined) {
-      const opacityVal = (100 - parseInt(s.transparency_bar, 10)) / 100;
-      document.documentElement.style.setProperty('--card-opacity', `${Math.max(0.05, opacityVal)}`);
+      const transparency = parseInt(s.transparency_bar, 10);
+      const opacityVal = (100 - transparency) / 100;
+      document.documentElement.style.setProperty('--card-opacity', `${Math.max(0.02, Math.min(1.0, opacityVal))}`);
     }
 
     // Apply Blur slider (0 to 40px)
     if (s.blur_bar !== undefined) {
-      document.documentElement.style.setProperty('--card-blur', `${parseInt(s.blur_bar, 10)}px`);
+      const blur = parseInt(s.blur_bar, 10);
+      document.documentElement.style.setProperty('--card-blur', `${Math.max(0, Math.min(40, blur))}px`);
     }
   }
 
@@ -239,6 +265,10 @@ class App {
       await this.renderUserOverview();
     } else if (hash === 'servers' || hash === 'user-servers') {
       await this.renderUserServers();
+    } else if (hash === 'marketplace') {
+      if (window.marketplace) {
+        await marketplace.renderGlobalMarketplaceView();
+      }
     } else if (hash === 'profile' || hash === 'user-profile') {
       await this.renderUserProfile();
     } else if (hash === 'activity' || hash === 'user-activity') {

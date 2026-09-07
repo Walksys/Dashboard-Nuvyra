@@ -71,12 +71,13 @@ class DockerService {
     try {
       const existingContainer = this.docker.getContainer(containerName);
       const data = await existingContainer.inspect();
-      if (data.State.Running) {
-        return existingContainer;
-      } else {
-        await existingContainer.start();
+      if (data.State && data.State.Running) {
         return existingContainer;
       }
+      // Clean up stopped container so it's recreated with fresh ports, environment, and image
+      try {
+        await existingContainer.remove({ force: true });
+      } catch (e) {}
     } catch (err) {
       // Container doesn't exist yet, continue to create
     }
@@ -121,12 +122,25 @@ class DockerService {
         PortBindings: portBindings,
         Memory: (server.memory_mb || 1024) * 1024 * 1024,
         NanoCPUs: (server.cpu_limit || 100) * 10000000,
-        RestartPolicy: { Name: 'unless-stopped' }
+        RestartPolicy: { Name: 'no' }
       }
     });
 
     await container.start();
     return container;
+  }
+
+  async removeContainer(serverId, uuid) {
+    if (!this.isAvailable || !this.docker) return;
+    try {
+      const containerName = `mpanel-server-${serverId}-${(uuid || '').substring(0, 8)}`;
+      const container = this.docker.getContainer(containerName);
+      try {
+        await container.stop({ t: 2 });
+      } catch (e) {}
+      await container.remove({ force: true });
+      console.log(`🐳 Successfully removed container ${containerName}`);
+    } catch (e) {}
   }
 }
 

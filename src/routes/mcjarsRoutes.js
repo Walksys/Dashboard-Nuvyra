@@ -30,21 +30,22 @@ router.get('/types/:type/versions', authenticate, async (req, res) => {
 router.post('/install/:serverId', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
     const serverId = req.params.serverId;
-    const { type, version, build } = req.body;
+    const { type, version, build, docker_image } = req.body;
 
     if (!type || !version) {
       return res.status(400).json({ success: false, error: 'Jar type and version are required.' });
     }
 
+    const targetImage = docker_image || mcjarsService.getRecommendedJavaImage(version);
     const installResult = await mcjarsService.installJarToServer(serverId, type, version, build || 'latest');
 
     // Update server records
     await query.run(
-      'UPDATE servers SET jar_type = ?, jar_version = ?, jar_build = ? WHERE id = ?',
-      [type, version, build || 'latest', serverId]
+      'UPDATE servers SET jar_type = ?, jar_version = ?, jar_build = ?, docker_image = COALESCE(?, docker_image), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [type, version, build || 'latest', targetImage, serverId]
     );
 
-    logActivity(req.user.id, serverId, 'MCJAR_INSTALL', `Installed ${type} ${version}`, req);
+    logActivity(req.user.id, serverId, 'MCJAR_INSTALL', `Installed ${type} ${version} (${targetImage})`, req);
 
     res.json({
       success: true,

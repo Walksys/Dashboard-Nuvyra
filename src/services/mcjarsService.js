@@ -56,6 +56,36 @@ class McJarsService {
   }
 
   /**
+   * Recommend appropriate Pterodactyl/Yolks Java Docker image based on Minecraft version
+   */
+  getRecommendedJavaImage(version) {
+    if (!version || typeof version !== 'string') return 'ghcr.io/pterodactyl/yolks:java_21';
+    const match = version.match(/^(\d+)\.(\d+)(?:\.(\d+))?/);
+    if (!match) return 'ghcr.io/pterodactyl/yolks:java_21';
+
+    const major = parseInt(match[1], 10);
+    const minor = parseInt(match[2], 10);
+    const patch = parseInt(match[3] || '0', 10);
+
+    if (major === 1) {
+      if (minor >= 21) {
+        return 'ghcr.io/pterodactyl/yolks:java_21';
+      } else if (minor === 20 && patch >= 5) {
+        return 'ghcr.io/pterodactyl/yolks:java_21';
+      } else if (minor >= 18) {
+        return 'ghcr.io/pterodactyl/yolks:java_17';
+      } else if (minor === 17) {
+        return 'ghcr.io/pterodactyl/yolks:java_17';
+      } else {
+        return 'ghcr.io/pterodactyl/yolks:java_8';
+      }
+    } else if (major >= 26) {
+      return 'ghcr.io/pterodactyl/yolks:java_25';
+    }
+    return 'ghcr.io/pterodactyl/yolks:java_21';
+  }
+
+  /**
    * Get all versions for a jar type from mcjars.app API
    */
   async getVersions(typeId) {
@@ -65,9 +95,27 @@ class McJarsService {
       if (res.data && res.data.builds) {
         const versionKeys = Object.keys(res.data.builds);
         // Filter and clean versions (sort latest first)
-        const sorted = versionKeys.filter(v => !v.includes('snapshot') && !v.includes('pre') && !v.includes('rc')).reverse();
-        const finalVersions = sorted.length > 0 ? sorted : versionKeys.reverse();
-        return finalVersions.map(v => ({ version: v, builds: ['latest'] }));
+        const cleanVersions = versionKeys.filter(v => !v.includes('snapshot') && !v.includes('pre') && !v.includes('rc'));
+        const list = cleanVersions.length > 0 ? cleanVersions : versionKeys;
+
+        // Semver sort descending
+        const parseVer = v => {
+          const m = v.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?/);
+          return m ? [parseInt(m[1]||0), parseInt(m[2]||0), parseInt(m[3]||0)] : [0,0,0];
+        };
+        const sorted = [...list].sort((a, b) => {
+          const pa = parseVer(a), pb = parseVer(b);
+          if (pa[0] !== pb[0]) return pb[0] - pa[0];
+          if (pa[1] !== pb[1]) return pb[1] - pa[1];
+          if (pa[2] !== pb[2]) return pb[2] - pa[2];
+          return b.localeCompare(a);
+        });
+
+        return sorted.map(v => ({
+          version: v,
+          builds: ['latest'],
+          recommendedJava: this.getRecommendedJavaImage(v)
+        }));
       }
     } catch (e) {
       // Fallback
@@ -76,7 +124,8 @@ class McJarsService {
     const versions = FALLBACK_VERSIONS[typeId.toLowerCase()] || ['1.21.4', '1.20.4', '1.19.4', '1.18.2', '1.16.5', '1.12.2'];
     return versions.map(v => ({
       version: v,
-      builds: ['latest']
+      builds: ['latest'],
+      recommendedJava: this.getRecommendedJavaImage(v)
     }));
   }
 
@@ -177,15 +226,21 @@ class McJarsService {
     }
     fs.renameSync(tempJarPath, targetJarPath);
 
-    // Automatically accept eula.txt for Minecraft servers
-    const eulaPath = path.join(serverDir, 'eula.txt');
-    fs.writeFileSync(eulaPath, '# EULA accepted by Mpanel\neula=true\n', 'utf8');
+    // Automatically configure eula.txt and server.properties with the server's allocated port
+    let targetPort = 25565;
+    try {
+      const { query } = require('../database/db');
+      const sRow = await query.get(
+        'SELECT a.port FROM servers s LEFT JOIN allocations a ON s.allocation_id = a.id WHERE s.id = ?',
+        [serverId]
+      );
+      if (sRow && sRow.port) {
+        targetPort = sRow.port;
+      }
+    } catch (e) {}
 
-    // Create server.properties if not present
-    const propsPath = path.join(serverDir, 'server.properties');
-    if (!fs.existsSync(propsPath)) {
-      fs.writeFileSync(propsPath, 'motd=Powered by Mpanel\\nserver-port=25565\\nonline-mode=true\\nmax-players=20\\n', 'utf8');
-    }
+    const runnerService = require('./runnerService');
+    runnerService.syncMinecraftProperties(serverDir, targetPort);
 
     console.log(`[MCJars] Successfully installed ${typeId} ${version} (${(stats.size / (1024*1024)).toFixed(2)} MB) to server ${serverId}`);
     return { success: true, jarPath: targetJarPath, type: typeId, version, size: stats.size, downloadUrl };
