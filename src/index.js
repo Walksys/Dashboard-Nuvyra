@@ -26,6 +26,9 @@ const serverScheduleRoutes = require('./routes/serverScheduleRoutes');
 const serverSubuserRoutes = require('./routes/serverSubuserRoutes');
 const mcjarsRoutes = require('./routes/mcjarsRoutes');
 const activityRoutes = require('./routes/activityRoutes');
+const marketplaceRoutes = require('./routes/marketplaceRoutes');
+const serverPlayerRoutes = require('./routes/serverPlayerRoutes');
+const serverWorldRoutes = require('./routes/serverWorldRoutes');
 
 async function bootstrap() {
   console.log('🚀 Initializing Mpanel Core Engine...');
@@ -44,7 +47,13 @@ async function bootstrap() {
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
   // Static Assets
-  app.use(express.static(path.join(__dirname, '../public')));
+  app.use(express.static(path.join(__dirname, '../public'), {
+    maxAge: 0,
+    etag: false,
+    setHeaders: (res) => {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }));
   app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
   // REST API Routes
@@ -59,8 +68,12 @@ async function bootstrap() {
   app.use('/api/servers/:serverId/backups', serverBackupRoutes);
   app.use('/api/servers/:serverId/schedules', serverScheduleRoutes);
   app.use('/api/servers/:serverId/subusers', serverSubuserRoutes);
+  app.use('/api/servers/:serverId/players', serverPlayerRoutes);
+  app.use('/api/servers/:serverId/worlds', serverWorldRoutes);
   app.use('/api/mcjars', mcjarsRoutes);
   app.use('/api/activity', activityRoutes);
+  app.use('/api/marketplace', marketplaceRoutes);
+  app.use('/api/servers/:serverId/marketplace', marketplaceRoutes);
 
   // Fallback to index.html for SPA routing
   app.get('*', (req, res) => {

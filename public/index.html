@@ -145,6 +145,9 @@
             <a href="#servers" onclick="app.navigate('user-servers')" id="nav-user-servers" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-cyan-400 transition">
               <i data-lucide="server" class="w-4 h-4"></i> My Servers
             </a>
+            <a href="#marketplace" onclick="app.navigate('marketplace')" id="nav-user-marketplace" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-cyan-400 transition">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i> Marketplace
+            </a>
             <a href="#profile" onclick="app.navigate('user-profile')" id="nav-user-profile" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-cyan-400 transition">
               <i data-lucide="user" class="w-4 h-4"></i> Profile & 2FA
             </a>
@@ -218,11 +221,15 @@
   <div id="modal-container"></div>
 
   <!-- Application Javascript Modules -->
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js?v=2.0.0"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/settings.js"></script>
+  <script src="/js/settings.js?v=2.0.0"></script>
   <script src="/js/console.js"></script>
   <script src="/js/filemanager.js"></script>
+  <script src="/js/marketplace.js?v=2.1.0"></script>
+  <script src="/js/versionChanger.js?v=1.0.0"></script>
+  <script src="/js/playerManager.js?v=1.0.0"></script>
+  <script src="/js/worldManager.js?v=1.0.0"></script>
   <script src="/js/admin.js"></script>
 
   <script>

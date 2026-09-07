@@ -15,12 +15,24 @@ class FileManager {
       <div class="space-y-4">
         <!-- Action Toolbar & Breadcrumbs -->
         <div class="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <!-- Breadcrumb Path -->
-          <div class="flex items-center gap-1.5 text-xs font-mono text-slate-300 overflow-x-auto max-w-full">
-            <button onclick="fileManager.navigateTo('')" class="text-cyan-400 hover:underline flex items-center gap-1">
-              <i data-lucide="home" class="w-3.5 h-3.5"></i> /home/container
-            </button>
-            ${this.renderBreadcrumbsHTML(currentPath)}
+          <!-- Breadcrumb Path & Quick Shortcuts -->
+          <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex items-center gap-1.5 text-xs font-mono text-slate-300 overflow-x-auto max-w-full">
+              <button onclick="fileManager.navigateTo('')" class="text-cyan-400 hover:underline flex items-center gap-1">
+                <i data-lucide="home" class="w-3.5 h-3.5"></i> /home/container
+              </button>
+              ${this.renderBreadcrumbsHTML(currentPath)}
+            </div>
+
+            <!-- Quick Jump Shortcuts -->
+            <div class="flex items-center gap-1.5 text-[11px]">
+              <button onclick="fileManager.navigateTo('plugins')" class="px-2.5 py-1 rounded-lg font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 transition">
+                <i data-lucide="puzzle" class="w-3 h-3"></i> /plugins
+              </button>
+              <button onclick="fileManager.navigateTo('mods')" class="px-2.5 py-1 rounded-lg font-semibold bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition">
+                <i data-lucide="box" class="w-3 h-3"></i> /mods
+              </button>
+            </div>
           </div>
 
           <!-- Actions: New File, New Folder, Upload, Compress -->

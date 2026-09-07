@@ -8,6 +8,7 @@ const { query } = require('../database/db');
 const { authenticate, requireAdmin, requireServerAccess } = require('../middleware/auth');
 const runnerService = require('../services/runnerService');
 const mcjarsService = require('../services/mcjarsService');
+const dockerService = require('../services/dockerService');
 const { logActivity } = require('../services/activityService');
 const imagesConfig = require('../config/images');
 
@@ -98,6 +99,9 @@ router.post('/', authenticate, async (req, res) => {
     let defaultCmd = startup_cmd;
 
     if (server_type === 'minecraft') {
+      if (!defaultImg && mc_jar_version) {
+        defaultImg = mcjarsService.getRecommendedJavaImage(mc_jar_version);
+      }
       defaultImg = defaultImg || imagesConfig.minecraft[1].value; // Java 21
       defaultCmd = defaultCmd || 'java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar server.jar nogui';
     } else if (server_type === 'nodejs') {
@@ -136,9 +140,16 @@ router.post('/', authenticate, async (req, res) => {
 
     const newServerId = insertResult.lastID;
 
-    // Mark allocation as assigned
+    // Mark allocation as assigned and determine assigned port
+    let assignedPort = 25565;
     if (allocId) {
       await query.run('UPDATE allocations SET server_id = ?, assigned = 1 WHERE id = ?', [newServerId, allocId]);
+      try {
+        const allocRow = await query.get('SELECT port FROM allocations WHERE id = ?', [allocId]);
+        if (allocRow && allocRow.port) {
+          assignedPort = allocRow.port;
+        }
+      } catch (e) {}
     }
 
     // Initialize server directory on disk: ./mpanel/servers/server<id>
@@ -149,8 +160,7 @@ router.post('/', authenticate, async (req, res) => {
 
     // Seed default template files based on server type
     if (server_type === 'minecraft') {
-      fs.writeFileSync(path.join(serverDir, 'eula.txt'), '# EULA accepted by Mpanel\neula=true\n', 'utf8');
-      fs.writeFileSync(path.join(serverDir, 'server.properties'), 'motd=Powered by Mpanel\nserver-port=25565\nonline-mode=true\nmax-players=20\n', 'utf8');
+      runnerService.syncMinecraftProperties(serverDir, assignedPort);
       
       // Auto-install jar if specified
       if (mc_jar_type && mc_jar_version) {
@@ -256,6 +266,15 @@ router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (re
       // Assign new allocation
       await query.run('UPDATE allocations SET server_id = ?, assigned = 1 WHERE id = ?', [serverId, allocation_id]);
       newAllocId = allocation_id;
+
+      // Immediately sync server.properties if Minecraft
+      try {
+        const allocRow = await query.get('SELECT port FROM allocations WHERE id = ?', [allocation_id]);
+        if (allocRow && allocRow.port) {
+          const sDir = path.join(config.SERVERS_DIR, `server${serverId}`);
+          runnerService.syncMinecraftProperties(sDir, allocRow.port);
+        }
+      } catch (e) {}
     }
 
     await query.run(`
@@ -366,6 +385,80 @@ router.post('/:id/reinstall', authenticate, requireServerAccess('settings.edit')
   }
 });
 
+// Change Server Minecraft Version & Engine
+router.post('/:id/change-version', authenticate, requireServerAccess('settings.edit'), async (req, res) => {
+  try {
+    const serverId = req.params.id;
+    const server = req.server;
+    const { jar_type, jar_version, jar_build, docker_image, delete_old_files } = req.body;
+
+    if (!jar_type || !jar_version) {
+      return res.status(400).json({ success: false, error: 'Jar software type and version are required.' });
+    }
+
+    // Determine target docker image if not supplied
+    let targetImage = docker_image;
+    if (!targetImage) {
+      targetImage = mcjarsService.getRecommendedJavaImage(jar_version);
+    }
+
+    // Stop server if running
+    const wasRunning = runnerService.isServerRunning(serverId);
+    if (wasRunning) {
+      await runnerService.stopServer(serverId);
+    }
+
+    const serverDir = path.join(config.SERVERS_DIR, `server${serverId}`);
+
+    // If requested, clean up old jar and build caches to prevent conflicts between engines
+    if (delete_old_files && fs.existsSync(serverDir)) {
+      try {
+        const oldJar = path.join(serverDir, 'server.jar');
+        if (fs.existsSync(oldJar)) fs.unlinkSync(oldJar);
+
+        // Remove paper/purpur cache folders if present
+        const cacheFolders = ['.paper-remapped', 'cache', 'bundler', '.fabric', '.forge'];
+        for (const cf of cacheFolders) {
+          const cPath = path.join(serverDir, cf);
+          if (fs.existsSync(cPath)) {
+            fs.rmSync(cPath, { recursive: true, force: true });
+          }
+        }
+      } catch (cleanErr) {
+        console.warn('Notice: Error cleaning old cache files during version change:', cleanErr.message);
+      }
+    }
+
+    // Download and install new jar
+    const installResult = await mcjarsService.installJarToServer(serverId, jar_type, jar_version, jar_build || 'latest');
+
+    // Update database record with new jar_type, jar_version, jar_build, and docker_image
+    await query.run(
+      `UPDATE servers 
+       SET jar_type = ?, jar_version = ?, jar_build = ?, docker_image = COALESCE(?, docker_image), updated_at = CURRENT_TIMESTAMP 
+       WHERE id = ?`,
+      [jar_type, jar_version, jar_build || 'latest', targetImage, serverId]
+    );
+
+    logActivity(req.user.id, serverId, 'SERVER_VERSION_CHANGE', `Changed server software to ${jar_type} ${jar_version} (${targetImage})`, req);
+
+    res.json({
+      success: true,
+      message: `Successfully switched server to ${jar_type} ${jar_version}!`,
+      details: {
+        jar_type,
+        jar_version,
+        docker_image: targetImage,
+        wasRunning,
+        installResult
+      }
+    });
+  } catch (err) {
+    console.error('Change version error:', err);
+    res.status(500).json({ success: false, error: `Failed to change server version: ${err.message}` });
+  }
+});
+
 // Delete Server
 router.delete('/:id', authenticate, requireServerAccess('settings.delete'), async (req, res) => {
   try {
@@ -375,6 +468,11 @@ router.delete('/:id', authenticate, requireServerAccess('settings.delete'), asyn
     // Stop server
     if (runnerService.isServerRunning(serverId)) {
       await runnerService.killServer(serverId);
+    }
+
+    // Clean up Docker container if available
+    if (dockerService.isAvailable) {
+      await dockerService.removeContainer(serverId, server.uuid);
     }
 
     // Release allocation
