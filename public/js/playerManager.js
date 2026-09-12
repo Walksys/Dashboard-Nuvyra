@@ -31,12 +31,17 @@ class PlayerManager {
         <!-- Top Title & Overview Banner -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
-              <span class="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-500/10">
-                <i data-lucide="users" class="w-5 h-5"></i>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
+                <span class="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-500/10">
+                  <i data-lucide="users" class="w-5 h-5"></i>
+                </span>
+                Minecraft Player Manager
+              </h3>
+              <span id="pm-active-server-badge" class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <i data-lucide="server" class="w-3 h-3 inline mr-1"></i>${this.escapeHtml(this.serverData?.name || ('Server #' + this.currentServerId))}
               </span>
-              Minecraft Player Manager
-            </h3>
+            </div>
             <p class="text-xs text-slate-400 mt-1">
               Live real-time online player controls, inventory inspections, gameplay statistics, advancements, whitelist, operators & bans.
             </p>
@@ -231,10 +236,30 @@ class PlayerManager {
         if (!isSearching) {
           this.renderCurrentTab();
         }
+      } else {
+        throw new Error(res?.error || 'Failed to fetch player data.');
       }
     } catch (err) {
       console.error('[PlayerManager] Load error:', err);
-      if (manual) app.showToast('Failed to load player data: ' + err.message, 'error');
+      if (manual) app.toast('Failed to load player data: ' + err.message, 'error');
+      if (!this.data) {
+        const contentView = document.getElementById('pm-content-view');
+        if (contentView) {
+          contentView.innerHTML = `
+            <div class="glass-panel p-8 rounded-2xl border border-rose-500/20 text-center space-y-3">
+              <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/20">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+              </div>
+              <p class="text-sm font-bold text-white">Failed to connect to Player Manager</p>
+              <p class="text-xs text-rose-300 font-mono">${this.escapeHtml(err.message)}</p>
+              <button onclick="playerManager.loadData(true)" class="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition inline-flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Retry
+              </button>
+            </div>
+          `;
+          if (window.lucide) lucide.createIcons();
+        }
+      }
     } finally {
       this.isLoading = false;
       if (icon) icon.classList.remove('animate-spin');
@@ -408,7 +433,7 @@ class PlayerManager {
               Start the server from the top power controls to view and interact with real-time connected players.
             </p>
           </div>
-          <button onclick="serverConsole.triggerPower(${this.currentServerId}, 'start')" class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg inline-flex items-center gap-2 transition">
+          <button onclick="playerManager.startServer()" class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg inline-flex items-center gap-2 transition">
             <i data-lucide="play" class="w-4 h-4"></i> Start Server Now
           </button>
         </div>
@@ -1892,18 +1917,18 @@ class PlayerManager {
       });
 
       if (res && res.success) {
-        app.showToast(res.message || 'Action executed successfully!', 'success');
+        app.toast(res.message || 'Action executed successfully!', 'success');
         await this.loadData();
         // Immediately trigger live inspector update if modal is active
         if (this.inspectorPlayer) {
           setTimeout(() => this.fetchAndRenderInspectorDetails(false), 200);
         }
       } else {
-        app.showToast(res.error || 'Failed to execute player action.', 'error');
+        app.toast(res.error || 'Failed to execute player action.', 'error');
       }
     } catch (err) {
       console.error('[PlayerManager] Action error:', err);
-      app.showToast(err.message || 'Network error during player action', 'error');
+      app.toast(err.message || 'Network error during player action', 'error');
     }
   }
 
@@ -2355,6 +2380,38 @@ class PlayerManager {
     if (!confirm(`Clear the entire inventory of ${username}?`)) return;
     this.sendPlayerAction('clear', { username });
   }
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  async startServer() {
+    if (!this.currentServerId) return;
+    if (window.serverConsole && typeof serverConsole.triggerPower === 'function') {
+      await serverConsole.triggerPower(this.currentServerId, 'start');
+    } else {
+      try {
+        await app.api(`/api/servers/${this.currentServerId}/power`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'start' })
+        });
+        app.toast('Server start command dispatched!', 'success');
+        setTimeout(() => this.loadData(true), 2500);
+      } catch (e) {
+        app.toast('Failed to start server: ' + e.message, 'error');
+      }
+    }
+  }
 }
 
-const playerManager = new PlayerManager();
+// Global instance registered on window
+window.playerManager = new PlayerManager();
+var playerManager = window.playerManager;
+

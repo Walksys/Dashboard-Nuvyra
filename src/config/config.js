@@ -10,7 +10,8 @@ module.exports = {
   // Secrets & JWT
   JWT_SECRET: process.env.JWT_SECRET || 'mpanel_super_secure_jwt_secret_key_2026_x892!',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-  CURSEFORGE_API_KEY: process.env.CURSEFORGE_API_KEY || '$2a$10$iZYWa6jrmyz7hN69sfmInes1FAqrn2ycR.ZdrKKrtOpz/Tn9ETMcK',
+  CURSEFORGE_API_KEY: process.env.CURSEFORGE_API_KEY || '$2a$10$2LouREiMl.mx0kVBK.RlK.nloje4XS3oF8uSw809VZr07O.0A5cLq',
+  CURSEFORGE_BASE_URL: process.env.CURSEFORGE_BASE_URL || 'https://api.curseforge.com/v1',
 
   // Storage Paths
   BASE_DIR: path.resolve(__dirname, '../../'),

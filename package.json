@@ -1,12 +1,14 @@
 {
   "name": "mpanel",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Mpanel - High-Performance Game & Application Server Web Management Panel in Node.js",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "build": "node bin/build.js",
+    "setup": "node bin/setup.js",
+    "update": "bash menu.sh update",
     "createuser": "node bin/createuser.js",
     "menu": "bash menu.sh",
     "pm2:start": "pm2 start ecosystem.config.js",

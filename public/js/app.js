@@ -55,6 +55,11 @@ class App {
     }, 4000);
   }
 
+  // Compatibility alias for toast
+  showToast(message, type = 'info') {
+    return this.toast(message, type);
+  }
+
   // Generic API Requester
   async api(endpoint, options = {}) {
     const headers = options.headers || {};

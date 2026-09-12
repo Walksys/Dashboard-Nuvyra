@@ -666,7 +666,7 @@ class VersionChanger {
         }
 
         // Re-render tab to show newly active configuration
-        const area = document.getElementById('subtab-content-area');
+        const area = document.getElementById('marketplace-view-content') || document.getElementById('subtab-content-area');
         if (area) {
           await this.renderVersionChangerTab(area, this.currentServerId, this.serverData);
         }

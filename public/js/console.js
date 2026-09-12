@@ -63,26 +63,11 @@ class ServerConsole {
           <button onclick="serverConsole.switchSubTab('console')" id="subnav-console" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
             <i data-lucide="terminal" class="w-4 h-4"></i> Console
           </button>
-          <button onclick="serverConsole.switchSubTab('players')" id="subnav-players" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="users" class="w-4 h-4 text-cyan-400"></i> Players
-          </button>
-          <button onclick="serverConsole.switchSubTab('worlds')" id="subnav-worlds" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="globe" class="w-4 h-4 text-emerald-400"></i> Worlds & Installer
-          </button>
           <button onclick="serverConsole.switchSubTab('files')" id="subnav-files" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
             <i data-lucide="folder" class="w-4 h-4"></i> File Manager
           </button>
-          <button onclick="serverConsole.switchSubTab('plugins')" id="subnav-plugins" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="puzzle" class="w-4 h-4"></i> Plugins
-          </button>
-          <button onclick="serverConsole.switchSubTab('mods')" id="subnav-mods" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="box" class="w-4 h-4"></i> Mods
-          </button>
           <button onclick="serverConsole.switchSubTab('marketplace')" id="subnav-marketplace" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="shopping-bag" class="w-4 h-4"></i> Marketplace
-          </button>
-          <button onclick="serverConsole.switchSubTab('version-changer')" id="subnav-version-changer" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Version Changer
+            <i data-lucide="shopping-bag" class="w-4 h-4 text-cyan-400"></i> Addon Marketplace
           </button>
           <button onclick="serverConsole.switchSubTab('backups')" id="subnav-backups" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
             <i data-lucide="archive" class="w-4 h-4"></i> Backups
@@ -150,7 +135,36 @@ class ServerConsole {
     }
   }
 
-  switchSubTab(tabName) {
+  async switchSubTab(tabName) {
+    const directMarketplaceMap = {
+      'plugins': 'plugin',
+      'plugin': 'plugin',
+      'mods': 'mod',
+      'mod': 'mod',
+      'players': 'players',
+      'player': 'players',
+      'worlds': 'world',
+      'world': 'world',
+      'version-changer': 'version-changer',
+      'version': 'version-changer'
+    };
+
+    if (directMarketplaceMap[tabName]) {
+      const category = directMarketplaceMap[tabName];
+      document.querySelectorAll('.subnav-btn').forEach(btn => {
+        btn.classList.remove('bg-white/20', 'text-cyan-400', 'shadow');
+      });
+      const activeBtn = document.getElementById('subnav-marketplace');
+      if (activeBtn) activeBtn.classList.add('bg-white/20', 'text-cyan-400', 'shadow');
+
+      const area = document.getElementById('subtab-content-area');
+      if (window.marketplace && area) {
+        await marketplace.renderServerMarketplaceTab(area, this.serverId, this.serverData, category);
+        await marketplace.switchCategory(category);
+      }
+      return;
+    }
+
     document.querySelectorAll('.subnav-btn').forEach(btn => {
       btn.classList.remove('bg-white/20', 'text-cyan-400', 'shadow');
     });
@@ -162,28 +176,16 @@ class ServerConsole {
 
     const area = document.getElementById('subtab-content-area');
 
-    if (tabName !== 'players' && window.playerManager) {
+    if (tabName !== 'marketplace' && window.playerManager) {
       playerManager.stopLiveAutoSync();
     }
 
     if (tabName === 'console') {
       this.renderConsoleTab(area);
-    } else if (tabName === 'players') {
-      playerManager.renderPlayerManagerTab(area, this.serverId, this.serverData);
-    } else if (tabName === 'worlds') {
-      if (window.worldManager) {
-        worldManager.renderWorldManagerTab(area, this.serverId, this.serverData);
-      }
     } else if (tabName === 'files') {
       fileManager.renderFileManagerTab(area, this.serverId);
-    } else if (tabName === 'plugins') {
-      fileManager.renderFileManagerTab(area, this.serverId, 'plugins');
-    } else if (tabName === 'mods') {
-      fileManager.renderFileManagerTab(area, this.serverId, 'mods');
     } else if (tabName === 'marketplace') {
       this.renderMarketplaceTab(area);
-    } else if (tabName === 'version-changer') {
-      this.renderVersionChangerTab(area);
     } else if (tabName === 'backups') {
       this.renderBackupsTab(area);
     } else if (tabName === 'schedules') {
@@ -422,9 +424,9 @@ class ServerConsole {
   }
 
   // Render Marketplace Tab
-  async renderMarketplaceTab(container) {
+  async renderMarketplaceTab(container, category = null) {
     if (window.marketplace) {
-      await marketplace.renderServerMarketplaceTab(container, this.serverId, this.serverData);
+      await marketplace.renderServerMarketplaceTab(container, this.serverId, this.serverData, category);
     }
   }
 
