@@ -32,7 +32,7 @@ const uploadWorldZip = multer({
 // 1. List all worlds & active world details
 router.get('/', authenticate, requireServerAccess('files.read'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const result = await worldService.listWorlds(serverId);
     res.json({ success: true, ...result });
   } catch (err) {
@@ -44,7 +44,7 @@ router.get('/', authenticate, requireServerAccess('files.read'), async (req, res
 // 2. Set Active World (updates server.properties level-name)
 router.post('/activate', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const { worldName } = req.body;
     if (!worldName) {
       return res.status(400).json({ success: false, error: 'worldName is required.' });
@@ -62,7 +62,7 @@ router.post('/activate', authenticate, requireServerAccess('files.write'), async
 // 3. Create a new world
 router.post('/create', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const { name, seed, gameMode, difficulty, hardcore, levelType, generateStructures, setActive } = req.body;
 
     if (!name) {
@@ -91,7 +91,7 @@ router.post('/create', authenticate, requireServerAccess('files.write'), async (
 // 4. Clone an existing world
 router.post('/clone', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const { sourceWorld, targetWorld } = req.body;
 
     if (!sourceWorld || !targetWorld) {
@@ -110,7 +110,7 @@ router.post('/clone', authenticate, requireServerAccess('files.write'), async (r
 // 5. Delete an inactive world
 router.post('/delete', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const { worldName } = req.body;
 
     if (!worldName) {
@@ -129,7 +129,7 @@ router.post('/delete', authenticate, requireServerAccess('files.write'), async (
 // 6. Reset a world (deletes chunks and entity data to regenerate)
 router.post('/reset', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const { worldName } = req.body;
 
     if (!worldName) {
@@ -148,7 +148,8 @@ router.post('/reset', authenticate, requireServerAccess('files.write'), async (r
 // 7. Download world as .zip archive
 router.get('/:worldName/download', authenticate, requireServerAccess('files.read'), async (req, res) => {
   try {
-    const { serverId, worldName } = req.params;
+    const serverId = req.server?.id || req.params.serverId;
+    const { worldName } = req.params;
     const safeName = path.basename(worldName.trim());
 
     res.attachment(`${safeName}_${Date.now()}.zip`);
@@ -163,7 +164,7 @@ router.get('/:worldName/download', authenticate, requireServerAccess('files.read
 // 8. Import / Upload world .zip archive
 router.post('/upload', authenticate, requireServerAccess('files.write'), uploadWorldZip.single('file'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No .zip file uploaded.' });
     }
@@ -237,7 +238,7 @@ router.post('/upload', authenticate, requireServerAccess('files.write'), uploadW
 // 9. 1-Click install map from Marketplace
 router.post('/install-map', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const { mapId, customName, setActive } = req.body;
 
     if (!mapId) {
@@ -261,7 +262,7 @@ router.post('/install-map', authenticate, requireServerAccess('files.write'), as
 // 10. Install world from ANY direct download URL (.zip)
 router.post('/install-url', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId;
     const { downloadUrl, customName, setActive } = req.body;
 
     if (!downloadUrl) {

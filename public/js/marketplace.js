@@ -419,22 +419,33 @@ class MarketplaceController {
   }
 
   async ensureActiveServerId() {
-    if (this.currentServerId && this.serverData && this.serverData.name) return;
-    if (window.serverConsole && serverConsole.serverId && serverConsole.serverData && serverConsole.serverData.name) {
+    if (window.serverConsole && serverConsole.serverId) {
       this.currentServerId = serverConsole.serverId;
-      this.serverData = serverConsole.serverData;
-      return;
+      if (serverConsole.serverData && serverConsole.serverData.name) {
+        this.serverData = serverConsole.serverData;
+      }
     }
+
     try {
       const sRes = await app.api('/api/servers');
       const servers = sRes.servers || [];
       if (servers.length > 0) {
-        if (!this.currentServerId) {
+        const found = this.currentServerId ? servers.find(s => s.id == this.currentServerId) : null;
+        if (found) {
+          this.currentServerId = found.id;
+          this.serverData = found;
+        } else {
           this.currentServerId = servers[0].id;
           this.serverData = servers[0];
-        } else if (!this.serverData || !this.serverData.name) {
-          this.serverData = servers.find(s => s.id == this.currentServerId) || servers[0];
         }
+        if (this.serverData) this.detectServerDefaults(this.serverData);
+        if (window.worldManager) {
+          worldManager.currentServerId = this.currentServerId;
+          worldManager.serverData = this.serverData;
+        }
+      } else {
+        this.currentServerId = null;
+        this.serverData = null;
       }
     } catch (e) {
       console.error('Failed to ensure active server id:', e);
@@ -1421,14 +1432,24 @@ class MarketplaceController {
       servers = sRes.servers || [];
     } catch (e) {}
 
-    // Default to first server if available
-    if (servers.length > 0 && !this.currentServerId) {
-      this.currentServerId = servers[0].id;
-      this.serverData = servers[0];
+    // Verify currentServerId exists in servers; if not, default to first server
+    if (servers.length > 0) {
+      const found = this.currentServerId ? servers.find(s => s.id == this.currentServerId) : null;
+      if (found) {
+        this.currentServerId = found.id;
+        this.serverData = found;
+      } else {
+        this.currentServerId = servers[0].id;
+        this.serverData = servers[0];
+      }
       this.detectServerDefaults(this.serverData);
-    } else if (this.currentServerId) {
-      this.serverData = servers.find(s => s.id == this.currentServerId) || servers[0] || null;
-      if (this.serverData) this.detectServerDefaults(this.serverData);
+      if (window.worldManager) {
+        worldManager.currentServerId = this.currentServerId;
+        worldManager.serverData = this.serverData;
+      }
+    } else {
+      this.currentServerId = null;
+      this.serverData = null;
     }
 
     container.innerHTML = `
@@ -1517,6 +1538,8 @@ class MarketplaceController {
   async renderWorldsMarketplaceView() {
     const container = document.getElementById('marketplace-view-content');
     if (!container) return;
+
+    await this.ensureActiveServerId();
 
     if (!this.currentServerId) {
       container.innerHTML = `
@@ -1631,6 +1654,7 @@ class MarketplaceController {
   }
 
   async refreshWorldView() {
+    await this.ensureActiveServerId();
     await this.switchWorldSubTab(this.activeWorldSubTab);
   }
 
@@ -1644,6 +1668,7 @@ class MarketplaceController {
     `;
 
     try {
+      await this.ensureActiveServerId();
       const res = await app.api(`/api/servers/${this.currentServerId}/worlds`);
       this.serverWorlds = res.worlds || [];
       this.activeWorldName = res.activeWorld || 'world';
@@ -2401,7 +2426,8 @@ class MarketplaceController {
   }
 
   // Open Create World Modal
-  openCreateWorldModal() {
+  async openCreateWorldModal() {
+    if (!this.currentServerId) await this.ensureActiveServerId();
     if (!this.currentServerId) {
       app.toast('Please select a target server first.', 'warning');
       return;
@@ -2638,7 +2664,12 @@ class MarketplaceController {
   }
 
   // Open Upload World Modal
-  openUploadWorldModal() {
+  async openUploadWorldModal() {
+    if (!this.currentServerId) await this.ensureActiveServerId();
+    if (!this.currentServerId) {
+      app.toast('Please select a target server first.', 'warning');
+      return;
+    }
     const modalContainer = document.getElementById('modal-container');
     if (!modalContainer) return;
 
@@ -2740,7 +2771,8 @@ class MarketplaceController {
   }
 
   // Open CurseForge World Install Modal
-  openCurseForgeWorldInstallModal(modId, modTitle) {
+  async openCurseForgeWorldInstallModal(modId, modTitle) {
+    if (!this.currentServerId) await this.ensureActiveServerId();
     if (!this.currentServerId) {
       app.toast('Please select a target server first.', 'warning');
       return;
@@ -2842,7 +2874,8 @@ class MarketplaceController {
   }
 
   // Open Curated Map Install Modal
-  openMapInstallModal(mapId, mapTitle, mapSize) {
+  async openMapInstallModal(mapId, mapTitle, mapSize) {
+    if (!this.currentServerId) await this.ensureActiveServerId();
     if (!this.currentServerId) {
       app.toast('Please select or open a server first to install maps.', 'warning');
       return;
@@ -2937,6 +2970,7 @@ class MarketplaceController {
   }
 
   async installFromDirectUrl() {
+    if (!this.currentServerId) await this.ensureActiveServerId();
     if (!this.currentServerId) {
       app.toast('Please select or open a server first.', 'warning');
       return;

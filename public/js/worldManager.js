@@ -85,6 +85,14 @@ class WorldManagerController {
     const content = document.getElementById('world-manager-content');
     if (!content) return;
 
+    if (!this.currentServerId) {
+      if (window.serverConsole && serverConsole.serverId) {
+        this.currentServerId = serverConsole.serverId;
+      } else if (window.marketplace && marketplace.currentServerId) {
+        this.currentServerId = marketplace.currentServerId;
+      }
+    }
+
     try {
       const res = await app.api(`/api/servers/${this.currentServerId}/worlds`);
       this.worlds = res.worlds || [];
@@ -945,10 +953,11 @@ class WorldManagerController {
       if (!customName) return;
 
       app.toast(`Downloading CurseForge map "${modName}"...`, 'info');
-      const res = await app.api(`/api/servers/${this.currentServerId}/marketplace/curseforge/install`, {
+      const res = await app.api('/api/marketplace/curseforge/install', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          serverId: this.currentServerId,
           modId,
           fileId,
           customName,
