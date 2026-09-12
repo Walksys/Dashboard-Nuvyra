@@ -1,7 +1,7 @@
 # 🎮 Mpanel - Full Node.js Game & App Server Web Management Panel
 
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
-[![Version](https://img.shields.io/badge/release-v2.1.0-blue.svg)](https://github.com/nobita329/Mpanel/releases/tag/v2.1.0)
+[![Version](https://img.shields.io/badge/release-v2.2.0-blue.svg)](https://github.com/nobita329/Mpanel/releases/tag/v2.2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Theme: Full Black](https://img.shields.io/badge/Theme-Full%20Black%20OLED-black.svg)](#-theme--customization-engine)
 
@@ -21,37 +21,32 @@
 
 ## ✨ Key Features & Capabilities
 
-### 1. 👥 Minecraft Player Manager (Full Live Monitoring)
-- **Live Player Roster**: View all online players with real-time ping, health, food level, gamemode, and XP levels.
-- **🎒 Interactive Live Inventory Viewer**: Inspect player armor slots, offhand, main inventory, and hotbar with live item icons, stack counts, and damage values.
-- **📊 Detailed Player Statistics**: In-depth tracking of mob kills, blocks mined, total playtime, distance traveled, and deaths.
-- **🏆 Advancements & Achievements Tracker**: Complete advancement progress tracking across dimensions.
-- **⚡ Real-time Moderation Actions**: Instant Kick, Ban, Pardon, OP, and DEOP directly with one click.
+### 1. 👥 Minecraft Player Manager (Real-Time Live Monitoring & Offline Roster)
+- **Live Player Roster**: View connected players with live ping, gamemode, health, food bar, XP level, and UUID.
+- **🎒 Interactive Live Inventory Viewer**: Inspect player armor slots, offhand, main inventory, and ender chest with live item icons, stack counts, and durability.
+- **📊 Detailed Player Statistics**: In-depth tracking of mob kills, blocks mined, items crafted, and distance traveled.
+- **🏆 Advancements & Achievements Tracker**: Complete advancement tree tracking across Story, Nether, The End, Adventure, and Husbandry.
+- **⚡ Live Moderation Actions**: Instant Kick, Ban, Pardon, IP-Ban, OP (Levels 1–4), and DEOP.
+- **🛡️ Full Offline Support**: Add/remove Whitelist entries, manage Operators, and ban/unban players even when the server is powered down.
+- **🚀 1-Click Server Startup**: Direct power launch button inside Player Manager when the server is offline.
 
-### 2. 🧩 Multi-Source Addon Marketplace & World Management (A to Z)
+### 2. 🧩 Addon Marketplace (Consolidated A to Z Suite)
 - **🌐 3 Universal Web Providers (A to Z)**:
   1. **Modrinth** (`https://modrinth.com`): High-speed direct downloads for modern Minecraft mods, plugins, datapacks, resource packs, and modpacks.
-  2. **CurseForge** (`https://www.curseforge.com`): Full ecosystem integration with custom API key (`CURSEFORGE_API_KEY`) and base URL (`https://api.curseforge.com/v1`) covering plugins, mods, worlds/maps, and modpacks.
-  3. **SpigotMC** (`https://www.spigotmc.org`): Integrated via the official open Spiget v2 REST API (`api.spiget.org/v2`), giving access to 90,000+ Bukkit, Spigot, and Paper plugins with version compatibility lists and 1-click `.jar` installation.
+  2. **CurseForge** (`https://www.curseforge.com`): Full ecosystem integration via `CURSEFORGE_API_KEY` and base URL (`https://api.curseforge.com/v1`) covering plugins, mods, worlds/maps, and modpacks.
+  3. **SpigotMC** (`https://www.spigotmc.org`): Direct integration via Spiget v2 REST API (`api.spiget.org/v2`), giving access to 90,000+ Bukkit, Spigot, and Paper plugins with version compatibility lists and 1-click `.jar` installation.
 - **🎮 Minecraft Version Filtering (A to Z)**:
-  - Comprehensive dropdown selector covering every release series from **Minecraft 1.21 Tricky Trials** all the way down to **1.5.2** (grouped with release titles). Automatically filters plugins, mods, datapacks, resource packs, and worlds across all three providers.
-- **📂 8 Distinct Categories ("Sab Alg Alg")**:
+  - Comprehensive dropdown selector covering every release from **Minecraft 1.21 Tricky Trials** all the way down to **1.5.2**, plus interactive quick version selector pills for instant filtering.
+- **📂 10 Consolidated Categories ("Sab Alg Alg")**:
+  - **Version Changer**: 1-click server core and engine switcher (Paper, Purpur, Spigot, Fabric, Forge, NeoForge, Velocity, BungeeCord).
+  - **Player Manager**: Complete live and offline player moderation suite with inventory inspections.
+  - **World Manager (A to Z)**: World creation, dimension management, CurseForge/Modrinth world store, instant generator profiles (Void, Superflat, Amplified, Large Biomes), and ZIP archive import/export.
   - **Plugins**: Bukkit, Spigot, Paper, Purpur, Folia, Velocity, BungeeCord plugins with version filtering.
   - **Mods**: Fabric, Forge, NeoForge, Quilt mods with loader badges and 1-click download to `mods/`.
   - **Datapacks**: Vanilla game extensions deployed into `world/datapacks/`.
   - **Resource Packs**: Server-side and client resource packs deployed into `resourcepacks/`.
   - **Modpacks**: CurseForge and Modrinth complete modpack packages.
-  - **World Management (A to Z)**:
-    - *Server Worlds Roster*: Inspect active and standby worlds, disk size, and dimensions (Overworld, Nether, The End).
-    - *1-Click Active World Switcher*: Updates `server.properties` `level-name` instantly.
-    - *World Creation*: Custom seed, generator preset (Normal, Superflat, Large Biomes, Amplified, Buffet), gamemode, difficulty, structures, and hardcore permadeath.
-    - *World Cloning & Reset*: Duplicate or wipe region files with 1 click.
-    - *Import & Export*: 1-click `.zip` backup download and `.zip` archive upload.
-    - *CurseForge Worlds & Maps Store*: Live search and 1-click install from CurseForge (`classId: 17`).
-    - *Modrinth World Maps*: Adventure and exploration maps from Modrinth.
-    - *Curated Fast Maps*: Instant deployment for Skyblock, OneBlock, Clean Void World, Parkour Spiral, Bedwars 8-Teams, Medieval Hub.
-    - *Direct URL (.zip) Installer*: Download and unpack from any web link.
-  - **Properties UI**: Visual `server.properties` editor with live in-game MOTD preview (supports Minecraft `§` and `&` color codes), category cards (Gameplay, World, Performance, Security), and dual Visual Form / Raw Editor.
+  - **Properties UI**: Visual `server.properties` editor with dedicated **`[ 🟢 ON ]` `[ ⚪ OFF ]`** segmented switchers, live color-coded MOTD preview (`§` and `&` codes), instant state sync, and a **"Restart to Apply"** quick reboot action button.
   - **Server Tools**: 1-click essential server utility suite (ViaVersion, ViaBackwards, GeyserMC, Floodgate, Spark Profiler, Chunky, LuckPerms, SkinsRestorer), Aikar's JVM performance flags, Playit.gg tunnel manager, and server log cleaner.
 
 ### 3. 🔄 Minecraft Version Changer (MCJars Engine)
@@ -114,9 +109,13 @@
 
 ## 🛠️ Installation & Quick Start
 
-### 1. 🚀 1-Click Auto Install & Auto Setup (`menu.sh`)
-Run the full automated setup (installs Node.js 20 LTS, PM2, dependencies, generates `.env`, seeds database, and starts PM2 with boot autostart):
+### 1. 🚀 1-Click Universal Auto Install (`menu.sh`)
+Run the full automated installer directly from the web or locally (installs Node.js 20 LTS, PM2, dependencies, generates `.env`, seeds database, and starts PM2 with boot autostart):
 ```bash
+# Instant One-Liner from GitHub
+bash <(curl -sSL https://raw.githubusercontent.com/nobita329/Mpanel/main/menu.sh)
+
+# Or locally
 ./menu.sh auto -y
 # or interactive
 ./menu.sh auto
@@ -169,6 +168,7 @@ npm run pm2:logs
 ```
 /
 ├── bin/
+│   ├── setup.js             # Automated setup, directory creator & database seeder
 │   ├── createuser.js        # Interactive CLI user creation script
 │   └── build.js             # Directory verification & preparation script
 ├── data/
@@ -184,7 +184,7 @@ npm run pm2:logs
 │       ├── app.js           # Core router, API requester & toasts
 │       ├── auth.js          # Authentication, 2FA TOTP & profile
 │       ├── settings.js      # Customization engine, 4K wallpapers, transparency & blur
-│       ├── marketplace.js   # CurseForge & Modrinth Addon Marketplace
+│       ├── marketplace.js   # CurseForge, Modrinth & SpigotMC Addon Marketplace
 │       ├── playerManager.js # Minecraft Live Player Manager & Inventory Viewer
 │       ├── worldManager.js  # Minecraft World Installer & Dimension Manager
 │       ├── versionChanger.js# MCJars Version & Core switcher
@@ -209,7 +209,10 @@ npm run pm2:logs
 │   │   ├── wallpaperService.js # 4KWallpapers scraper, cache & category engine
 │   │   ├── playerService.js # Minecraft player NBT/JSON parser & RCON actions
 │   │   ├── worldService.js  # World generation, dimensions & zip archives
-│   │   ├── marketplaceService.js # CurseForge addon downloader
+│   │   ├── curseforgeService.js  # CurseForge REST API v1 integration
+│   │   ├── spigotService.js # SpigotMC / Spiget API v2 integration
+│   │   ├── propertiesService.js  # Minecraft server.properties GUI schema
+│   │   ├── marketplaceService.js # Addon downloader & package installer
 │   │   ├── fileManagerService.js # Sandboxed filesystem operations
 │   │   ├── backupService.js # Zip backup creation & restoration
 │   │   ├── scheduleService.js # Cron scheduled tasks
