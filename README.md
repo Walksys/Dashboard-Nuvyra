@@ -28,13 +28,31 @@
 - **🏆 Advancements & Achievements Tracker**: Complete advancement progress tracking across dimensions.
 - **⚡ Real-time Moderation Actions**: Instant Kick, Ban, Pardon, OP, and DEOP directly with one click.
 
-### 2. 🧩 Addon Marketplace & World Installer
-- **CurseForge & Modrinth Integration**: Browse and download mods, plugins, modpacks, and add-ons directly into server directories with 1-click installation.
-- **🌍 Minecraft World Installer & Manager**:
-  - Create new custom worlds (Void World, Flat, Amplified, Custom Seed).
-  - Multi-dimension support with separate management for **Overworld**, **Nether**, and **The End**.
-  - World backup, restore, duplicate, zip download, and active world switching.
-  - Live difficulty, seed, and generator configuration.
+### 2. 🧩 Multi-Source Addon Marketplace & World Management (A to Z)
+- **🌐 3 Universal Web Providers (A to Z)**:
+  1. **Modrinth** (`https://modrinth.com`): High-speed direct downloads for modern Minecraft mods, plugins, datapacks, resource packs, and modpacks.
+  2. **CurseForge** (`https://www.curseforge.com`): Full ecosystem integration with custom API key (`CURSEFORGE_API_KEY`) and base URL (`https://api.curseforge.com/v1`) covering plugins, mods, worlds/maps, and modpacks.
+  3. **SpigotMC** (`https://www.spigotmc.org`): Integrated via the official open Spiget v2 REST API (`api.spiget.org/v2`), giving access to 90,000+ Bukkit, Spigot, and Paper plugins with version compatibility lists and 1-click `.jar` installation.
+- **🎮 Minecraft Version Filtering (A to Z)**:
+  - Comprehensive dropdown selector covering every release series from **Minecraft 1.21 Tricky Trials** all the way down to **1.5.2** (grouped with release titles). Automatically filters plugins, mods, datapacks, resource packs, and worlds across all three providers.
+- **📂 8 Distinct Categories ("Sab Alg Alg")**:
+  - **Plugins**: Bukkit, Spigot, Paper, Purpur, Folia, Velocity, BungeeCord plugins with version filtering.
+  - **Mods**: Fabric, Forge, NeoForge, Quilt mods with loader badges and 1-click download to `mods/`.
+  - **Datapacks**: Vanilla game extensions deployed into `world/datapacks/`.
+  - **Resource Packs**: Server-side and client resource packs deployed into `resourcepacks/`.
+  - **Modpacks**: CurseForge and Modrinth complete modpack packages.
+  - **World Management (A to Z)**:
+    - *Server Worlds Roster*: Inspect active and standby worlds, disk size, and dimensions (Overworld, Nether, The End).
+    - *1-Click Active World Switcher*: Updates `server.properties` `level-name` instantly.
+    - *World Creation*: Custom seed, generator preset (Normal, Superflat, Large Biomes, Amplified, Buffet), gamemode, difficulty, structures, and hardcore permadeath.
+    - *World Cloning & Reset*: Duplicate or wipe region files with 1 click.
+    - *Import & Export*: 1-click `.zip` backup download and `.zip` archive upload.
+    - *CurseForge Worlds & Maps Store*: Live search and 1-click install from CurseForge (`classId: 17`).
+    - *Modrinth World Maps*: Adventure and exploration maps from Modrinth.
+    - *Curated Fast Maps*: Instant deployment for Skyblock, OneBlock, Clean Void World, Parkour Spiral, Bedwars 8-Teams, Medieval Hub.
+    - *Direct URL (.zip) Installer*: Download and unpack from any web link.
+  - **Properties UI**: Visual `server.properties` editor with live in-game MOTD preview (supports Minecraft `§` and `&` color codes), category cards (Gameplay, World, Performance, Security), and dual Visual Form / Raw Editor.
+  - **Server Tools**: 1-click essential server utility suite (ViaVersion, ViaBackwards, GeyserMC, Floodgate, Spark Profiler, Chunky, LuckPerms, SkinsRestorer), Aikar's JVM performance flags, Playit.gg tunnel manager, and server log cleaner.
 
 ### 3. 🔄 Minecraft Version Changer (MCJars Engine)
 - Switch server software and Minecraft versions with a single click.
@@ -96,7 +114,17 @@
 
 ## 🛠️ Installation & Quick Start
 
-### 1. Interactive Management Menu (`menu.sh`)
+### 1. 🚀 1-Click Auto Install & Auto Setup (`menu.sh`)
+Run the full automated setup (installs Node.js 20 LTS, PM2, dependencies, generates `.env`, seeds database, and starts PM2 with boot autostart):
+```bash
+./menu.sh auto -y
+# or interactive
+./menu.sh auto
+# or via npm
+npm run setup
+```
+
+### 2. Interactive Management Menu (`menu.sh`)
 ```bash
 ./menu.sh
 # or
@@ -106,15 +134,15 @@ npm run menu
 ```
 
 Direct shortcuts available:
-- `./menu.sh install` - Install Node.js, dependencies, and build directories
+- `./menu.sh auto` / `./menu.sh setup` - 1-Click Auto Install, Setup, Database Seeding & PM2 Launch
+- `./menu.sh update` - 1-Click Auto Update (Git pull, DB migrations, dependencies & PM2 restart)
 - `./menu.sh usercreate` - Create new admin or normal user
 - `./menu.sh pm2` - PM2 Process Management menu (Start, Stop, Restart, Logs, Autostart)
-- `./menu.sh update` - Git pull and rebuild dependencies
 - `./menu.sh status` - Check port listening status (`3001`, `3003`, `3004`) and database
 - `./menu.sh playit` - Install native Playit.gg zero-port tunnel CLI
 - `./menu.sh uninstall` - Safely remove or clean Mpanel
 
-### 2. Manual CLI Setup
+### 3. Manual CLI Setup
 ```bash
 # Clone the repository
 git clone https://github.com/nobita329/Mpanel.git
@@ -123,16 +151,13 @@ cd Mpanel
 # Install dependencies
 npm install
 
-# Initialize directories & database
-npm run build
+# Run automated directory, .env & database setup
+npm run setup
 
-# Create Administrator Account
+# Create Administrator Account (if custom required)
 npm run createuser
 
-# Launch in foreground
-npm start
-
-# Or launch with PM2 (Recommended for Production)
+# Launch with PM2 (Recommended for Production)
 npm run pm2:start
 npm run pm2:logs
 ```

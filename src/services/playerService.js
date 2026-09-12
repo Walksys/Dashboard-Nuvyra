@@ -306,6 +306,10 @@ class PlayerService {
 
   writeJson(filePath, data) {
     try {
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
       try {
         const { execSync } = require('child_process');
