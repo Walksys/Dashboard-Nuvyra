@@ -69,7 +69,7 @@ router.get('/curseforge/search', async (req, res) => {
 // CurseForge Install World
 router.post('/curseforge/install', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId || req.body?.serverId || req.query?.serverId;
     const { modId, fileId, customName, setActive } = req.body;
     const result = await curseforgeService.installCurseForgeWorld(serverId, {
       modId,
@@ -87,7 +87,7 @@ router.post('/curseforge/install', authenticate, requireServerAccess('files.writ
 // CurseForge Universal Addon Install (plugins, mods, datapacks, resourcepacks)
 router.post('/curseforge/install-addon', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId || req.body?.serverId || req.query?.serverId;
     const { modId, fileId, targetType, customName, projectName } = req.body;
     if (!modId) {
       return res.status(400).json({ success: false, error: 'modId is required.' });
@@ -149,7 +149,7 @@ router.get('/project/:id/versions', async (req, res) => {
 // 4. Server-Specific: List Installed Items
 router.get('/installed', authenticate, requireServerAccess('files.read'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId || req.query?.serverId || req.body?.serverId;
     const installed = await marketplaceService.listInstalled(serverId);
     res.json({ success: true, installed, serverId });
   } catch (err) {
@@ -160,7 +160,7 @@ router.get('/installed', authenticate, requireServerAccess('files.read'), async 
 // 5. Server-Specific: 1-Click Install Item
 router.post('/install', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId || req.body?.serverId || req.query?.serverId;
     const { downloadUrl, fileName, targetType, projectName } = req.body;
 
     if (!downloadUrl || !fileName) {
@@ -201,7 +201,7 @@ router.post('/install', authenticate, requireServerAccess('files.write'), async 
 // 6. Server-Specific: Uninstall Item
 router.post('/uninstall', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
-    const serverId = req.params.serverId;
+    const serverId = req.server?.id || req.params.serverId || req.body?.serverId || req.query?.serverId;
     const { fileName, directory, targetType } = req.body;
 
     if (!fileName) {
