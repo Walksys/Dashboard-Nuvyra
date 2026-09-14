@@ -44,7 +44,8 @@ class MusicPlayer {
     if (bar) bar.classList.remove('hidden');
 
     this.currentTrack = url;
-    document.getElementById('music-track-title').innerText = title;
+    const trackTitleEl = document.getElementById('music-track-title');
+    if (trackTitleEl) trackTitleEl.innerText = title;
     this.setVolume(volume);
 
     if (this.audio.src !== url) {
@@ -56,7 +57,8 @@ class MusicPlayer {
     if (!this.audio.src || this.audio.src === window.location.href) {
       // Default Lo-Fi Chill Synth stream if no custom track set
       this.audio.src = 'https://stream.zeno.fm/f3wvbbqmdg8uv';
-      document.getElementById('music-track-title').innerText = 'Lofi Beats Chill Stream';
+      const trackTitleEl = document.getElementById('music-track-title');
+      if (trackTitleEl) trackTitleEl.innerText = 'Lofi Beats Chill Stream';
     }
 
     if (this.isPlaying) {

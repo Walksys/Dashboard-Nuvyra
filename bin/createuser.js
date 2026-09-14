@@ -53,16 +53,41 @@ async function main() {
       process.exit(1);
     }
 
-    const existing = await query.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email]);
-    if (existing) {
-      console.error(`\n❌ Error: A user with username "${username}" or email "${email}" already exists.`);
-      process.exit(1);
-    }
+    const existing = await query.get(
+      'SELECT id, username, email FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)',
+      [username, email]
+    );
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const userUuid = uuidv4();
     const role = isAdmin ? 'admin' : 'user';
 
+    if (existing) {
+      // If run interactively, prompt for confirmation unless flags were explicitly provided
+      if (!args.includes('--password') && !args.includes('-p')) {
+        const resetAns = await askQuestion(rl, `User "${existing.username}" (${existing.email}) already exists. Reset password and role? (Y/n): `);
+        if (resetAns.toLowerCase().startsWith('n')) {
+          console.log('Action cancelled.');
+          return;
+        }
+      }
+
+      await query.run(
+        'UPDATE users SET password_hash = ?, role = ?, suspended = 0 WHERE id = ?',
+        [passwordHash, role, existing.id]
+      );
+
+      console.log('\n======================================');
+      console.log('✅ User credentials updated successfully!');
+      console.log(`• ID:       ${existing.id}`);
+      console.log(`• Username: ${existing.username}`);
+      console.log(`• Email:    ${existing.email}`);
+      console.log(`• Role:     ${role.toUpperCase()}`);
+      console.log('• Status:   ACTIVE (un-suspended)');
+      console.log('======================================\n');
+      return;
+    }
+
+    const userUuid = uuidv4();
     const result = await query.run(
       'INSERT INTO users (uuid, username, email, password_hash, role) VALUES (?, ?, ?, ?, ?)',
       [userUuid, username, email, passwordHash, role]

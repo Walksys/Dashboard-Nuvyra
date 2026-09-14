@@ -14,11 +14,17 @@ const { logActivity } = require('../services/activityService');
 router.post('/login', async (req, res) => {
   try {
     const { username, password, twoFactorCode } = req.body;
-    if (!username || !password) {
+    const identifier = (username || '').toString().trim();
+    const userPass = (password || '').toString();
+
+    if (!identifier || !userPass) {
       return res.status(400).json({ success: false, error: 'Username/email and password are required.' });
     }
 
-    const user = await query.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, username]);
+    const user = await query.get(
+      'SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)',
+      [identifier, identifier]
+    );
     if (!user) {
       return res.status(401).json({ success: false, error: 'Invalid username or password.' });
     }
@@ -27,7 +33,7 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ success: false, error: 'This account has been suspended by an administrator.' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    const isMatch = await bcrypt.compare(userPass, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ success: false, error: 'Invalid username or password.' });
     }
@@ -86,31 +92,37 @@ router.post('/register', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Public registration is currently disabled.' });
     }
 
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) {
+    const cleanUsername = (username || '').toString().trim();
+    const cleanEmail = (email || '').toString().trim();
+    const cleanPassword = (password || '').toString();
+
+    if (!cleanUsername || !cleanEmail || !cleanPassword) {
       return res.status(400).json({ success: false, error: 'All fields are required.' });
     }
 
-    if (username.length < 3) {
+    if (cleanUsername.length < 3) {
       return res.status(400).json({ success: false, error: 'Username must be at least 3 characters.' });
     }
 
-    if (password.length < 6) {
+    if (cleanPassword.length < 6) {
       return res.status(400).json({ success: false, error: 'Password must be at least 6 characters.' });
     }
 
     // Check existing
-    const existing = await query.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email]);
+    const existing = await query.get(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)',
+      [cleanUsername, cleanEmail]
+    );
     if (existing) {
       return res.status(400).json({ success: false, error: 'Username or Email is already registered.' });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(cleanPassword, 10);
     const userUuid = uuidv4();
 
     const result = await query.run(
       'INSERT INTO users (uuid, username, email, password_hash, role) VALUES (?, ?, ?, ?, ?)',
-      [userUuid, username, email, passwordHash, 'user']
+      [userUuid, cleanUsername, cleanEmail, passwordHash, 'user']
     );
 
     const token = jwt.sign(

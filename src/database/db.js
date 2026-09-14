@@ -210,6 +210,15 @@ async function initDatabase() {
   `;
 
   await query.exec(schema);
+
+  // SAGA Auto Suspension v1 Migrations
+  try {
+    await query.run('ALTER TABLE servers ADD COLUMN expiration_date DATETIME');
+  } catch (e) {}
+  try {
+    await query.run('ALTER TABLE servers ADD COLUMN is_suspended INTEGER DEFAULT 0');
+  } catch (e) {}
+
   console.log('✅ SQLite Schema initialized successfully.');
 }
 

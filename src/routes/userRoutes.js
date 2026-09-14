@@ -12,7 +12,13 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
     const users = await query.all(`
       SELECT u.id, u.uuid, u.username, u.email, u.role, u.two_factor_enabled,
              u.suspended, u.avatar, u.created_at, u.updated_at,
-             COUNT(s.id) as server_count
+             COUNT(s.id) as server_count,
+             COALESCE(SUM(s.memory_mb), 0) as total_memory_mb,
+             COALESCE(SUM(s.cpu_limit), 0) as total_cpu_limit,
+             COALESCE(SUM(s.disk_mb), 0) as total_disk_mb,
+             COALESCE(SUM(CASE WHEN s.is_suspended = 1 OR s.status = 'suspended' THEN 1 ELSE 0 END), 0) as suspended_server_count,
+             COALESCE(SUM(CASE WHEN s.is_suspended = 0 AND s.status != 'suspended' THEN 1 ELSE 0 END), 0) as active_server_count,
+             COALESCE(SUM(CASE WHEN s.expiration_date IS NOT NULL AND datetime(s.expiration_date) <= datetime('now', '+3 days') THEN 1 ELSE 0 END), 0) as expiring_soon_count
       FROM users u
       LEFT JOIN servers s ON s.user_id = u.id
       GROUP BY u.id

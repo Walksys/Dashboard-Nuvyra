@@ -100,7 +100,10 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       'blur_bar',
       'registration_enabled',
       'theme_mode',
-      'auto_save_enabled'
+      'auto_save_enabled',
+      'active_theme',
+      'panel_sounds_enabled',
+      'arix_primary_color'
     ];
 
     for (const [key, value] of Object.entries(updates)) {
