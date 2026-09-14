@@ -125,8 +125,16 @@ class AdminManager {
   }
 
   // 2. Server Management View
+  setServerViewMode(mode) {
+    this.serverViewMode = mode;
+    localStorage.setItem('mpanel_server_view_mode', mode);
+    this.renderServersView();
+  }
+
   // 2. SERVERS & SERVER ACCOUNTS MONITOR
   async renderServersView() {
+    this.serverViewMode = this.serverViewMode || localStorage.getItem('mpanel_server_view_mode') || 'card';
+    const isCard = this.serverViewMode === 'card';
     const container = document.getElementById('view-container');
     container.innerHTML = `
       <div class="space-y-8 pb-12">
@@ -139,7 +147,17 @@ class AdminManager {
             <p class="text-xs text-slate-400 mt-1 font-medium">Manage and monitor all your servers</p>
           </div>
           <div class="flex items-center gap-2.5 flex-wrap">
-            <button onclick="admin.renderServersView()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300 transition" title="Refresh Tables">
+            <!-- Card / List segmented switcher (Default: card) -->
+            <div class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-white/10 shadow-inner">
+              <button onclick="admin.setServerViewMode('card')" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${isCard ? 'bg-cyan-500 text-black shadow-md' : 'text-slate-400 hover:text-white'}">
+                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Cards
+              </button>
+              <button onclick="admin.setServerViewMode('list')" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${!isCard ? 'bg-cyan-500 text-black shadow-md' : 'text-slate-400 hover:text-white'}">
+                <i data-lucide="list" class="w-3.5 h-3.5"></i> List
+              </button>
+            </div>
+
+            <button onclick="admin.renderServersView()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300 transition" title="Refresh">
               <i data-lucide="refresh-cw" class="w-4 h-4"></i>
             </button>
             <button onclick="admin.showCreateUserModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/40 flex items-center gap-1.5 transition shadow-sm">
@@ -158,30 +176,19 @@ class AdminManager {
           <div class="flex items-center justify-between px-1">
             <div class="flex items-center gap-2.5">
               <div class="w-7 h-7 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                <i data-lucide="server" class="w-4 h-4"></i>
+                <i data-lucide="${isCard ? 'layout-grid' : 'server'}" class="w-4 h-4"></i>
               </div>
               <h3 class="text-base font-bold text-white tracking-wide">Server</h3>
               <span id="adm-servers-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Loading...</span>
             </div>
+            <span class="text-[11px] font-mono text-slate-500">View: <strong class="text-cyan-400 uppercase">${isCard ? 'Card' : 'List'}</strong></span>
           </div>
 
-          <div class="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-xl">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs text-slate-300">
-                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
-                  <tr>
-                    <th class="px-4 py-3">Server Name</th>
-                    <th class="px-4 py-3">IP Address</th>
-                    <th class="px-4 py-3">User</th>
-                    <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3">Resources</th>
-                    <th class="px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="adm-servers-tbody" class="divide-y divide-white/5">
-                  <tr><td colspan="6" class="text-center py-10 text-slate-500"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-cyan-400"></i>Loading servers...</td></tr>
-                </tbody>
-              </table>
+          <!-- Server Target Container -->
+          <div id="adm-servers-view-target">
+            <div class="glass-panel p-12 rounded-2xl border border-white/10 text-center text-slate-500">
+              <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-cyan-400"></i>
+              <span>Loading servers...</span>
             </div>
           </div>
         </div>
@@ -233,6 +240,12 @@ class AdminManager {
       const servers = serversRes.servers || [];
       const users = usersRes.users || [];
 
+      // Build quick users map
+      const usersMap = {};
+      users.forEach(u => {
+        usersMap[u.id] = u;
+      });
+
       // Update count badges
       const srvBadge = document.getElementById('adm-servers-count-badge');
       if (srvBadge) srvBadge.innerText = `${servers.length} ${servers.length === 1 ? 'Server' : 'Servers'}`;
@@ -248,126 +261,370 @@ class AdminManager {
       });
 
       // ----------------------------------------------------------------------
-      // Populate Server Table
+      // Populate Server Section (Card or List)
       // ----------------------------------------------------------------------
-      const srvTbody = document.getElementById('adm-servers-tbody');
-      if (srvTbody) {
+      const srvTarget = document.getElementById('adm-servers-view-target');
+      if (srvTarget) {
         if (servers.length === 0) {
-          srvTbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="text-center py-12 text-slate-500">
-                <i data-lucide="server-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-                <p class="text-sm font-semibold text-slate-300">No servers deployed yet</p>
-                <button onclick="admin.showCreateServerModal()" class="btn-cyber px-3 py-1.5 rounded-xl text-xs mt-3 font-bold">+ Deploy New Server</button>
-              </td>
-            </tr>
+          srvTarget.innerHTML = `
+            <div class="glass-panel rounded-2xl border border-white/10 p-12 text-center text-slate-500">
+              <i data-lucide="server-off" class="w-10 h-10 mx-auto mb-3 opacity-40 text-cyan-400"></i>
+              <p class="text-sm font-semibold text-slate-300">No servers deployed yet</p>
+              <p class="text-xs text-slate-500 mt-1">Get started by creating and configuring your first server instance.</p>
+              <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs mt-4 font-bold">+ Deploy New Server</button>
+            </div>
+          `;
+        } else if (isCard) {
+          // ================= CARD VIEW (DEFAULT) =================
+          srvTarget.innerHTML = `
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+              ${servers.map(s => {
+                const owner = usersMap[s.user_id] || {
+                  id: s.user_id,
+                  username: s.owner_username || 'Admin',
+                  email: s.owner_email || '',
+                  role: s.owner_role || 'admin',
+                  suspended: s.owner_suspended || 0
+                };
+                const isOwnerAdmin = owner.role === 'admin';
+                const isOwnerSuspended = !!owner.suspended;
+
+                const isSuspended = !!s.is_suspended || s.status === 'suspended';
+                const isRunning = !isSuspended && s.status === 'running';
+
+                let expBadge = '';
+                if (s.expiration_date) {
+                  const expDate = new Date(s.expiration_date);
+                  const diffDays = Math.ceil((expDate.getTime() - Date.now()) / (1000 * 3600 * 24));
+                  if (diffDays <= 0) {
+                    expBadge = '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">Expired</span>';
+                  } else if (diffDays <= 3) {
+                    expBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">${diffDays}d left</span>`;
+                  } else {
+                    expBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono text-slate-400 border border-white/5">${diffDays}d left</span>`;
+                  }
+                }
+
+                const statusHTML = isSuspended
+                  ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>SUSPENDED</span>${expBadge}</div>`
+                  : (isRunning
+                    ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>RUNNING</span>${expBadge}</div>`
+                    : `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>OFFLINE</span>${expBadge}</div>`);
+
+                const fullAddr = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
+                const ramFmt = s.memory_mb >= 1024 ? (s.memory_mb / 1024).toFixed(1) + ' GiB' : (s.memory_mb || 1024) + ' MB';
+                const diskFmt = s.disk_mb >= 1024 ? (s.disk_mb / 1024).toFixed(1) + ' GiB' : (s.disk_mb || 5120) + ' MB';
+
+                return `
+                  <div class="glass-panel p-5 rounded-3xl border border-white/10 hover:border-cyan-500/30 transition shadow-xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3.5">
+                      <!-- 1. Server Name & Status -->
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-3 min-w-0">
+                          <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0 mt-0.5 shadow-inner">
+                            <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : 'terminal')}" class="w-5 h-5"></i>
+                          </div>
+                          <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                              <h4 class="font-bold text-white hover:text-cyan-300 cursor-pointer text-sm truncate transition" onclick="app.navigate('server-manage/${s.id}/console')" title="Open Server Console">
+                                ${app.escapeHtml(s.name)}
+                              </h4>
+                              <span class="text-[10px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">#${s.id}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-[10px] font-mono text-slate-400 mt-1">
+                              <span class="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 uppercase font-bold text-[9px] border border-cyan-500/20">${app.escapeHtml(s.server_type)}</span>
+                              <span>•</span>
+                              <span class="text-slate-500 truncate max-w-[100px]" title="${s.uuid}">${s.uuid.substring(0, 8)}...</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="shrink-0 text-right">
+                          ${statusHTML}
+                        </div>
+                      </div>
+
+                      <!-- 2. IP Address -->
+                      <div class="p-2.5 rounded-xl bg-slate-900/60 border border-white/5 flex items-center justify-between font-mono text-xs">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <i data-lucide="network" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
+                          <span class="text-slate-400 text-[11px] shrink-0">IP Address:</span>
+                          <span class="text-cyan-300 font-bold truncate">${fullAddr}</span>
+                        </div>
+                        <button onclick="navigator.clipboard.writeText('${fullAddr}'); app.playSound('copy'); app.toast('Copied address: ${fullAddr}', 'info');" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 transition text-[10px] flex items-center gap-1 font-bold shrink-0">
+                          <i data-lucide="copy" class="w-3 h-3"></i> Copy
+                        </button>
+                      </div>
+
+                      <!-- 3. User Section (Create User, User delete, Edit User, Suspended User, User Access) -->
+                      <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-purple-500/20 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                          <span class="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                            <i data-lucide="user" class="w-3 h-3"></i> User (Owner)
+                          </span>
+                          <div class="flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${isOwnerAdmin ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-slate-800 text-slate-400 border border-white/5'}">
+                              ${isOwnerAdmin ? 'ADMIN' : 'CLIENT'}
+                            </span>
+                            ${isOwnerSuspended ? '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">SUSPENDED</span>' : '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400">ACTIVE</span>'}
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2.5 min-w-0">
+                          <div class="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 uppercase shrink-0">
+                            ${(owner.username || 'A').substring(0, 1)}
+                          </div>
+                          <div class="min-w-0">
+                            <span class="font-bold text-white text-xs block truncate">${app.escapeHtml(owner.username || 'Admin')}</span>
+                            <span class="text-[10px] text-slate-400 block truncate font-mono">${app.escapeHtml(owner.email || 'No email')}</span>
+                          </div>
+                        </div>
+                        <!-- User Actions: Create User, User delete, Edit User, Suspended User, User Access -->
+                        <div class="pt-2 border-t border-white/5 flex flex-wrap items-center gap-1.5">
+                          <button onclick="admin.showCreateUserModal()" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 transition flex items-center gap-1" title="Create New User">
+                            <i data-lucide="user-plus" class="w-3 h-3"></i> Create User
+                          </button>
+                          <button onclick="admin.showEditUserModal(${owner.id})" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition flex items-center gap-1" title="Edit User Account">
+                            <i data-lucide="user-cog" class="w-3 h-3 text-purple-400"></i> Edit User
+                          </button>
+                          <button onclick="admin.showServerOwnerModal(${s.id}, '${app.escapeHtml(s.name)}', ${owner.id}, '${app.escapeHtml(owner.username)}')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition flex items-center gap-1" title="Server Access & Transfer Ownership">
+                            <i data-lucide="shield-check" class="w-3 h-3"></i> User Access
+                          </button>
+                          <button onclick="admin.toggleSuspendUser(${owner.id})" class="px-2 py-1 rounded-lg text-[10px] font-bold ${isOwnerSuspended ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/20 hover:bg-amber-500/30'} transition flex items-center gap-1" title="Toggle User Suspension">
+                            <i data-lucide="${isOwnerSuspended ? 'unlock' : 'slash'}" class="w-3 h-3"></i> ${isOwnerSuspended ? 'Unsuspend' : 'Suspended User'}
+                          </button>
+                          <button onclick="admin.deleteUser(${owner.id}, '${app.escapeHtml(owner.username)}')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/20 transition flex items-center gap-1" title="Delete User Account">
+                            <i data-lucide="user-x" class="w-3 h-3"></i> User delete
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- 4. Resources Section (Create, delete, Edit, Suspended) -->
+                      <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-cyan-500/20 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                          <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                            <i data-lucide="cpu" class="w-3 h-3"></i> Resources
+                          </span>
+                          <span class="text-[10px] font-mono text-cyan-300 font-bold">${ramFmt} RAM</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 font-mono text-center">
+                          <div class="p-2 rounded-xl bg-slate-800/60 border border-white/5">
+                            <div class="text-[9px] text-slate-400 uppercase">Memory</div>
+                            <div class="text-xs font-bold text-cyan-300 mt-0.5">${ramFmt}</div>
+                          </div>
+                          <div class="p-2 rounded-xl bg-slate-800/60 border border-white/5">
+                            <div class="text-[9px] text-slate-400 uppercase">CPU Limit</div>
+                            <div class="text-xs font-bold text-purple-300 mt-0.5">${s.cpu_limit || 100}%</div>
+                          </div>
+                          <div class="p-2 rounded-xl bg-slate-800/60 border border-white/5">
+                            <div class="text-[9px] text-slate-400 uppercase">Disk</div>
+                            <div class="text-xs font-bold text-indigo-300 mt-0.5">${diskFmt}</div>
+                          </div>
+                        </div>
+                        <!-- Resource Actions: Create, delete, Edit, Suspended -->
+                        <div class="pt-2 border-t border-white/5 flex flex-wrap items-center gap-1.5">
+                          <button onclick="admin.showAddResourcePresetModal(${s.id}, '${app.escapeHtml(s.name)}', ${s.memory_mb || 1024}, ${s.cpu_limit || 100}, ${s.disk_mb || 5120})" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition flex items-center gap-1" title="Add / Allocate Resources">
+                            <i data-lucide="plus" class="w-3 h-3"></i> Create
+                          </button>
+                          <button onclick="admin.showEditServerModal(${s.id})" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 transition flex items-center gap-1" title="Edit Server Configuration">
+                            <i data-lucide="sliders" class="w-3 h-3"></i> Edit
+                          </button>
+                          <button onclick="admin.toggleServerSuspension(${s.id})" class="px-2 py-1 rounded-lg text-[10px] font-bold ${isSuspended ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/20 hover:bg-amber-500/30'} transition flex items-center gap-1" title="Toggle Auto-Suspension">
+                            <i data-lucide="${isSuspended ? 'unlock' : 'pause-circle'}" class="w-3 h-3"></i> ${isSuspended ? 'Unsuspend' : 'Suspended'}
+                          </button>
+                          <button onclick="admin.resetServerResources(${s.id}, '${app.escapeHtml(s.name)}')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/20 transition flex items-center gap-1" title="Reset Custom Resources">
+                            <i data-lucide="rotate-ccw" class="w-3 h-3"></i> delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 5. Actions Footer -->
+                    <div class="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-1.5">
+                        <button onclick="admin.sendServerPower(${s.id}, 'start')" class="p-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 transition" title="Start Server">
+                          <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="admin.sendServerPower(${s.id}, 'restart')" class="p-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-400 border border-amber-500/20 transition" title="Restart Server">
+                          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="admin.sendServerPower(${s.id}, 'stop')" class="p-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition" title="Stop Server">
+                          <i data-lucide="square" class="w-3.5 h-3.5"></i>
+                        </button>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <button onclick="admin.deleteServer(${s.id}, '${app.escapeHtml(s.name)}')" class="p-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition" title="Delete Server">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="app.navigate('server-manage/${s.id}/console')" class="btn-cyber px-4 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-md">
+                          <i data-lucide="terminal" class="w-4 h-4"></i> Manage
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
           `;
         } else {
-          srvTbody.innerHTML = servers.map(s => {
-            const isSuspended = !!s.is_suspended || s.status === 'suspended';
-            const isRunning = !isSuspended && s.status === 'running';
+          // ================= LIST VIEW (TABLE) =================
+          srvTarget.innerHTML = `
+            <div class="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+                    <tr>
+                      <th class="px-4 py-3">Server Name</th>
+                      <th class="px-4 py-3">IP Address</th>
+                      <th class="px-4 py-3">User</th>
+                      <th class="px-4 py-3">Status</th>
+                      <th class="px-4 py-3">Resources</th>
+                      <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adm-servers-tbody" class="divide-y divide-white/5">
+                    ${servers.map(s => {
+                      const owner = usersMap[s.user_id] || {
+                        id: s.user_id,
+                        username: s.owner_username || 'Admin',
+                        email: s.owner_email || '',
+                        role: s.owner_role || 'admin',
+                        suspended: s.owner_suspended || 0
+                      };
+                      const isOwnerAdmin = owner.role === 'admin';
+                      const isOwnerSuspended = !!owner.suspended;
 
-            let expBadge = '';
-            if (s.expiration_date) {
-              const expDate = new Date(s.expiration_date);
-              const diffDays = Math.ceil((expDate.getTime() - Date.now()) / (1000 * 3600 * 24));
-              if (diffDays <= 0) {
-                expBadge = '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">Expired</span>';
-              } else if (diffDays <= 3) {
-                expBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">${diffDays}d left</span>`;
-              } else {
-                expBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono text-slate-400 border border-white/5">${diffDays}d left</span>`;
-              }
-            }
+                      const isSuspended = !!s.is_suspended || s.status === 'suspended';
+                      const isRunning = !isSuspended && s.status === 'running';
 
-            const statusHTML = isSuspended
-              ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>SUSPENDED</span>${expBadge}</div>`
-              : (isRunning
-                ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>RUNNING</span>${expBadge}</div>`
-                : `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>OFFLINE</span>${expBadge}</div>`);
+                      let expBadge = '';
+                      if (s.expiration_date) {
+                        const expDate = new Date(s.expiration_date);
+                        const diffDays = Math.ceil((expDate.getTime() - Date.now()) / (1000 * 3600 * 24));
+                        if (diffDays <= 0) {
+                          expBadge = '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">Expired</span>';
+                        } else if (diffDays <= 3) {
+                          expBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">${diffDays}d left</span>`;
+                        } else {
+                          expBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono text-slate-400 border border-white/5">${diffDays}d left</span>`;
+                        }
+                      }
 
-            const fullAddr = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
-            const ramFmt = s.memory_mb >= 1024 ? (s.memory_mb / 1024).toFixed(1) + ' GiB' : s.memory_mb + ' MB';
+                      const statusHTML = isSuspended
+                        ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>SUSPENDED</span>${expBadge}</div>`
+                        : (isRunning
+                          ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>RUNNING</span>${expBadge}</div>`
+                          : `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>OFFLINE</span>${expBadge}</div>`);
 
-            return `
-              <tr class="hover:bg-white/5 transition-colors">
-                <!-- Server Name -->
-                <td class="px-4 py-3">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0">
-                      <i data-lucide="${s.server_type === 'minecraft' ? 'box' : 'terminal'}" class="w-4 h-4"></i>
-                    </div>
-                    <div class="min-w-0">
-                      <div class="font-bold text-white hover:text-cyan-300 cursor-pointer truncate max-w-xs transition text-xs" onclick="app.navigate('server-manage/${s.id}/console')">
-                        ${app.escapeHtml(s.name)}
-                      </div>
-                      <div class="flex items-center gap-1.5 text-[10px] font-mono text-slate-400 mt-0.5">
-                        <span class="text-slate-500">#${s.id}</span>
-                        <span>•</span>
-                        <span class="px-1 rounded bg-white/5 text-[9px] uppercase">${app.escapeHtml(s.server_type)}</span>
-                        <span>•</span>
-                        <span class="text-slate-500 truncate max-w-[90px]">${s.uuid.substring(0, 8)}...</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
+                      const fullAddr = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
+                      const ramFmt = s.memory_mb >= 1024 ? (s.memory_mb / 1024).toFixed(1) + ' GiB' : (s.memory_mb || 1024) + ' MB';
+                      const diskFmt = s.disk_mb >= 1024 ? (s.disk_mb / 1024).toFixed(1) + ' GiB' : (s.disk_mb || 5120) + ' MB';
 
-                <!-- IP Address -->
-                <td class="px-4 py-3 font-mono">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-cyan-300 font-semibold text-xs">${fullAddr}</span>
-                    <button onclick="navigator.clipboard.writeText('${fullAddr}'); app.playSound('copy'); app.toast('Copied address: ${fullAddr}', 'info');" class="p-1 rounded hover:bg-white/10 text-slate-500 hover:text-cyan-400 transition" title="Copy Address">
-                      <i data-lucide="copy" class="w-3 h-3"></i>
-                    </button>
-                  </div>
-                </td>
+                      return `
+                        <tr class="hover:bg-white/5 transition-colors">
+                          <!-- Server Name -->
+                          <td class="px-4 py-3">
+                            <div class="flex items-center gap-2.5">
+                              <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0">
+                                <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : 'terminal')}" class="w-4 h-4"></i>
+                              </div>
+                              <div class="min-w-0">
+                                <div class="font-bold text-white hover:text-cyan-300 cursor-pointer truncate max-w-xs transition text-xs" onclick="app.navigate('server-manage/${s.id}/console')">
+                                  ${app.escapeHtml(s.name)}
+                                </div>
+                                <div class="flex items-center gap-1.5 text-[10px] font-mono text-slate-400 mt-0.5">
+                                  <span class="text-slate-500">#${s.id}</span>
+                                  <span>•</span>
+                                  <span class="px-1 rounded bg-white/5 text-[9px] uppercase font-bold">${app.escapeHtml(s.server_type)}</span>
+                                  <span>•</span>
+                                  <span class="text-slate-500 truncate max-w-[90px]">${s.uuid.substring(0, 8)}...</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
 
-                <!-- User (Owner) -->
-                <td class="px-4 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-bold text-cyan-400 uppercase shrink-0">
-                      ${(s.owner_username || 'A').substring(0, 1)}
-                    </div>
-                    <div class="min-w-0">
-                      <span class="font-semibold text-slate-200 block text-xs truncate">${app.escapeHtml(s.owner_username || 'Admin')}</span>
-                      ${s.owner_email ? `<span class="text-[10px] text-slate-500 block truncate font-mono">${app.escapeHtml(s.owner_email)}</span>` : ''}
-                    </div>
-                  </div>
-                </td>
+                          <!-- IP Address -->
+                          <td class="px-4 py-3 font-mono">
+                            <div class="flex items-center gap-1.5">
+                              <span class="text-cyan-300 font-semibold text-xs">${fullAddr}</span>
+                              <button onclick="navigator.clipboard.writeText('${fullAddr}'); app.playSound('copy'); app.toast('Copied address: ${fullAddr}', 'info');" class="p-1 rounded hover:bg-white/10 text-slate-500 hover:text-cyan-400 transition" title="Copy Address">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                              </button>
+                            </div>
+                          </td>
 
-                <!-- Status -->
-                <td class="px-4 py-3">
-                  ${statusHTML}
-                </td>
+                          <!-- User (Create User, User delete, Edit User, Suspended User, User Access) -->
+                          <td class="px-4 py-3">
+                            <div class="space-y-1.5">
+                              <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-[10px] font-bold text-purple-300 uppercase shrink-0">
+                                  ${(owner.username || 'A').substring(0, 1)}
+                                </div>
+                                <div class="min-w-0">
+                                  <span class="font-semibold text-slate-200 block text-xs truncate">${app.escapeHtml(owner.username || 'Admin')}</span>
+                                  ${owner.email ? `<span class="text-[10px] text-slate-500 block truncate font-mono">${app.escapeHtml(owner.email)}</span>` : ''}
+                                </div>
+                                <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${isOwnerAdmin ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-800 text-slate-400'}">
+                                  ${isOwnerAdmin ? 'ADMIN' : 'USER'}
+                                </span>
+                              </div>
+                              <div class="flex flex-wrap items-center gap-1">
+                                <button onclick="admin.showCreateUserModal()" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/20 transition" title="Create User">+ User</button>
+                                <button onclick="admin.showEditUserModal(${owner.id})" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition" title="Edit User">Edit</button>
+                                <button onclick="admin.showServerOwnerModal(${s.id}, '${app.escapeHtml(s.name)}', ${owner.id}, '${app.escapeHtml(owner.username)}')" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/20 transition" title="User Access & Transfer">Access</button>
+                                <button onclick="admin.toggleSuspendUser(${owner.id})" class="px-1.5 py-0.5 rounded text-[9px] font-bold ${isOwnerSuspended ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/20'} transition" title="Suspended User">${isOwnerSuspended ? 'Unsuspend' : 'Suspend'}</button>
+                                <button onclick="admin.deleteUser(${owner.id}, '${app.escapeHtml(owner.username)}')" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/20 transition" title="User delete">Delete</button>
+                              </div>
+                            </div>
+                          </td>
 
-                <!-- Resources -->
-                <td class="px-4 py-3 font-mono">
-                  <div class="space-y-0.5 text-[11px]">
-                    <div class="text-cyan-300 font-bold">${ramFmt} RAM</div>
-                    <div class="text-slate-400 text-[10px]">${s.cpu_limit || 100}% CPU • ${s.disk_mb || 1000} MB Disk</div>
-                  </div>
-                </td>
+                          <!-- Status -->
+                          <td class="px-4 py-3">
+                            ${statusHTML}
+                          </td>
 
-                <!-- Actions -->
-                <td class="px-4 py-3 text-right whitespace-nowrap">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button onclick="app.navigate('server-manage/${s.id}/console')" class="btn-cyber px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 shadow-sm" title="Manage Console">
-                      <i data-lucide="terminal" class="w-3 h-3"></i> Manage
-                    </button>
-                    <button onclick="admin.toggleServerSuspension(${s.id})" title="${isSuspended ? 'Unsuspend Server' : 'Suspend Server'}" class="p-1.5 rounded-lg border transition ${isSuspended ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30' : 'bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 border-white/10'}">
-                      <i data-lucide="${isSuspended ? 'unlock' : 'lock'}" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button onclick="admin.showEditServerModal(${s.id})" title="Edit Configuration" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 transition">
-                      <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button onclick="admin.deleteServer(${s.id}, '${app.escapeHtml(s.name)}')" title="Delete Server" class="p-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            `;
-          }).join('');
+                          <!-- Resources (Create, delete, Edit, Suspended) -->
+                          <td class="px-4 py-3 font-mono">
+                            <div class="space-y-1.5">
+                              <div class="text-[11px]">
+                                <span class="text-cyan-300 font-bold">${ramFmt} RAM</span>
+                                <span class="text-slate-400 text-[10px] ml-1">• ${s.cpu_limit || 100}% CPU • ${diskFmt} Disk</span>
+                              </div>
+                              <div class="flex flex-wrap items-center gap-1">
+                                <button onclick="admin.showAddResourcePresetModal(${s.id}, '${app.escapeHtml(s.name)}', ${s.memory_mb || 1024}, ${s.cpu_limit || 100}, ${s.disk_mb || 5120})" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/20 transition" title="Create / Add Resources">+ Create</button>
+                                <button onclick="admin.showEditServerModal(${s.id})" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 border border-purple-500/20 transition" title="Edit Configuration">Edit</button>
+                                <button onclick="admin.toggleServerSuspension(${s.id})" class="px-1.5 py-0.5 rounded text-[9px] font-bold ${isSuspended ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/20'} transition" title="Toggle Auto-Suspension">${isSuspended ? 'Unsuspend' : 'Suspended'}</button>
+                                <button onclick="admin.resetServerResources(${s.id}, '${app.escapeHtml(s.name)}')" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/20 transition" title="Delete Custom Resources">delete</button>
+                              </div>
+                            </div>
+                          </td>
+
+                          <!-- Actions -->
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button onclick="admin.sendServerPower(${s.id}, 'start')" class="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 transition" title="Start">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                              </button>
+                              <button onclick="admin.sendServerPower(${s.id}, 'restart')" class="p-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 text-amber-400 border border-amber-500/20 transition" title="Restart">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                              </button>
+                              <button onclick="admin.sendServerPower(${s.id}, 'stop')" class="p-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition" title="Stop">
+                                <i data-lucide="square" class="w-3.5 h-3.5"></i>
+                              </button>
+                              <button onclick="app.navigate('server-manage/${s.id}/console')" class="btn-cyber px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 shadow-sm" title="Manage Console">
+                                <i data-lucide="terminal" class="w-3 h-3"></i> Manage
+                              </button>
+                              <button onclick="admin.deleteServer(${s.id}, '${app.escapeHtml(s.name)}')" title="Delete Server" class="p-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
         }
       }
 
@@ -480,6 +737,217 @@ class AdminManager {
     }
 
     if (window.lucide) lucide.createIcons();
+  }
+
+  async sendServerPower(serverId, action) {
+    try {
+      app.toast(`Sending ${action.toUpperCase()} command...`, 'info');
+      await app.api(`/api/servers/${serverId}/power`, {
+        method: 'POST',
+        body: JSON.stringify({ action })
+      });
+      app.toast(`Server power action "${action}" dispatched!`, 'success');
+      setTimeout(() => this.renderServersView(), 1200);
+    } catch (err) {
+      app.toast('Power action failed: ' + err.message, 'error');
+    }
+  }
+
+  async showServerOwnerModal(serverId, serverName, currentUserId, currentUsername) {
+    const modalContainer = document.getElementById('modal-container');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-white/15 shadow-2xl space-y-4">
+          <div class="flex justify-between items-center border-b border-white/10 pb-3">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-5 h-5 text-cyan-400"></i> User Access & Ownership
+            </h3>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p class="text-xs text-slate-400">Manage owner and user access for <strong>${app.escapeHtml(serverName)}</strong> (ID #${serverId}).</p>
+
+          <div class="p-3 rounded-2xl bg-slate-900/60 border border-white/10 flex items-center justify-between text-xs">
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Current Owner</span>
+              <span class="text-cyan-300 font-bold text-sm">${app.escapeHtml(currentUsername || 'Admin')}</span>
+            </div>
+            ${currentUserId ? `
+              <button type="button" onclick="admin.showUserServerAccessModal(${currentUserId}, '${app.escapeHtml(currentUsername || 'Admin')}')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 transition">
+                View All User Servers
+              </button>
+            ` : ''}
+          </div>
+
+          <form onsubmit="admin.handleServerOwnerChange(event, ${serverId})" class="space-y-4 pt-1">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Transfer Ownership to User</label>
+              <select id="transfer-srv-user-id" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" required>
+                <option value="">Loading users...</option>
+              </select>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-white/10">
+              <button type="button" onclick="admin.showCreateUserModal()" class="text-xs font-bold text-purple-400 hover:underline flex items-center gap-1">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> + Create New User
+              </button>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300">Cancel</button>
+                <button type="submit" class="btn-cyber px-4 py-2 rounded-xl text-xs font-bold">Transfer Server</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    try {
+      const res = await app.api('/api/admin/users');
+      const users = res.users || [];
+      const select = document.getElementById('transfer-srv-user-id');
+      if (select) {
+        select.innerHTML = users.map(u => `
+          <option value="${u.id}" ${u.id === currentUserId ? 'selected' : ''}>
+            ${app.escapeHtml(u.username)} (${app.escapeHtml(u.email || 'No email')}) - ${u.role.toUpperCase()}
+          </option>
+        `).join('');
+      }
+    } catch (e) {
+      app.toast('Failed to load users: ' + e.message, 'error');
+    }
+  }
+
+  async handleServerOwnerChange(e, serverId) {
+    e.preventDefault();
+    const select = document.getElementById('transfer-srv-user-id');
+    if (!select) return;
+    const newUserId = parseInt(select.value, 10);
+    try {
+      const res = await app.api(`/api/servers/${serverId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: newUserId })
+      });
+      if (res.success) {
+        app.toast(`Server #${serverId} owner updated successfully!`, 'success');
+        document.getElementById('modal-container').innerHTML = '';
+        this.renderServersView();
+      }
+    } catch (err) {
+      app.toast(err.message || 'Failed to change server owner', 'error');
+    }
+  }
+
+  showAddResourcePresetModal(serverId, serverName, curRam, curCpu, curDisk) {
+    const modalContainer = document.getElementById('modal-container');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-white/15 shadow-2xl space-y-4">
+          <div class="flex justify-between items-center border-b border-white/10 pb-3">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-5 h-5 text-cyan-400"></i> Add Resources: ${app.escapeHtml(serverName)}
+            </h3>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p class="text-xs text-slate-400">Quickly allocate additional resources or apply a boost preset to this server.</p>
+
+          <div class="grid grid-cols-3 gap-2 font-mono text-center text-xs p-3 rounded-2xl bg-slate-900/60 border border-white/10">
+            <div>
+              <span class="text-[10px] text-slate-400 block uppercase">Current RAM</span>
+              <span class="text-cyan-300 font-bold">${curRam >= 1024 ? (curRam / 1024).toFixed(1) + ' GB' : curRam + ' MB'}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 block uppercase">Current CPU</span>
+              <span class="text-purple-300 font-bold">${curCpu}%</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 block uppercase">Current Disk</span>
+              <span class="text-indigo-300 font-bold">${curDisk >= 1024 ? (curDisk / 1024).toFixed(1) + ' GB' : curDisk + ' MB'}</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-slate-300">Quick Boost Presets:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="admin.applyResourcePreset(${serverId}, ${curRam + 1024}, ${curCpu}, ${curDisk})" class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 transition text-left flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i> +1 GB RAM
+              </button>
+              <button type="button" onclick="admin.applyResourcePreset(${serverId}, ${curRam + 2048}, ${curCpu}, ${curDisk})" class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 transition text-left flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i> +2 GB RAM
+              </button>
+              <button type="button" onclick="admin.applyResourcePreset(${serverId}, ${curRam}, ${curCpu + 50}, ${curDisk})" class="px-3 py-2 rounded-xl text-xs font-bold bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 transition text-left flex items-center gap-1.5">
+                <i data-lucide="cpu" class="w-3.5 h-3.5"></i> +50% CPU
+              </button>
+              <button type="button" onclick="admin.applyResourcePreset(${serverId}, ${curRam}, ${curCpu}, ${curDisk + 5120})" class="px-3 py-2 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition text-left flex items-center gap-1.5">
+                <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i> +5 GB Disk
+              </button>
+            </div>
+          </div>
+
+          <form onsubmit="admin.handleCustomResourceBoost(event, ${serverId}, ${curRam}, ${curCpu}, ${curDisk})" class="space-y-3 pt-2 border-t border-white/10">
+            <label class="block text-xs font-semibold text-slate-300">Or Add Custom Amount:</label>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Add RAM (MB)</label>
+                <input type="number" id="add-res-ram" value="1024" step="any" min="0" class="w-full glass-input px-2.5 py-1.5 rounded-xl text-xs font-mono text-cyan-300">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Add CPU (%)</label>
+                <input type="number" id="add-res-cpu" value="25" step="any" min="0" class="w-full glass-input px-2.5 py-1.5 rounded-xl text-xs font-mono text-purple-300">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Add Disk (MB)</label>
+                <input type="number" id="add-res-disk" value="2048" step="any" min="0" class="w-full glass-input px-2.5 py-1.5 rounded-xl text-xs font-mono text-indigo-300">
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+              <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300">Cancel</button>
+              <button type="submit" class="btn-cyber px-4 py-2 rounded-xl text-xs font-bold">Apply Resources</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async applyResourcePreset(serverId, newRam, newCpu, newDisk) {
+    try {
+      const res = await app.api(`/api/servers/${serverId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          memory_mb: newRam,
+          cpu_limit: newCpu,
+          disk_mb: newDisk
+        })
+      });
+      if (res.success) {
+        app.toast('Resources updated successfully!', 'success');
+        document.getElementById('modal-container').innerHTML = '';
+        this.renderServersView();
+      }
+    } catch (err) {
+      app.toast(err.message || 'Failed to update resources', 'error');
+    }
+  }
+
+  async handleCustomResourceBoost(e, serverId, curRam, curCpu, curDisk) {
+    e.preventDefault();
+    const addRam = parseFloat(document.getElementById('add-res-ram').value) || 0;
+    const addCpu = parseFloat(document.getElementById('add-res-cpu').value) || 0;
+    const addDisk = parseFloat(document.getElementById('add-res-disk').value) || 0;
+
+    const newRam = Math.round(curRam + addRam);
+    const newCpu = Math.round(curCpu + addCpu);
+    const newDisk = Math.round(curDisk + addDisk);
+
+    await this.applyResourcePreset(serverId, newRam, newCpu, newDisk);
+  }
+
+  async resetServerResources(serverId, serverName) {
+    if (!confirm(`Reset resources for server "${serverName}" back to baseline defaults (1024 MB RAM, 100% CPU, 5120 MB Disk)?`)) return;
+    await this.applyResourcePreset(serverId, 1024, 100, 5120);
   }
 
   // Helper methods for auto-generated server naming & resource conversions
@@ -1953,7 +2421,11 @@ class AdminManager {
       if (res.success) {
         document.getElementById('modal-container').innerHTML = '';
         app.toast('User updated successfully!', 'success');
-        this.renderUsersView();
+        if (window.location.hash.includes('admin-servers')) {
+          this.renderServersView();
+        } else {
+          this.renderUsersView();
+        }
       }
     } catch (err) {
       app.toast(err.message || 'Failed to update user', 'error');
@@ -2128,7 +2600,11 @@ class AdminManager {
       if (data.success) {
         document.getElementById('modal-container').innerHTML = '';
         app.toast('User created successfully!', 'success');
-        this.renderUsersView();
+        if (window.location.hash.includes('admin-servers')) {
+          this.renderServersView();
+        } else {
+          this.renderUsersView();
+        }
       }
     } catch (err) {
       app.toast(err.message, 'error');
@@ -2140,7 +2616,11 @@ class AdminManager {
       const data = await app.api(`/api/admin/users/${userId}/suspend`, { method: 'POST' });
       if (data.success) {
         app.toast(`User status updated.`, 'info');
-        this.renderUsersView();
+        if (window.location.hash.includes('admin-servers')) {
+          this.renderServersView();
+        } else {
+          this.renderUsersView();
+        }
       }
     } catch (err) {
       app.toast(err.message, 'error');
@@ -2153,7 +2633,11 @@ class AdminManager {
       const data = await app.api(`/api/admin/users/${userId}`, { method: 'DELETE' });
       if (data.success) {
         app.toast('User deleted.', 'info');
-        this.renderUsersView();
+        if (window.location.hash.includes('admin-servers')) {
+          this.renderServersView();
+        } else {
+          this.renderUsersView();
+        }
       }
     } catch (err) {
       app.toast(err.message, 'error');

@@ -19,6 +19,7 @@ router.get('/', authenticate, async (req, res) => {
     if (req.user.role === 'admin') {
       servers = await query.all(`
         SELECT s.*, u.username as owner_username, u.email as owner_email,
+               u.role as owner_role, u.suspended as owner_suspended,
                a.ip, a.port, n.name as node_name
         FROM servers s
         LEFT JOIN users u ON s.user_id = u.id
