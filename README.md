@@ -1,7 +1,7 @@
 # 🎮 Mpanel - Full Node.js Game & App Server Web Management Panel
 
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
-[![Version](https://img.shields.io/badge/release-v2.3.0-blue.svg)](https://github.com/nobita329/Mpanel/releases/tag/v2.3.0)
+[![Version](https://img.shields.io/badge/release-v2.4.0-blue.svg)](https://github.com/nobita329/Mpanel/releases/tag/v2.4.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Theme: Full Black](https://img.shields.io/badge/Theme-Full%20Black%20OLED-black.svg)](#-theme--customization-engine)
 

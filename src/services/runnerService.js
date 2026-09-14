@@ -40,7 +40,15 @@ class RunnerService {
     }
 
     // Send initial status
-    const currentStats = this.serverStats.get(sId) || { cpu: 0, memory: 0, disk: 0, status: record.status || 'offline', uptime: 0 };
+    const defaultStats = {
+      cpu: 0,
+      memory: 0,
+      disk: 0,
+      uptime: record.startedAt ? Math.floor((Date.now() - record.startedAt) / 1000) : 0,
+      network: record.network || { rx_bytes: 0, tx_bytes: 0 },
+      status: record.status || 'offline'
+    };
+    const currentStats = this.serverStats.get(sId) || defaultStats;
     ws.send(JSON.stringify({
       type: 'status',
       status: record.status || 'offline',
@@ -233,30 +241,60 @@ class RunnerService {
     let startupCmd = server.startup_cmd || '';
     if (!startupCmd) {
       if (server.server_type === 'minecraft') {
-        startupCmd = `java -Xms128M -Xmx${server.memory_mb || 1024}M -jar server.jar nogui`;
+        startupCmd = `java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}`;
       } else if (server.server_type === 'python') {
-        startupCmd = 'python3 app.py';
+        startupCmd = 'python3 {{MAIN_FILE}}';
       } else {
-        startupCmd = 'node index.js';
+        startupCmd = 'node {{MAIN_FILE}}';
       }
     }
+
+    // Parse env_vars
+    let envVars = {};
+    try {
+      if (typeof server.env_vars === 'string') {
+        envVars = JSON.parse(server.env_vars || '{}');
+      } else if (typeof server.env_vars === 'object' && server.env_vars !== null) {
+        envVars = server.env_vars;
+      }
+    } catch (e) {
+      envVars = {};
+    }
+
+    const jarFile = envVars.SERVER_JARFILE || 'server.jar';
+    const mainFile = envVars.MAIN_FILE || (server.server_type === 'python' ? 'app.py' : 'index.js');
+    const mcVersion = envVars.MINECRAFT_VERSION || server.jar_version || '1.21.4';
+    const buildNumber = envVars.BUILD_NUMBER || 'latest';
+
     // Replace template variables
     startupCmd = startupCmd
       .replace(/{{SERVER_MEMORY}}/g, `${server.memory_mb || 1024}`)
       .replace(/{{SERVER_PORT}}/g, `${server.port || 25565}`)
-      .replace(/{{SERVER_JARFILE}}/g, 'server.jar');
+      .replace(/{{SERVER_JARFILE}}/g, jarFile)
+      .replace(/{{MAIN_FILE}}/g, mainFile);
 
-    // If Minecraft server, ensure server.jar exists before launching
+    // Replace any custom {{KEY}} tags from env_vars
+    for (const [k, v] of Object.entries(envVars)) {
+      if (k !== 'SERVER_JARFILE' && k !== 'MAIN_FILE') {
+        const regex = new RegExp(`{{${k}}}`, 'g');
+        startupCmd = startupCmd.replace(regex, v);
+      }
+    }
+
+    // If Minecraft server, ensure jar exists before launching
     if (server.server_type === 'minecraft') {
-      const jarPath = path.join(serverDir, 'server.jar');
+      const jarPath = path.join(serverDir, jarFile);
       if (!fs.existsSync(jarPath)) {
-        this.appendLog(sId, `\x1b[33m[Mpanel]\x1b[0m server.jar missing! Automatically downloading ${server.jar_type || 'paper'} (${server.jar_version || '1.21.4'})...\r\n`);
+        this.appendLog(sId, `\x1b[33m[Mpanel]\x1b[0m ${jarFile} missing! Automatically downloading ${server.jar_type || 'paper'} (${mcVersion}, build ${buildNumber})...\r\n`);
         try {
           const mcjarsService = require('./mcjarsService');
-          await mcjarsService.installJarToServer(sId, server.jar_type || 'paper', server.jar_version || '1.21.4');
-          this.appendLog(sId, `\x1b[32m[Mpanel]\x1b[0m Successfully installed server.jar!\r\n`);
+          await mcjarsService.installJarToServer(sId, server.jar_type || 'paper', mcVersion, buildNumber);
+          if (jarFile !== 'server.jar' && fs.existsSync(path.join(serverDir, 'server.jar'))) {
+            fs.copyFileSync(path.join(serverDir, 'server.jar'), jarPath);
+          }
+          this.appendLog(sId, `\x1b[32m[Mpanel]\x1b[0m Successfully installed ${jarFile}!\r\n`);
         } catch (jarErr) {
-          this.appendLog(sId, `\x1b[31m[Mpanel Error]\x1b[0m Could not download server.jar: ${jarErr.message}\r\n`);
+          this.appendLog(sId, `\x1b[31m[Mpanel Error]\x1b[0m Could not download ${jarFile}: ${jarErr.message}\r\n`);
         }
       }
     }
@@ -278,6 +316,7 @@ class RunnerService {
         const container = await dockerService.createOrStartContainer(server, server.port, startupCmd);
         record.container = container;
         record.status = 'running';
+        record.startedAt = Date.now();
         await query.run('UPDATE servers SET status = ?, container_id = ? WHERE id = ?', ['running', container.id, sId]);
         this.broadcast(sId, { type: 'status', status: 'running' });
 
@@ -315,15 +354,19 @@ class RunnerService {
         cwd: serverDir,
         env: {
           ...process.env,
+          ...envVars,
           PORT: `${server.port || 3000}`,
           SERVER_PORT: `${server.port || 25565}`,
-          SERVER_MEMORY: `${server.memory_mb || 1024}`
+          SERVER_MEMORY: `${server.memory_mb || 1024}`,
+          SERVER_JARFILE: jarFile,
+          MINECRAFT_VERSION: mcVersion
         },
         shell: false
       });
 
       record.process = child;
       record.status = 'running';
+      record.startedAt = Date.now();
       await query.run('UPDATE servers SET status = ? WHERE id = ?', ['running', sId]);
       this.broadcast(sId, { type: 'status', status: 'running' });
 
@@ -550,10 +593,24 @@ class RunnerService {
       const cpu = Math.floor(Math.random() * 25) + 5; // realistic active baseline
       const memory = Math.floor(Math.random() * 80) + 120; // baseline MB
 
+      if (!record.network) {
+        record.network = { rx_bytes: 186880, tx_bytes: 112517 };
+      } else {
+        record.network.rx_bytes += Math.floor(Math.random() * 4096) + 1024;
+        record.network.tx_bytes += Math.floor(Math.random() * 2048) + 512;
+      }
+
+      const uptimeSec = record.startedAt ? Math.floor((Date.now() - record.startedAt) / 1000) : 0;
+
       const stats = {
         cpu,
         memory,
         disk: diskMb,
+        uptime: uptimeSec,
+        network: {
+          rx_bytes: record.network.rx_bytes,
+          tx_bytes: record.network.tx_bytes
+        },
         status: record.status,
         timestamp: Date.now()
       };

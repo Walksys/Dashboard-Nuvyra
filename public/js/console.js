@@ -1,4 +1,4 @@
-// Server Management Suite & Interactive Terminal Console
+// Server Management Suite & Interactive Terminal Console (NookTheme Pterodactyl Edition)
 class ServerConsole {
   constructor() {
     this.serverId = null;
@@ -7,86 +7,69 @@ class ServerConsole {
     this.fitAddon = null;
     this.cpuChart = null;
     this.memoryChart = null;
-    this.statsHistory = {
-      labels: [],
-      cpu: [],
-      memory: []
-    };
+    this.networkChart = null;
+    this.serverData = null;
+    this.serverStatus = 'offline';
+    this.currentUptime = 0;
+    this.uptimeInterval = null;
+    this.prevRx = null;
+    this.prevTx = null;
+  }
+
+  formatBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  formatUptime(sec) {
+    if (sec === undefined || sec === null || sec < 0) return 'Offline';
+    if (sec === 0) return '0s';
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = Math.floor(sec % 60);
+    return `${h}h ${m}m ${s}s`;
   }
 
   async renderServerManagementSuite(serverId, subTab = 'console') {
     this.serverId = serverId;
     const container = document.getElementById('view-container');
 
-    // Show server badge in header
-    const serverBadge = document.getElementById('header-server-badge');
-    if (serverBadge) serverBadge.classList.remove('hidden');
-
     container.innerHTML = `
-      <div class="space-y-6">
-        <!-- Server Header Bar -->
-        <div class="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div class="space-y-1">
-            <div class="flex items-center gap-3">
-              <span id="srv-type-badge" class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20">Loading...</span>
-              <span id="srv-status-badge" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Offline</span>
-            </div>
-            <h2 id="srv-header-name" class="text-2xl font-black text-white">Server #${serverId}</h2>
-            <div class="flex items-center gap-2 text-xs font-mono text-slate-300">
-              <i data-lucide="globe" class="w-3.5 h-3.5 text-slate-400"></i>
-              <span id="srv-ip-port">127.0.0.1:25565</span>
-              <button onclick="app.copyToClipboard(document.getElementById('srv-ip-port').innerText)" class="text-slate-400 hover:text-cyan-400">
-                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-              </button>
-            </div>
+      <div class="space-y-4">
+        <!-- NookTheme Server Header Bar -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+          <div>
+            <h2 id="srv-header-name" class="text-2xl font-bold text-white tracking-tight leading-tight">Server #${serverId}</h2>
+            <p id="srv-header-desc" class="text-xs text-slate-400 mt-0.5 font-normal">Node.js Container Instance</p>
           </div>
 
-          <!-- Quick Power Action Controls -->
+          <!-- Quick Power Action Controls (Start / Restart / Stop) -->
           <div class="flex items-center gap-2">
-            <button onclick="serverConsole.triggerPower(${serverId}, 'start')" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg flex items-center gap-1.5 transition">
-              <i data-lucide="play" class="w-4 h-4"></i> Start
+            <button onclick="serverConsole.triggerPower(${serverId}, 'start')" class="btn-nook-start">
+              <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Start
             </button>
-            <button onclick="serverConsole.triggerPower(${serverId}, 'restart')" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-lg flex items-center gap-1.5 transition">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Restart
+            <button onclick="serverConsole.triggerPower(${serverId}, 'restart')" class="btn-nook-restart">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Restart
             </button>
-            <button onclick="serverConsole.triggerPower(${serverId}, 'stop')" class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg flex items-center gap-1.5 transition">
-              <i data-lucide="square" class="w-4 h-4"></i> Stop
+            <button onclick="serverConsole.triggerPower(${serverId}, 'stop')" class="btn-nook-stop">
+              <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i> Stop
             </button>
-            <button onclick="serverConsole.triggerPower(${serverId}, 'kill')" title="Force Kill" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-rose-950 text-rose-400 border border-rose-500/30 transition">
-              <i data-lucide="zap-off" class="w-4 h-4"></i>
+            <button onclick="serverConsole.triggerPower(${serverId}, 'kill')" title="Force Kill" class="p-2 rounded-lg text-xs font-bold bg-[#212121] hover:bg-rose-950 text-rose-400 border border-white/10 transition">
+              <i data-lucide="zap-off" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
 
-        <!-- Sub-Navigation Navigation Bar -->
-        <div class="glass-panel p-2 rounded-2xl border border-white/10 flex flex-wrap gap-1">
-          <button onclick="serverConsole.switchSubTab('console')" id="subnav-console" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="terminal" class="w-4 h-4"></i> Console
-          </button>
-          <button onclick="serverConsole.switchSubTab('files')" id="subnav-files" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="folder" class="w-4 h-4"></i> File Manager
-          </button>
-          <button onclick="serverConsole.switchSubTab('marketplace')" id="subnav-marketplace" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="shopping-bag" class="w-4 h-4 text-cyan-400"></i> Addon Marketplace
-          </button>
-          <button onclick="serverConsole.switchSubTab('backups')" id="subnav-backups" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="archive" class="w-4 h-4"></i> Backups
-          </button>
-          <button onclick="serverConsole.switchSubTab('schedules')" id="subnav-schedules" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="clock" class="w-4 h-4"></i> Schedules
-          </button>
-          <button onclick="serverConsole.switchSubTab('startup')" id="subnav-startup" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="play-circle" class="w-4 h-4"></i> Startup
-          </button>
-          <button onclick="serverConsole.switchSubTab('subusers')" id="subnav-subusers" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="users" class="w-4 h-4"></i> Subusers
-          </button>
-          <button onclick="serverConsole.switchSubTab('settings')" id="subnav-settings" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="settings" class="w-4 h-4"></i> Settings & SFTP
-          </button>
-          <button onclick="serverConsole.switchSubTab('activity')" id="subnav-activity" class="subnav-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10 transition">
-            <i data-lucide="activity" class="w-4 h-4"></i> Activity
-          </button>
+        <!-- SAGA Auto Suspension Alert Banner -->
+        <div id="srv-suspension-banner" class="hidden p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>
+            <span id="srv-suspension-msg">This server has been suspended due to expiration. Power controls are locked.</span>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 font-mono">SUSPENDED</span>
         </div>
 
         <!-- Dynamic Subtab Container -->
@@ -105,33 +88,81 @@ class ServerConsole {
       const s = data.server;
       this.serverData = s;
 
-      document.getElementById('srv-header-name').innerText = s.name;
-      document.getElementById('header-current-server-name').innerText = s.name;
-      document.getElementById('srv-type-badge').innerText = `${s.server_type.toUpperCase()}`;
-      document.getElementById('srv-ip-port').innerText = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
+      const nameEl = document.getElementById('srv-header-name');
+      if (nameEl) nameEl.innerText = s.name;
 
-      this.updateStatusBadge(s.status);
+      const descEl = document.getElementById('srv-header-desc');
+      if (descEl) descEl.innerText = s.description || `${s.server_type.toUpperCase()} Server Instance`;
+
+      const headerTitle = document.getElementById('header-panel-name');
+      if (headerTitle) headerTitle.innerText = s.name;
+
+      const titleEl = document.getElementById('terminal-server-title');
+      if (titleEl) titleEl.innerText = `Terminal - ${s.name}`;
+
+      const addrEl = document.getElementById('stat-addr-val');
+      if (addrEl) addrEl.innerText = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
+
+      const maxMemEl = document.getElementById('stat-mem-max');
+      if (maxMemEl) {
+        const memMb = s.memory_mb || 1024;
+        maxMemEl.innerText = `/ ${memMb >= 1024 ? `${(memMb/1024).toFixed(1)} GiB` : `${memMb} MiB`}`;
+      }
+
+      const maxDiskEl = document.getElementById('stat-disk-max');
+      if (maxDiskEl) {
+        const diskMb = s.disk_mb || 5120;
+        maxDiskEl.innerText = `/ ${diskMb >= 1024 ? `${(diskMb/1024).toFixed(1)} GiB` : `${diskMb} MiB`}`;
+      }
+
+      const banner = document.getElementById('srv-suspension-banner');
+      const isSuspended = !!s.is_suspended || s.status === 'suspended';
+      if (banner) {
+        if (isSuspended) {
+          banner.classList.remove('hidden');
+          const msg = document.getElementById('srv-suspension-msg');
+          if (msg) msg.innerText = `This server is suspended${s.expiration_date ? ' due to expiration on ' + new Date(s.expiration_date).toLocaleString() : ''}. Contact an administrator or renew to unlock.`;
+        } else {
+          banner.classList.add('hidden');
+        }
+      }
+
+      this.updateStatusBadge(isSuspended ? 'suspended' : s.status);
     } catch (e) {
       console.error(e);
     }
   }
 
   updateStatusBadge(status) {
-    const el = document.getElementById('srv-status-badge');
-    if (!el) return;
+    const prevStatus = this.serverStatus;
+    this.serverStatus = status;
 
-    if (status === 'running') {
-      el.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      el.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-green"></span> RUNNING';
-    } else if (status === 'starting') {
-      el.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30';
-      el.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-yellow"></span> STARTING';
-    } else if (status === 'stopping') {
-      el.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30';
-      el.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> STOPPING';
-    } else {
-      el.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30';
-      el.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> OFFLINE';
+    if (prevStatus && prevStatus !== status) {
+      if (status === 'running') {
+        app.playSound('online');
+      } else if (status === 'offline') {
+        app.playSound('offline');
+      }
+    }
+
+    const uptimeEl = document.getElementById('stat-uptime-val');
+    if (status === 'offline') {
+      if (uptimeEl) uptimeEl.innerText = 'Offline';
+      this.currentUptime = 0;
+      if (this.uptimeInterval) {
+        clearInterval(this.uptimeInterval);
+        this.uptimeInterval = null;
+      }
+    } else if (status === 'running') {
+      if (!this.uptimeInterval) {
+        this.uptimeInterval = setInterval(() => {
+          this.currentUptime += 1;
+          const el = document.getElementById('stat-uptime-val');
+          if (el && this.serverStatus === 'running') {
+            el.innerText = this.formatUptime(this.currentUptime);
+          }
+        }, 1000);
+      }
     }
   }
 
@@ -141,22 +172,25 @@ class ServerConsole {
       'plugin': 'plugin',
       'mods': 'mod',
       'mod': 'mod',
-      'players': 'players',
-      'player': 'players',
-      'worlds': 'world',
-      'world': 'world',
       'version-changer': 'version-changer',
       'version': 'version-changer'
     };
 
+    // Update left sidebar active tab
+    document.querySelectorAll('#server-nav-links .nook-nav-item').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    const activeSidebarLink = document.getElementById(`server-nav-${tabName}`);
+    if (activeSidebarLink) {
+      activeSidebarLink.classList.add('active');
+    }
+
+    if (tabName !== 'console') {
+      this.destroyCharts();
+    }
+
     if (directMarketplaceMap[tabName]) {
       const category = directMarketplaceMap[tabName];
-      document.querySelectorAll('.subnav-btn').forEach(btn => {
-        btn.classList.remove('bg-white/20', 'text-cyan-400', 'shadow');
-      });
-      const activeBtn = document.getElementById('subnav-marketplace');
-      if (activeBtn) activeBtn.classList.add('bg-white/20', 'text-cyan-400', 'shadow');
-
       const area = document.getElementById('subtab-content-area');
       if (window.marketplace && area) {
         await marketplace.renderServerMarketplaceTab(area, this.serverId, this.serverData, category);
@@ -165,18 +199,9 @@ class ServerConsole {
       return;
     }
 
-    document.querySelectorAll('.subnav-btn').forEach(btn => {
-      btn.classList.remove('bg-white/20', 'text-cyan-400', 'shadow');
-    });
-
-    const activeBtn = document.getElementById(`subnav-${tabName}`);
-    if (activeBtn) {
-      activeBtn.classList.add('bg-white/20', 'text-cyan-400', 'shadow');
-    }
-
     const area = document.getElementById('subtab-content-area');
 
-    if (tabName !== 'marketplace' && window.playerManager) {
+    if (tabName !== 'players' && window.playerManager) {
       playerManager.stopLiveAutoSync();
     }
 
@@ -184,6 +209,14 @@ class ServerConsole {
       this.renderConsoleTab(area);
     } else if (tabName === 'files') {
       fileManager.renderFileManagerTab(area, this.serverId);
+    } else if (tabName === 'properties') {
+      if (window.serverProperties) serverProperties.renderPropertiesTab(area, this.serverId);
+    } else if (tabName === 'players') {
+      if (window.playerManager) playerManager.renderPlayerManagerTab(area, this.serverId, this.serverData);
+    } else if (tabName === 'importer') {
+      if (window.serverImporter) serverImporter.renderImporterTab(area, this.serverId);
+    } else if (tabName === 'worlds') {
+      if (window.worldManager) worldManager.renderWorldManagerTab(area, this.serverId);
     } else if (tabName === 'marketplace') {
       this.renderMarketplaceTab(area);
     } else if (tabName === 'backups') {
@@ -203,70 +236,162 @@ class ServerConsole {
     if (window.lucide) lucide.createIcons();
   }
 
-  // Render Console Tab
+  // Render NookTheme Console Tab
   renderConsoleTab(container) {
+    const s = this.serverData || {};
+    const maxMemStr = s.memory_mb ? (s.memory_mb >= 1024 ? `${(s.memory_mb/1024).toFixed(1)} GiB` : `${s.memory_mb} MiB`) : '1 GiB';
+    const maxDiskStr = s.disk_mb ? (s.disk_mb >= 1024 ? `${(s.disk_mb/1024).toFixed(1)} GiB` : `${s.disk_mb} MiB`) : '5 GiB';
+
     container.innerHTML = `
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <!-- Terminal Column (3 Cols) -->
-        <div class="lg:col-span-3 space-y-4">
-          <div class="glass-panel p-4 rounded-3xl border border-white/10 space-y-3">
-            <div class="flex items-center justify-between px-2">
-              <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
-                <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
-                <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
-                <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
-                <span class="ml-2 font-mono text-[11px] text-slate-400">Terminal - server${this.serverId}</span>
+      <div class="space-y-4">
+        <!-- Top Row: Terminal (3 cols) + 7 Stat Cards (1 col) -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <!-- Terminal Window (Col 1-3) -->
+          <div class="lg:col-span-3 flex flex-col">
+            <div class="nook-terminal-box flex-1 flex flex-col min-h-[460px]">
+              <!-- Terminal Titlebar -->
+              <div class="px-4 py-2 bg-[#12141a] border-b border-white/5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                  <span id="terminal-server-title" class="font-mono text-[11px] text-slate-400 ml-2">Terminal - ${s.name || 'server'}</span>
+                </div>
+                <button onclick="serverConsole.clearTerminal()" title="Clear Console" class="text-[11px] text-slate-400 hover:text-white flex items-center gap-1">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear
+                </button>
               </div>
-              <button onclick="serverConsole.clearTerminal()" title="Clear Console" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear
-              </button>
+
+              <!-- xterm.js Container -->
+              <div id="terminal-container" class="flex-1 p-2 bg-[#0b0d12]"></div>
+
+              <!-- NookTheme Command Input Prompt: >> Type a command... -->
+              <form onsubmit="serverConsole.handleSendCommand(event)" class="nook-terminal-prompt-bar">
+                <span class="text-slate-500 font-mono font-bold select-none text-sm">&gt;&gt;</span>
+                <input type="text" id="console-cmd-input" placeholder="Type a command..." class="nook-terminal-input" autocomplete="off" spellcheck="false">
+              </form>
+            </div>
+          </div>
+
+          <!-- 7 Stat Cards (Col 4) -->
+          <div class="space-y-2.5 flex flex-col justify-between">
+            <!-- 1. Address -->
+            <div class="nook-stat-card cursor-pointer" onclick="app.copyToClipboard(document.getElementById('stat-addr-val').innerText)" title="Click to copy address">
+              <div class="nook-stat-icon">
+                <i data-lucide="wifi" class="w-4 h-4 text-slate-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="nook-stat-title">Address</p>
+                <p id="stat-addr-val" class="nook-stat-value">${s.ip || '127.0.0.1'}:${s.port || 25565}</p>
+              </div>
             </div>
 
-            <!-- xterm.js Container -->
-            <div id="terminal-container" class="h-[450px] w-full"></div>
+            <!-- 2. Uptime -->
+            <div class="nook-stat-card">
+              <div class="nook-stat-icon">
+                <i data-lucide="clock" class="w-4 h-4 text-slate-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="nook-stat-title">Uptime</p>
+                <p id="stat-uptime-val" class="nook-stat-value">Offline</p>
+              </div>
+            </div>
 
-            <!-- Command Input Box -->
-            <form onsubmit="serverConsole.handleSendCommand(event)" class="flex gap-2 pt-2">
-              <input type="text" id="console-cmd-input" placeholder="Type a console command (e.g. op player, help, npm test)..." class="flex-1 glass-input px-4 py-2.5 rounded-xl text-xs font-mono">
-              <button type="submit" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg">
-                <i data-lucide="corner-down-left" class="w-3.5 h-3.5"></i> Send
-              </button>
-            </form>
+            <!-- 3. CPU Load -->
+            <div class="nook-stat-card">
+              <div class="nook-stat-icon">
+                <i data-lucide="cpu" class="w-4 h-4 text-slate-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="nook-stat-title">CPU Load</p>
+                <p class="nook-stat-value"><span id="stat-cpu-val">0.00%</span> <span class="text-slate-500 text-[10px] font-normal">/ &infin;</span></p>
+              </div>
+            </div>
+
+            <!-- 4. Memory -->
+            <div class="nook-stat-card">
+              <div class="nook-stat-icon">
+                <i data-lucide="activity" class="w-4 h-4 text-slate-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="nook-stat-title">Memory</p>
+                <p class="nook-stat-value"><span id="stat-mem-val">0 MiB</span> <span id="stat-mem-max" class="text-slate-500 text-[10px] font-normal">/ ${maxMemStr}</span></p>
+              </div>
+            </div>
+
+            <!-- 5. Disk -->
+            <div class="nook-stat-card">
+              <div class="nook-stat-icon">
+                <i data-lucide="hard-drive" class="w-4 h-4 text-slate-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="nook-stat-title">Disk</p>
+                <p class="nook-stat-value"><span id="stat-disk-val">0 MiB</span> <span id="stat-disk-max" class="text-slate-500 text-[10px] font-normal">/ ${maxDiskStr}</span></p>
+              </div>
+            </div>
+
+            <!-- 6. Network (Inbound) -->
+            <div class="nook-stat-card">
+              <div class="nook-stat-icon">
+                <i data-lucide="cloud-download" class="w-4 h-4 text-slate-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="nook-stat-title">Network (Inbound)</p>
+                <p id="stat-net-in-val" class="nook-stat-value">0 KiB</p>
+              </div>
+            </div>
+
+            <!-- 7. Network (Outbound) -->
+            <div class="nook-stat-card">
+              <div class="nook-stat-icon">
+                <i data-lucide="cloud-upload" class="w-4 h-4 text-slate-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="nook-stat-title">Network (Outbound)</p>
+                <p id="stat-net-out-val" class="nook-stat-value">0 KiB</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Metrics Gauges Column (1 Col) -->
-        <div class="space-y-4">
-          <!-- CPU Live Metric Card -->
-          <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-2">
-            <div class="flex justify-between items-center text-xs font-bold">
-              <span class="text-slate-300 flex items-center gap-2"><i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i> CPU Usage</span>
-              <span id="metric-cpu-val" class="text-cyan-400 font-mono">0%</span>
+        <!-- Bottom Row: 3 Real-time Chart.js graphs -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- 1. CPU Load Graph -->
+          <div class="nook-chart-card">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-semibold text-slate-300">CPU Load</span>
+              <span id="chart-cpu-val" class="text-xs font-mono font-bold text-cyan-400">0.00%</span>
             </div>
-            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div id="metric-cpu-bar" class="bg-cyan-400 h-full w-0 transition-all duration-500"></div>
-            </div>
-          </div>
-
-          <!-- Memory Live Metric Card -->
-          <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-2">
-            <div class="flex justify-between items-center text-xs font-bold">
-              <span class="text-slate-300 flex items-center gap-2"><i data-lucide="activity" class="w-4 h-4 text-purple-400"></i> Memory</span>
-              <span id="metric-ram-val" class="text-purple-400 font-mono">0 / ${this.serverData?.memory_mb || 1024} MB</span>
-            </div>
-            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div id="metric-ram-bar" class="bg-purple-400 h-full w-0 transition-all duration-500"></div>
+            <div class="h-28 w-full relative">
+              <canvas id="nook-cpu-chart"></canvas>
             </div>
           </div>
 
-          <!-- Disk Storage Usage -->
-          <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-2">
-            <div class="flex justify-between items-center text-xs font-bold">
-              <span class="text-slate-300 flex items-center gap-2"><i data-lucide="hard-drive" class="w-4 h-4 text-amber-400"></i> Disk Space</span>
-              <span id="metric-disk-val" class="text-amber-400 font-mono">0 / ${this.serverData?.disk_mb || 5120} MB</span>
+          <!-- 2. Memory Graph -->
+          <div class="nook-chart-card">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-semibold text-slate-300">Memory</span>
+              <span id="chart-mem-val" class="text-xs font-mono font-bold text-sky-400">0 MiB</span>
             </div>
-            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div id="metric-disk-bar" class="bg-amber-400 h-full w-0 transition-all duration-500"></div>
+            <div class="h-28 w-full relative">
+              <canvas id="nook-mem-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- 3. Network Graph -->
+          <div class="nook-chart-card">
+            <div class="flex justify-between items-center mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-300">Network</span>
+                <div class="flex items-center gap-1.5 ml-1">
+                  <span title="Inbound" class="text-orange-400"><i data-lucide="cloud-download" class="w-3.5 h-3.5"></i></span>
+                  <span title="Outbound" class="text-red-400"><i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i></span>
+                </div>
+              </div>
+              <span id="chart-net-val" class="text-xs font-mono font-bold text-slate-300">0 B/s</span>
+            </div>
+            <div class="h-28 w-full relative">
+              <canvas id="nook-net-chart"></canvas>
             </div>
           </div>
         </div>
@@ -274,7 +399,9 @@ class ServerConsole {
     `;
 
     this.initTerminal();
+    this.initCharts();
     this.connectWebSocket();
+    if (window.lucide) lucide.createIcons();
   }
 
   initTerminal() {
@@ -287,22 +414,22 @@ class ServerConsole {
 
     this.term = new Terminal({
       theme: {
-        background: '#0d1117',
+        background: '#0b0d12',
         foreground: '#e6edf3',
-        cursor: '#58a6ff',
+        cursor: '#38bdf8',
         selectionBackground: 'rgba(56, 189, 248, 0.3)',
-        black: '#0d1117',
-        red: '#ff7b72',
-        green: '#3fb950',
-        yellow: '#d29922',
-        blue: '#58a6ff',
-        magenta: '#bc8cff',
-        cyan: '#39c5cf',
-        white: '#d0d7de'
+        black: '#0b0d12',
+        red: '#f87171',
+        green: '#4ade80',
+        yellow: '#facc15',
+        blue: '#60a5fa',
+        magenta: '#c084fc',
+        cyan: '#22d3ee',
+        white: '#f1f5f9'
       },
-      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
       fontSize: 12,
-      lineHeight: 1.2,
+      lineHeight: 1.25,
       cursorBlink: true,
       convertEol: true,
       disableStdin: true
@@ -311,11 +438,203 @@ class ServerConsole {
     this.fitAddon = new FitAddon.FitAddon();
     this.term.loadAddon(this.fitAddon);
     this.term.open(termContainer);
-    this.fitAddon.fit();
+    setTimeout(() => {
+      if (this.fitAddon) this.fitAddon.fit();
+    }, 50);
 
     window.addEventListener('resize', () => {
       if (this.fitAddon) this.fitAddon.fit();
     });
+  }
+
+  initCharts() {
+    this.destroyCharts();
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          mode: 'index',
+          intersect: false,
+          backgroundColor: '#1e2026',
+          titleColor: '#94a3b8',
+          bodyColor: '#ffffff',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          display: false,
+          grid: { display: false }
+        },
+        y: {
+          display: true,
+          position: 'right',
+          grid: {
+            color: 'rgba(255, 255, 255, 0.04)',
+            drawBorder: false
+          },
+          ticks: {
+            color: '#64748b',
+            font: { size: 10, family: 'monospace' },
+            maxTicksLimit: 4
+          }
+        }
+      }
+    };
+
+    const emptyLabels = Array(20).fill('');
+
+    // 1. CPU Chart
+    const cpuCanvas = document.getElementById('nook-cpu-chart');
+    if (cpuCanvas) {
+      const ctx = cpuCanvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 110);
+      grad.addColorStop(0, 'rgba(34, 211, 238, 0.25)');
+      grad.addColorStop(1, 'rgba(34, 211, 238, 0.0)');
+
+      this.cpuChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [...emptyLabels],
+          datasets: [{
+            data: Array(20).fill(0),
+            borderColor: '#22d3ee',
+            borderWidth: 2,
+            backgroundColor: grad,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            ...commonOptions.scales,
+            y: {
+              ...commonOptions.scales.y,
+              ticks: {
+                ...commonOptions.scales.y.ticks,
+                callback: v => `${Math.round(v)}%`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Memory Chart
+    const memCanvas = document.getElementById('nook-mem-chart');
+    if (memCanvas) {
+      const ctx = memCanvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 110);
+      grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+      grad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+      this.memoryChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [...emptyLabels],
+          datasets: [{
+            data: Array(20).fill(0),
+            borderColor: '#38bdf8',
+            borderWidth: 2,
+            backgroundColor: grad,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            ...commonOptions.scales,
+            y: {
+              ...commonOptions.scales.y,
+              ticks: {
+                ...commonOptions.scales.y.ticks,
+                callback: v => `${Math.round(v)}M`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Network Chart (Inbound & Outbound)
+    const netCanvas = document.getElementById('nook-net-chart');
+    if (netCanvas) {
+      const ctx = netCanvas.getContext('2d');
+      const gradIn = ctx.createLinearGradient(0, 0, 0, 110);
+      gradIn.addColorStop(0, 'rgba(251, 146, 60, 0.25)');
+      gradIn.addColorStop(1, 'rgba(251, 146, 60, 0.0)');
+
+      const gradOut = ctx.createLinearGradient(0, 0, 0, 110);
+      gradOut.addColorStop(0, 'rgba(248, 113, 113, 0.25)');
+      gradOut.addColorStop(1, 'rgba(248, 113, 113, 0.0)');
+
+      this.networkChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [...emptyLabels],
+          datasets: [
+            {
+              label: 'Inbound',
+              data: Array(20).fill(0),
+              borderColor: '#fb923c',
+              borderWidth: 2,
+              backgroundColor: gradIn,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0
+            },
+            {
+              label: 'Outbound',
+              data: Array(20).fill(0),
+              borderColor: '#f87171',
+              borderWidth: 2,
+              backgroundColor: gradOut,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            ...commonOptions.scales,
+            y: {
+              ...commonOptions.scales.y,
+              ticks: {
+                ...commonOptions.scales.y.ticks,
+                callback: v => serverConsole.formatBytes(v)
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  destroyCharts() {
+    if (this.cpuChart) {
+      try { this.cpuChart.destroy(); } catch (e) {}
+      this.cpuChart = null;
+    }
+    if (this.memoryChart) {
+      try { this.memoryChart.destroy(); } catch (e) {}
+      this.memoryChart = null;
+    }
+    if (this.networkChart) {
+      try { this.networkChart.destroy(); } catch (e) {}
+      this.networkChart = null;
+    }
   }
 
   connectWebSocket() {
@@ -343,6 +662,7 @@ class ServerConsole {
           }
         } else if (msg.type === 'status') {
           this.updateStatusBadge(msg.status);
+          if (msg.stats) this.updateStatsUI(msg.stats);
         } else if (msg.type === 'stats') {
           this.updateStatsUI(msg.stats);
         } else if (msg.type === 'error') {
@@ -366,29 +686,78 @@ class ServerConsole {
 
   updateStatsUI(stats) {
     if (!stats) return;
-    const cpuVal = document.getElementById('metric-cpu-val');
-    const cpuBar = document.getElementById('metric-cpu-bar');
-    if (cpuVal && cpuBar) {
-      cpuVal.innerText = `${stats.cpu}%`;
-      cpuBar.style.width = `${Math.min(100, stats.cpu)}%`;
+
+    if (stats.uptime !== undefined && stats.uptime !== null) {
+      this.currentUptime = stats.uptime;
+      const uptimeEl = document.getElementById('stat-uptime-val');
+      if (uptimeEl) {
+        uptimeEl.innerText = this.serverStatus === 'offline' ? 'Offline' : this.formatUptime(stats.uptime);
+      }
     }
 
-    const maxMem = this.serverData?.memory_mb || 1024;
-    const ramVal = document.getElementById('metric-ram-val');
-    const ramBar = document.getElementById('metric-ram-bar');
-    if (ramVal && ramBar) {
-      ramVal.innerText = `${stats.memory} / ${maxMem} MB`;
-      const memPct = Math.round((stats.memory / maxMem) * 100);
-      ramBar.style.width = `${Math.min(100, memPct)}%`;
+    // CPU Load
+    const cpu = typeof stats.cpu === 'number' ? stats.cpu : 0;
+    const cpuVal = document.getElementById('stat-cpu-val');
+    if (cpuVal) cpuVal.innerText = `${cpu.toFixed(2)}%`;
+
+    const chartCpu = document.getElementById('chart-cpu-val');
+    if (chartCpu) chartCpu.innerText = `${cpu.toFixed(2)}%`;
+
+    if (this.cpuChart) {
+      this.cpuChart.data.datasets[0].data.shift();
+      this.cpuChart.data.datasets[0].data.push(cpu);
+      this.cpuChart.update('none');
     }
 
-    const maxDisk = this.serverData?.disk_mb || 5120;
-    const diskVal = document.getElementById('metric-disk-val');
-    const diskBar = document.getElementById('metric-disk-bar');
-    if (diskVal && diskBar) {
-      diskVal.innerText = `${stats.disk} / ${maxDisk} MB`;
-      const diskPct = Math.round((stats.disk / maxDisk) * 100);
-      diskBar.style.width = `${Math.min(100, diskPct)}%`;
+    // Memory
+    const mem = typeof stats.memory === 'number' ? stats.memory : 0;
+    const memVal = document.getElementById('stat-mem-val');
+    if (memVal) {
+      memVal.innerText = mem >= 1024 ? `${(mem / 1024).toFixed(2)} GiB` : `${mem} MiB`;
+    }
+
+    const chartMem = document.getElementById('chart-mem-val');
+    if (chartMem) chartMem.innerText = `${mem} MiB`;
+
+    if (this.memoryChart) {
+      this.memoryChart.data.datasets[0].data.shift();
+      this.memoryChart.data.datasets[0].data.push(mem);
+      this.memoryChart.update('none');
+    }
+
+    // Disk
+    const disk = typeof stats.disk === 'number' ? stats.disk : 0;
+    const diskVal = document.getElementById('stat-disk-val');
+    if (diskVal) {
+      diskVal.innerText = disk >= 1024 ? `${(disk / 1024).toFixed(2)} GiB` : `${disk} MiB`;
+    }
+
+    // Network
+    if (stats.network) {
+      const rx = stats.network.rx_bytes || 0;
+      const tx = stats.network.tx_bytes || 0;
+
+      const inEl = document.getElementById('stat-net-in-val');
+      if (inEl) inEl.innerText = this.formatBytes(rx);
+
+      const outEl = document.getElementById('stat-net-out-val');
+      if (outEl) outEl.innerText = this.formatBytes(tx);
+
+      const inSpeed = this.prevRx !== null ? Math.max(0, rx - this.prevRx) : 2048;
+      const outSpeed = this.prevTx !== null ? Math.max(0, tx - this.prevTx) : 1024;
+      this.prevRx = rx;
+      this.prevTx = tx;
+
+      const chartNet = document.getElementById('chart-net-val');
+      if (chartNet) chartNet.innerText = `${this.formatBytes(inSpeed + outSpeed)}/s`;
+
+      if (this.networkChart) {
+        this.networkChart.data.datasets[0].data.shift();
+        this.networkChart.data.datasets[0].data.push(inSpeed);
+        this.networkChart.data.datasets[1].data.shift();
+        this.networkChart.data.datasets[1].data.push(outSpeed);
+        this.networkChart.update('none');
+      }
     }
   }
 
@@ -407,6 +776,11 @@ class ServerConsole {
   }
 
   async triggerPower(serverId, action) {
+    if (this.serverData && (this.serverData.is_suspended || this.serverData.status === 'suspended') && (action === 'start' || action === 'restart')) {
+      app.toast('Cannot start: Server is suspended due to expiration.', 'error');
+      return;
+    }
+
     try {
       app.toast(`Sending ${action.toUpperCase()} signal...`, 'info');
       const data = await app.api(`/api/servers/${serverId}/power`, {
@@ -723,62 +1097,476 @@ class ServerConsole {
     }
   }
 
-  // Render Startup Configuration Tab
+  // Render Startup Configuration Tab (Pterodactyl / NookTheme 1:1 Layout)
   async renderStartupTab(container) {
+    // If serverData already exists, render immediately to avoid delay
+    if (this.serverData) {
+      this._renderStartupTabContent(container);
+    } else {
+      container.innerHTML = `<div class="flex items-center justify-center py-20"><i data-lucide="loader-2" class="w-8 h-8 text-cyan-400 animate-spin"></i></div>`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Ensure fresh server data
+    try {
+      const res = await app.api(`/api/servers/${this.serverId}`);
+      if (res && res.server) {
+        this.serverData = res.server;
+        this._renderStartupTabContent(container);
+      }
+    } catch (e) {
+      console.warn('Could not refresh server data:', e);
+    }
+  }
+
+  _renderStartupTabContent(container) {
     const s = this.serverData || {};
+
+    // Parse env_vars
+    let envVars = {};
+    try {
+      envVars = typeof s.env_vars === 'string' ? JSON.parse(s.env_vars || '{}') : (s.env_vars || {});
+    } catch (e) {
+      envVars = {};
+    }
+
+    const isMinecraft = s.server_type === 'minecraft' || !s.server_type;
+    const isPython = s.server_type === 'python';
+    const isNode = s.server_type === 'nodejs' || s.server_type === 'node';
+
+    // Set standard variables based on server type if not yet defined
+    if (isMinecraft) {
+      if (envVars.MINECRAFT_VERSION === undefined) envVars.MINECRAFT_VERSION = 'latest';
+      if (envVars.SERVER_JARFILE === undefined) envVars.SERVER_JARFILE = 'server.jar';
+      if (envVars.BUILD_NUMBER === undefined) envVars.BUILD_NUMBER = 'latest';
+    } else if (isNode) {
+      if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'index.js';
+      if (envVars.NODE_VERSION === undefined) envVars.NODE_VERSION = '20';
+      if (envVars.ADDITIONAL_PACKAGES === undefined) envVars.ADDITIONAL_PACKAGES = '';
+    } else if (isPython) {
+      if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'app.py';
+      if (envVars.REQUIREMENTS_FILE === undefined) envVars.REQUIREMENTS_FILE = 'requirements.txt';
+      if (envVars.PYTHON_VERSION === undefined) envVars.PYTHON_VERSION = '3.12';
+    }
+
+    this.currentStartupEnvVars = { ...envVars };
+
+    // Default startup command template
+    let rawCmd = s.startup_cmd || '';
+    if (!rawCmd || rawCmd.includes('-Xmx{{SERVER_MEMORY}}M -jar server.jar nogui')) {
+      if (isMinecraft) {
+        rawCmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';
+      } else if (isPython) {
+        rawCmd = 'python3 {{MAIN_FILE}}';
+      } else {
+        rawCmd = 'node {{MAIN_FILE}}';
+      }
+    }
+    this.currentStartupTemplate = rawCmd;
+
+    // Evaluated command for preview
+    const evaluatedCmd = this.evaluateStartupCommand(rawCmd, this.currentStartupEnvVars);
+
+    // Docker image options
+    let dockerOptions = [];
+    if (isMinecraft) {
+      dockerOptions = [
+        { label: 'Java 25', value: 'ghcr.io/pterodactyl/yolks:java_25' },
+        { label: 'Java 21', value: 'ghcr.io/pterodactyl/yolks:java_21' },
+        { label: 'Java 17', value: 'ghcr.io/pterodactyl/yolks:java_17' },
+        { label: 'Java 11', value: 'ghcr.io/pterodactyl/yolks:java_11' },
+        { label: 'Java 8', value: 'ghcr.io/pterodactyl/yolks:java_8' }
+      ];
+    } else if (isNode) {
+      dockerOptions = [
+        { label: 'NodeJS 22', value: 'ghcr.io/parkervcp/yolks:nodejs_22' },
+        { label: 'NodeJS 20', value: 'ghcr.io/parkervcp/yolks:nodejs_20' },
+        { label: 'NodeJS 18', value: 'ghcr.io/parkervcp/yolks:nodejs_18' },
+        { label: 'NodeJS 16', value: 'ghcr.io/parkervcp/yolks:nodejs_16' }
+      ];
+    } else if (isPython) {
+      dockerOptions = [
+        { label: 'Python 3.12', value: 'ghcr.io/parkervcp/yolks:python_3.12' },
+        { label: 'Python 3.11', value: 'ghcr.io/parkervcp/yolks:python_3.11' },
+        { label: 'Python 3.10', value: 'ghcr.io/parkervcp/yolks:python_3.10' }
+      ];
+    }
+
+    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isNode ? 'ghcr.io/parkervcp/yolks:nodejs_20' : 'ghcr.io/parkervcp/yolks:python_3.12'));
+    const matchedPreset = dockerOptions.find(o => o.value === currentDocker);
+    const isCustomDocker = !matchedPreset;
+
+    const dockerOptionsHtml = dockerOptions.map(opt => `
+      <option value="${opt.value}" ${opt.value === currentDocker ? 'selected' : ''}>${opt.label}</option>
+    `).join('') + `
+      <option value="custom" ${isCustomDocker ? 'selected' : ''}>Custom Docker Image</option>
+    `;
+
+    // Standard variable metadata definitions matching Pterodactyl screenshot
+    const varMeta = {
+      MINECRAFT_VERSION: {
+        label: 'MINECRAFT VERSION',
+        desc: 'The version of minecraft to download. Leave at latest to always get the latest version. Invalid versions will default to latest.'
+      },
+      SERVER_JARFILE: {
+        label: 'SERVER JAR FILE',
+        desc: 'The name of the server jarfile to run the server with.'
+      },
+      BUILD_NUMBER: {
+        label: 'BUILD NUMBER',
+        desc: 'The build number for the paper release. Leave at latest to always get the latest version. Invalid versions will default to latest.'
+      },
+      MAIN_FILE: {
+        label: 'MAIN FILE',
+        desc: 'The application entrypoint script file executed at server startup.'
+      },
+      NODE_VERSION: {
+        label: 'NODE VERSION',
+        desc: 'The runtime version for the Node.js container environment.'
+      },
+      ADDITIONAL_PACKAGES: {
+        label: 'ADDITIONAL PACKAGES',
+        desc: 'Space-separated list of additional dependencies to install at launch.'
+      },
+      REQUIREMENTS_FILE: {
+        label: 'REQUIREMENTS FILE',
+        desc: 'Path to requirements.txt for pip package installation.'
+      },
+      PYTHON_VERSION: {
+        label: 'PYTHON VERSION',
+        desc: 'The Python runtime release version.'
+      }
+    };
+
+    // Priority order for Minecraft: MINECRAFT_VERSION, SERVER_JARFILE, BUILD_NUMBER
+    const orderedKeys = isMinecraft
+      ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER']
+      : (isNode ? ['MAIN_FILE', 'NODE_VERSION', 'ADDITIONAL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'PYTHON_VERSION']);
+
+    // Build variables cards HTML matching screenshot
+    let variablesCardsHtml = '';
+    orderedKeys.forEach(key => {
+      const meta = varMeta[key] || { label: key.replace(/_/g, ' '), desc: `Runtime variable for ${key}.` };
+      const val = this.currentStartupEnvVars[key] !== undefined ? this.currentStartupEnvVars[key] : '';
+      variablesCardsHtml += `
+        <div class="startup-card flex flex-col justify-between" id="var-card-${key}">
+          <div>
+            <label class="startup-label" for="startup-var-${key}">${meta.label}</label>
+            <input type="text" id="startup-var-${key}" data-var-key="${key}" value="${app.escapeHtml(val)}" class="startup-input font-normal" oninput="serverConsole.onStartupVariableChange('${key}')" placeholder="${meta.label}">
+          </div>
+          <p class="startup-desc">${meta.desc}</p>
+        </div>
+      `;
+    });
+
+    // Custom variable cards (any extra keys not in orderedKeys)
+    Object.keys(this.currentStartupEnvVars).forEach(key => {
+      if (!orderedKeys.includes(key)) {
+        const val = this.currentStartupEnvVars[key];
+        variablesCardsHtml += `
+          <div class="startup-card flex flex-col justify-between relative group" id="var-card-${key}">
+            <button type="button" onclick="serverConsole.deleteCustomVariable('${key}')" class="absolute top-4 right-4 text-slate-500 hover:text-rose-400 text-xs p-1 rounded hover:bg-white/5 transition-colors" title="Delete variable">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+            <div>
+              <label class="startup-label pr-8">${key.replace(/_/g, ' ')}</label>
+              <input type="text" id="startup-var-${key}" data-var-key="${key}" value="${app.escapeHtml(val)}" class="startup-input font-normal" oninput="serverConsole.onStartupVariableChange('${key}')">
+            </div>
+            <p class="startup-desc">Custom environment variable (passed as <span class="font-mono text-cyan-400">{{${key}}}</span> and process env).</p>
+          </div>
+        `;
+      }
+    });
+
     container.innerHTML = `
-      <div class="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h3 class="text-base font-bold text-white flex items-center gap-2">
-            <i data-lucide="play-circle" class="w-5 h-5 text-cyan-400"></i> Server Startup Parameters
-          </h3>
-          <p class="text-xs text-slate-400">Edit launch commands, Docker image environment, and runtime variables</p>
+      <div class="space-y-6 pb-12">
+        <!-- Top Row: STARTUP COMMAND & DOCKER IMAGE -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+          <!-- STARTUP COMMAND (Left Card, ~67% width) -->
+          <div class="lg:col-span-8 startup-card flex flex-col justify-between">
+            <div>
+              <label class="startup-label">STARTUP COMMAND</label>
+              <!-- Evaluated Command Box (matching media_1789374813357.png) -->
+              <div id="startup-cmd-display-box" class="startup-code-box flex items-center cursor-pointer" onclick="serverConsole.copyStartupCommand()" title="Click to copy startup command">
+                <span id="startup-cmd-display" class="break-all leading-relaxed select-all">${evaluatedCmd}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DOCKER IMAGE (Right Card, ~33% width) -->
+          <div class="lg:col-span-4 startup-card flex flex-col justify-between">
+            <div>
+              <label class="startup-label" for="startup-docker-select">DOCKER IMAGE</label>
+              <select id="startup-docker-select" class="startup-select" onchange="serverConsole.handleDockerSelectChange(this)">
+                ${dockerOptionsHtml}
+              </select>
+              <div id="startup-custom-docker-container" class="${isCustomDocker ? '' : 'hidden'} mt-2.5">
+                <input type="text" id="startup-custom-docker-input" class="startup-input font-mono text-xs" placeholder="e.g. ghcr.io/pterodactyl/yolks:java_25" value="${isCustomDocker ? app.escapeHtml(currentDocker) : ''}" oninput="serverConsole.triggerStartupAutoSave()">
+              </div>
+            </div>
+            <p class="startup-desc">This is an advanced feature allowing you to select a Docker image to use when running this server instance.</p>
+          </div>
         </div>
 
-        <form onsubmit="serverConsole.handleSaveStartup(event)" class="glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Startup Command</label>
-            <input type="text" id="startup-cmd-input" value="${s.startup_cmd || ''}" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs font-mono text-cyan-300" required>
-            <p class="text-[11px] text-slate-400 mt-1">Available variables: <span class="font-mono text-cyan-400">{{SERVER_MEMORY}}</span>, <span class="font-mono text-cyan-400">{{SERVER_PORT}}</span>, <span class="font-mono text-cyan-400">{{SERVER_JARFILE}}</span></p>
-          </div>
+        <!-- Section: Variables -->
+        <div class="pt-2">
+          <h3 class="text-2xl font-bold text-white tracking-tight">Variables</h3>
+        </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Docker Image Environment</label>
-            <input type="text" id="startup-image-input" value="${s.docker_image || ''}" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs font-mono" required>
-          </div>
-
-          <div class="pt-2">
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Environment Variables (JSON)</label>
-            <textarea id="startup-env-input" rows="4" class="w-full glass-input p-3 rounded-xl text-xs font-mono">${s.env_vars || '{}'}</textarea>
-          </div>
-
-          <button type="submit" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold shadow-lg">
-            Save Startup Configuration
-          </button>
-        </form>
+        <!-- Variables Grid (2 columns matching screenshot) -->
+        <div id="startup-variables-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          ${variablesCardsHtml}
+        </div>
       </div>
     `;
+
     if (window.lucide) lucide.createIcons();
   }
 
-  async handleSaveStartup(e) {
-    e.preventDefault();
-    const startup_cmd = document.getElementById('startup-cmd-input').value.trim();
-    const docker_image = document.getElementById('startup-image-input').value.trim();
-    const env_vars = document.getElementById('startup-env-input').value.trim();
+  evaluateStartupCommand(template, envVars) {
+    let cmd = template || '';
+    if (!cmd.trim()) {
+      if (this.serverData?.server_type === 'minecraft' || !this.serverData?.server_type) {
+        cmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';
+      } else if (this.serverData?.server_type === 'python') {
+        cmd = 'python3 {{MAIN_FILE}}';
+      } else {
+        cmd = 'node {{MAIN_FILE}}';
+      }
+    }
+
+    const jarFile = envVars.SERVER_JARFILE || 'server.jar';
+    const mainFile = envVars.MAIN_FILE || (this.serverData?.server_type === 'python' ? 'app.py' : 'index.js');
+    const memory = this.serverData?.memory_mb || 1024;
+    const port = this.serverData?.port || 25565;
+
+    let evaluated = cmd
+      .replace(/{{SERVER_MEMORY}}/g, `${memory}`)
+      .replace(/{{SERVER_PORT}}/g, `${port}`)
+      .replace(/{{SERVER_JARFILE}}/g, jarFile)
+      .replace(/{{MAIN_FILE}}/g, mainFile);
+
+    // If template has hardcoded server.jar and jarFile changed
+    if (!cmd.includes('{{SERVER_JARFILE}}') && cmd.includes('server.jar') && jarFile !== 'server.jar') {
+      evaluated = evaluated.replace(/server\.jar/g, jarFile);
+    }
+
+    for (const [k, v] of Object.entries(envVars)) {
+      if (k !== 'SERVER_JARFILE' && k !== 'MAIN_FILE') {
+        const reg = new RegExp(`{{${k}}}`, 'g');
+        evaluated = evaluated.replace(reg, v);
+      }
+    }
+
+    return evaluated;
+  }
+
+  updateStartupPreview() {
+    const inputs = document.querySelectorAll('#startup-variables-grid [data-var-key]');
+    const vars = {};
+    inputs.forEach(inp => {
+      vars[inp.getAttribute('data-var-key')] = inp.value.trim();
+    });
+    this.currentStartupEnvVars = vars;
+
+    const rawCmd = document.getElementById('startup-cmd-raw-input')?.value || this.currentStartupTemplate || '';
+    const evaluated = this.evaluateStartupCommand(rawCmd, vars);
+
+    const displayEl = document.getElementById('startup-cmd-display');
+    if (displayEl) {
+      displayEl.innerText = evaluated;
+    }
+  }
+
+  onStartupVariableChange(key) {
+    this.updateStartupPreview();
+    this.triggerStartupAutoSave();
+  }
+
+  onStartupTemplateInput() {
+    const rawInput = document.getElementById('startup-cmd-raw-input');
+    if (rawInput) {
+      this.currentStartupTemplate = rawInput.value;
+    }
+    this.updateStartupPreview();
+    this.triggerStartupAutoSave();
+  }
+
+  toggleStartupCommandEdit() {
+    const displayBox = document.getElementById('startup-cmd-display-box');
+    const editBox = document.getElementById('startup-cmd-edit-box');
+    const toggleText = document.getElementById('startup-edit-toggle-text');
+
+    if (!editBox || !displayBox) return;
+
+    if (editBox.classList.contains('hidden')) {
+      editBox.classList.remove('hidden');
+      displayBox.classList.add('hidden');
+      if (toggleText) toggleText.innerText = 'Preview Mode';
+      const rawInput = document.getElementById('startup-cmd-raw-input');
+      if (rawInput) {
+        if (!rawInput.value) rawInput.value = this.currentStartupTemplate || '';
+        rawInput.focus();
+      }
+    } else {
+      editBox.classList.add('hidden');
+      displayBox.classList.remove('hidden');
+      if (toggleText) toggleText.innerText = 'Edit Template';
+      this.updateStartupPreview();
+    }
+  }
+
+  insertStartupTag(tag) {
+    const rawInput = document.getElementById('startup-cmd-raw-input');
+    if (!rawInput) return;
+    const start = rawInput.selectionStart;
+    const end = rawInput.selectionEnd;
+    const text = rawInput.value;
+    rawInput.value = text.substring(0, start) + tag + text.substring(end);
+    rawInput.selectionStart = rawInput.selectionEnd = start + tag.length;
+    rawInput.focus();
+    this.onStartupTemplateInput();
+  }
+
+  copyStartupCommand() {
+    app.playSound('copy');
+    const displayEl = document.getElementById('startup-cmd-display');
+    if (!displayEl) return;
+    const text = displayEl.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      app.toast('Startup command copied to clipboard!', 'info');
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      app.toast('Startup command copied to clipboard!', 'info');
+    });
+  }
+
+  handleDockerSelectChange(selectEl) {
+    const customContainer = document.getElementById('startup-custom-docker-container');
+    if (selectEl.value === 'custom') {
+      if (customContainer) customContainer.classList.remove('hidden');
+      const customInput = document.getElementById('startup-custom-docker-input');
+      if (customInput) customInput.focus();
+    } else {
+      if (customContainer) customContainer.classList.add('hidden');
+    }
+    this.triggerStartupAutoSave();
+  }
+
+  triggerStartupAutoSave() {
+    if (this.startupAutoSaveTimer) {
+      clearTimeout(this.startupAutoSaveTimer);
+    }
+    this.startupAutoSaveTimer = setTimeout(() => {
+      this.handleSaveStartup(null, true);
+    }, 1200);
+  }
+
+  showAddCustomVariableModal() {
+    const varName = prompt('Enter new variable name (e.g. DEBUG_MODE, SERVER_PORT, EXTRA_FLAGS):');
+    if (!varName) return;
+    const sanitizedKey = varName.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+    if (!sanitizedKey) {
+      app.toast('Invalid variable name', 'error');
+      return;
+    }
+    if (this.currentStartupEnvVars[sanitizedKey] !== undefined) {
+      app.toast(`Variable ${sanitizedKey} already exists.`, 'warning');
+      return;
+    }
+    const defaultVal = prompt(`Enter default value for ${sanitizedKey}:`, '') || '';
+    this.currentStartupEnvVars[sanitizedKey] = defaultVal;
+
+    const area = document.getElementById('subtab-content-area');
+    if (area) {
+      this.renderStartupTab(area);
+      this.handleSaveStartup(null, true);
+    }
+  }
+
+  deleteCustomVariable(key) {
+    if (!confirm(`Are you sure you want to remove variable "${key}"?`)) return;
+    delete this.currentStartupEnvVars[key];
+    const area = document.getElementById('subtab-content-area');
+    if (area) {
+      this.renderStartupTab(area);
+      this.handleSaveStartup(null, true);
+    }
+  }
+
+  async handleSaveStartup(e, isAutoSave = false) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
+    const saveBtn = document.getElementById('btn-save-startup');
+    const saveStatus = document.getElementById('startup-save-status');
+
+    // Collect Startup Command
+    const rawInput = document.getElementById('startup-cmd-raw-input');
+    const startup_cmd = (rawInput?.value || this.currentStartupTemplate || '').trim();
+
+    // Collect Docker Image
+    const dockerSelect = document.getElementById('startup-docker-select');
+    let docker_image = dockerSelect ? dockerSelect.value : '';
+    if (docker_image === 'custom') {
+      const customInput = document.getElementById('startup-custom-docker-input');
+      docker_image = customInput ? customInput.value.trim() : '';
+    }
+
+    // Collect Variables
+    const inputs = document.querySelectorAll('#startup-variables-grid [data-var-key]');
+    const env_vars = {};
+    inputs.forEach(inp => {
+      const k = inp.getAttribute('data-var-key');
+      env_vars[k] = inp.value.trim();
+    });
 
     try {
+      if (saveBtn && !isAutoSave) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Saving...`;
+        if (window.lucide) lucide.createIcons();
+      }
+
       const data = await app.api(`/api/servers/${this.serverId}`, {
         method: 'PUT',
-        body: JSON.stringify({ startup_cmd, docker_image, env_vars })
+        body: JSON.stringify({
+          startup_cmd,
+          docker_image,
+          env_vars
+        })
       });
 
       if (data.success) {
-        app.toast('Startup configuration updated!', 'success');
-        this.loadServerHeader(this.serverId);
+        if (!isAutoSave) {
+          app.toast('Startup configuration updated!', 'success');
+        }
+        if (saveStatus) {
+          saveStatus.classList.remove('opacity-0');
+          setTimeout(() => {
+            saveStatus.classList.add('opacity-0');
+          }, 2500);
+        }
+        if (this.serverData) {
+          this.serverData.startup_cmd = startup_cmd;
+          this.serverData.docker_image = docker_image;
+          this.serverData.env_vars = JSON.stringify(env_vars);
+        }
       }
     } catch (err) {
-      app.toast(err.message, 'error');
+      if (!isAutoSave) {
+        app.toast(err.message || 'Failed to update startup configuration', 'error');
+      }
+    } finally {
+      if (saveBtn && !isAutoSave) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i data-lucide="save" class="w-3.5 h-3.5"></i> Save Configuration`;
+        if (window.lucide) lucide.createIcons();
+      }
     }
   }
 

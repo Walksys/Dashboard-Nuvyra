@@ -44,10 +44,11 @@ router.get('/', authenticate, async (req, res) => {
 
     // Attach runtime live status to servers
     const enriched = servers.map(s => {
-      const isRunning = runnerService.isServerRunning(s.id);
+      const isSuspended = !!s.is_suspended;
+      const isRunning = !isSuspended && runnerService.isServerRunning(s.id);
       return {
         ...s,
-        status: isRunning ? (s.status === 'starting' ? 'starting' : 'running') : 'offline'
+        status: isSuspended ? 'suspended' : (isRunning ? (s.status === 'starting' ? 'starting' : 'running') : 'offline')
       };
     });
 
@@ -214,8 +215,9 @@ router.get('/:id', authenticate, requireServerAccess('view'), async (req, res) =
       return res.status(404).json({ success: false, error: 'Server not found.' });
     }
 
-    server.status = runnerService.isServerRunning(server.id) ? (server.status === 'starting' ? 'starting' : 'running') : 'offline';
-    server.is_running = runnerService.isServerRunning(server.id);
+    const isSuspended = !!server.is_suspended;
+    server.status = isSuspended ? 'suspended' : (runnerService.isServerRunning(server.id) ? (server.status === 'starting' ? 'starting' : 'running') : 'offline');
+    server.is_running = !isSuspended && runnerService.isServerRunning(server.id);
     server.sftp_username = `${req.user.username}.${server.id}`;
     server.sftp_host = server.node_fqdn || '127.0.0.1';
     server.sftp_port = server.sftp_port || config.PORT_SFTP;
@@ -231,7 +233,7 @@ router.get('/:id', authenticate, requireServerAccess('view'), async (req, res) =
   }
 });
 
-// Update Server (Details, Build Configuration, Startup)
+// Update Server (Details, Build Configuration, Startup, Expiration)
 router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (req, res) => {
   try {
     const serverId = req.params.id;
@@ -245,7 +247,9 @@ router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (re
       disk_mb,
       allocation_id,
       user_id,
-      env_vars
+      env_vars,
+      expiration_date,
+      is_suspended
     } = req.body;
 
     const current = req.server;
@@ -256,6 +260,8 @@ router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (re
     const newMemory = (isAdmin && memory_mb) ? parseInt(memory_mb, 10) : current.memory_mb;
     const newCpu = (isAdmin && cpu_limit) ? parseInt(cpu_limit, 10) : current.cpu_limit;
     const newDisk = (isAdmin && disk_mb) ? parseInt(disk_mb, 10) : current.disk_mb;
+    const newExpiration = isAdmin && expiration_date !== undefined ? (expiration_date || null) : current.expiration_date;
+    const newSuspended = isAdmin && is_suspended !== undefined ? (is_suspended ? 1 : 0) : (current.is_suspended ? 1 : 0);
 
     let newAllocId = current.allocation_id;
     if (isAdmin && allocation_id && allocation_id !== current.allocation_id) {
@@ -289,6 +295,8 @@ router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (re
         user_id = ?,
         allocation_id = ?,
         env_vars = ?,
+        expiration_date = ?,
+        is_suspended = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `, [
@@ -302,8 +310,14 @@ router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (re
       targetUserId,
       newAllocId,
       env_vars ? (typeof env_vars === 'object' ? JSON.stringify(env_vars) : env_vars) : current.env_vars,
+      newExpiration,
+      newSuspended,
       serverId
     ]);
+
+    if (newSuspended && runnerService.isServerRunning(serverId)) {
+      await runnerService.stopServer(serverId);
+    }
 
     logActivity(req.user.id, serverId, 'SERVER_UPDATE', 'Updated server settings/build configuration', req);
 
@@ -323,6 +337,14 @@ router.post('/:id/power', authenticate, requireServerAccess('power.control'), as
       return res.status(400).json({ success: false, error: 'Invalid power action.' });
     }
 
+    // Auto-suspension protection
+    if ((action === 'start' || action === 'restart') && req.server.is_suspended) {
+      return res.status(403).json({
+        success: false,
+        error: 'Cannot start server: This server is suspended due to expiration. Please renew your plan or contact an administrator.'
+      });
+    }
+
     let result;
     if (action === 'start') {
       result = await runnerService.startServer(serverId);
@@ -339,6 +361,53 @@ router.post('/:id/power', authenticate, requireServerAccess('power.control'), as
     res.json({ success: true, action, result });
   } catch (err) {
     console.error('Power action error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin: Quick Suspend / Unsuspend Toggle
+router.post('/:id/suspend', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const serverId = req.params.id;
+    const autoSuspensionService = require('../services/autoSuspensionService');
+    const server = await query.get('SELECT id, is_suspended FROM servers WHERE id = ?', [serverId]);
+    if (!server) return res.status(404).json({ success: false, error: 'Server not found' });
+
+    if (server.is_suspended) {
+      await autoSuspensionService.unsuspendServer(serverId);
+      res.json({ success: true, suspended: false, message: 'Server unsuspended successfully.' });
+    } else {
+      await autoSuspensionService.suspendServer(serverId, 'Admin manually suspended server');
+      res.json({ success: true, suspended: true, message: 'Server suspended successfully.' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin: Quick Extend Expiration (+7d, +30d, +90d, clear)
+router.post('/:id/expiration', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const serverId = req.params.id;
+    const { days, clear, custom_date } = req.body;
+    const autoSuspensionService = require('../services/autoSuspensionService');
+
+    let newDate = null;
+    if (clear) {
+      newDate = null;
+    } else if (custom_date) {
+      newDate = new Date(custom_date).toISOString();
+    } else if (days) {
+      const d = new Date();
+      d.setDate(d.getDate() + parseInt(days, 10));
+      newDate = d.toISOString();
+    }
+
+    await autoSuspensionService.setServerExpiration(serverId, newDate);
+    logActivity(req.user.id, serverId, 'SERVER_EXPIRATION_SET', `Set expiration date to ${newDate || 'Never'}`, req);
+
+    res.json({ success: true, expiration_date: newDate, message: 'Expiration updated successfully.' });
+  } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });

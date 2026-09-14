@@ -5,7 +5,39 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 const { logActivity } = require('../services/activityService');
 const config = require('../config/config');
 
-// List Nodes
+const os = require('os');
+
+function getNodeLiveStats() {
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const usedMem = totalMem - freeMem;
+  const memPercent = Math.round((usedMem / totalMem) * 100);
+
+  const cpus = os.cpus();
+  let totalTick = 0;
+  let idleTick = 0;
+  cpus.forEach(cpu => {
+    for (const type in cpu.times) {
+      totalTick += cpu.times[type];
+    }
+    idleTick += cpu.times.idle;
+  });
+  const cpuPercent = Math.min(100, Math.max(2, Math.round((1 - idleTick / totalTick) * 100)));
+  const loadAvg = os.loadavg();
+
+  return {
+    cpu_percent: cpuPercent,
+    load_avg: loadAvg[0].toFixed(2),
+    ram_used_mb: Math.round(usedMem / (1024 * 1024)),
+    ram_total_mb: Math.round(totalMem / (1024 * 1024)),
+    ram_percent: memPercent,
+    uptime_hours: (os.uptime() / 3600).toFixed(1),
+    cores: cpus.length,
+    status: cpuPercent > 90 || memPercent > 90 ? 'warning' : 'optimal'
+  };
+}
+
+// List Nodes (with Node Usage Status v1.0.2 metrics)
 router.get('/', authenticate, requireAdmin, async (req, res) => {
   try {
     const nodes = await query.all(`
@@ -21,7 +53,23 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
       ORDER BY n.id ASC
     `);
 
-    res.json({ success: true, nodes });
+    const liveStats = getNodeLiveStats();
+    const enrichedNodes = nodes.map(n => ({
+      ...n,
+      usage: liveStats
+    }));
+
+    res.json({ success: true, nodes: enrichedNodes });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Single Node Usage Status Endpoint
+router.get('/:id/stats', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const liveStats = getNodeLiveStats();
+    res.json({ success: true, stats: liveStats });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

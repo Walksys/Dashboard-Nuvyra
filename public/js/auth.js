@@ -2,6 +2,9 @@
 class AuthController {
   showLoginModal() {
     const modalContainer = document.getElementById('modal-container');
+    if (!modalContainer) return;
+    if (document.getElementById('login-modal')) return;
+
     modalContainer.innerHTML = `
       <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
         <div class="glass-panel w-full max-w-md p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl relative">
@@ -14,16 +17,21 @@ class AuthController {
           </div>
 
           <form onsubmit="auth.handleLogin(event)" class="space-y-4">
+            <div id="login-error-alert" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-400 flex items-start gap-2.5">
+              <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+              <span id="login-error-text"></span>
+            </div>
+
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Username or Email</label>
-              <input type="text" id="login-username" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="admin" required autofocus>
+              <input type="text" id="login-username" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="admin or admin@mpanel.local" autocapitalize="none" autocorrect="off" autocomplete="username" required autofocus>
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="block text-xs font-semibold text-slate-300">Password</label>
                 <a href="javascript:void(0)" onclick="auth.showForgotPassword()" class="text-[11px] text-cyan-400 hover:underline">Forgot password?</a>
               </div>
-              <input type="password" id="login-password" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="••••••••" required>
+              <input type="password" id="login-password" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="••••••••" autocomplete="current-password" required>
             </div>
 
             <!-- 2FA Input (Shown only when required) -->
@@ -32,8 +40,8 @@ class AuthController {
               <input type="text" id="login-2fa-code" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono tracking-widest text-center" placeholder="123456" maxlength="6">
             </div>
 
-            <button type="submit" id="login-submit-btn" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/25">
-              Sign In
+            <button type="submit" id="login-submit-btn" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2">
+              <span>Sign In</span>
             </button>
           </form>
 
@@ -49,6 +57,7 @@ class AuthController {
 
   showRegisterModal() {
     const modalContainer = document.getElementById('modal-container');
+    if (!modalContainer) return;
     modalContainer.innerHTML = `
       <div id="register-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
         <div class="glass-panel w-full max-w-md p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl relative">
@@ -61,21 +70,26 @@ class AuthController {
           </div>
 
           <form onsubmit="auth.handleRegister(event)" class="space-y-4">
+            <div id="register-error-alert" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-400 flex items-start gap-2.5">
+              <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+              <span id="register-error-text"></span>
+            </div>
+
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Username</label>
-              <input type="text" id="reg-username" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="e.g. shadow_player" required minlength="3">
+              <input type="text" id="reg-username" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="e.g. shadow_player" autocapitalize="none" autocorrect="off" autocomplete="username" required minlength="3">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
-              <input type="email" id="reg-email" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="you@example.com" required>
+              <input type="email" id="reg-email" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="you@example.com" autocapitalize="none" autocorrect="off" autocomplete="email" required>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
-              <input type="password" id="reg-password" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="••••••••" required minlength="6">
+              <input type="password" id="reg-password" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="••••••••" autocomplete="new-password" required minlength="6">
             </div>
 
-            <button type="submit" class="btn-cyber-purple w-full py-2.5 rounded-xl text-xs font-bold shadow-lg">
-              Create Account
+            <button type="submit" id="reg-submit-btn" class="btn-cyber-purple w-full py-2.5 rounded-xl text-xs font-bold shadow-lg flex items-center justify-center gap-2">
+              <span>Create Account</span>
             </button>
           </form>
 
@@ -91,10 +105,22 @@ class AuthController {
 
   async handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    const username = usernameInput ? usernameInput.value.trim() : '';
+    const password = passwordInput ? passwordInput.value : '';
     const twoFaInput = document.getElementById('login-2fa-code');
     const twoFactorCode = twoFaInput ? twoFaInput.value.trim() : null;
+    const submitBtn = document.getElementById('login-submit-btn');
+    const errAlert = document.getElementById('login-error-alert');
+    const errText = document.getElementById('login-error-text');
+
+    if (errAlert) errAlert.classList.add('hidden');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Signing In...</span>';
+      if (window.lucide) lucide.createIcons();
+    }
 
     try {
       const data = await app.api('/api/auth/login', {
@@ -106,6 +132,10 @@ class AuthController {
         document.getElementById('login-2fa-container').classList.remove('hidden');
         document.getElementById('login-2fa-code').focus();
         app.toast('Please enter your 6-digit 2FA code.', 'info');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Verify & Sign In</span>';
+        }
         return;
       }
 
@@ -117,17 +147,41 @@ class AuthController {
         document.getElementById('modal-container').innerHTML = '';
         app.toast(`Welcome back, ${data.user.username}!`, 'success');
         app.navigate('user-overview');
+        await app.handleRoute();
       }
     } catch (err) {
+      if (errAlert && errText) {
+        errText.innerText = err.message || 'Login failed. Please check your credentials.';
+        errAlert.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
       app.toast(err.message, 'error');
+    } finally {
+      if (submitBtn && (!app.token || document.getElementById('login-modal'))) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Sign In</span>';
+      }
     }
   }
 
   async handleRegister(e) {
     e.preventDefault();
-    const username = document.getElementById('reg-username').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value;
+    const usernameInput = document.getElementById('reg-username');
+    const emailInput = document.getElementById('reg-email');
+    const passwordInput = document.getElementById('reg-password');
+    const username = usernameInput ? usernameInput.value.trim() : '';
+    const email = emailInput ? emailInput.value.trim() : '';
+    const password = passwordInput ? passwordInput.value : '';
+    const submitBtn = document.getElementById('reg-submit-btn');
+    const errAlert = document.getElementById('register-error-alert');
+    const errText = document.getElementById('register-error-text');
+
+    if (errAlert) errAlert.classList.add('hidden');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Creating Account...</span>';
+      if (window.lucide) lucide.createIcons();
+    }
 
     try {
       const data = await app.api('/api/auth/register', {
@@ -143,9 +197,20 @@ class AuthController {
         document.getElementById('modal-container').innerHTML = '';
         app.toast(`Account created! Welcome, ${data.user.username}`, 'success');
         app.navigate('user-overview');
+        await app.handleRoute();
       }
     } catch (err) {
+      if (errAlert && errText) {
+        errText.innerText = err.message || 'Registration failed.';
+        errAlert.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
       app.toast(err.message, 'error');
+    } finally {
+      if (submitBtn && (!app.token || document.getElementById('register-modal'))) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Create Account</span>';
+      }
     }
   }
 

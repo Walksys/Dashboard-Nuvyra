@@ -9,6 +9,7 @@ const { initDatabase } = require('./database/db');
 const { seedDatabase } = require('./database/seed');
 const { setupWebSocket } = require('./websocket/consoleWs');
 const scheduleService = require('./services/scheduleService');
+const autoSuspensionService = require('./services/autoSuspensionService');
 const sftpServer = require('./sftp/sftpServer');
 const { createDaemonServer } = require('./api/daemonServer');
 
@@ -29,6 +30,8 @@ const activityRoutes = require('./routes/activityRoutes');
 const marketplaceRoutes = require('./routes/marketplaceRoutes');
 const serverPlayerRoutes = require('./routes/serverPlayerRoutes');
 const serverWorldRoutes = require('./routes/serverWorldRoutes');
+const serverImporterRoutes = require('./routes/serverImporterRoutes');
+const serverPropertiesRoutes = require('./routes/serverPropertiesRoutes');
 
 async function bootstrap() {
   console.log('🚀 Initializing Mpanel Core Engine...');
@@ -37,6 +40,7 @@ async function bootstrap() {
   await initDatabase();
   await seedDatabase();
   await scheduleService.initSchedules();
+  autoSuspensionService.init();
 
   // 1. Web UI & API App (Port 3001)
   const app = express();
@@ -70,6 +74,8 @@ async function bootstrap() {
   app.use('/api/servers/:serverId/subusers', serverSubuserRoutes);
   app.use('/api/servers/:serverId/players', serverPlayerRoutes);
   app.use('/api/servers/:serverId/worlds', serverWorldRoutes);
+  app.use('/api/servers/:serverId/importer', serverImporterRoutes);
+  app.use('/api/servers/:serverId/properties', serverPropertiesRoutes);
   app.use('/api/mcjars', mcjarsRoutes);
   app.use('/api/activity', activityRoutes);
   app.use('/api/marketplace', marketplaceRoutes);

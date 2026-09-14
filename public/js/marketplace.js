@@ -863,7 +863,8 @@ class MarketplaceController {
         pBar.classList.remove('hidden');
         const start = this.currentPage * this.limit + 1;
         const end = Math.min((this.currentPage + 1) * this.limit, this.totalHits);
-        document.getElementById('mp-page-info').innerText = `Showing ${start}-${end} of ${this.totalHits}`;
+        const pageInfoEl = document.getElementById('mp-page-info');
+        if (pageInfoEl) pageInfoEl.innerText = `Showing ${start}-${end} of ${this.totalHits}`;
         const prevBtn = document.getElementById('mp-prev-btn');
         const nextBtn = document.getElementById('mp-next-btn');
         if (prevBtn) prevBtn.disabled = (this.currentPage === 0);

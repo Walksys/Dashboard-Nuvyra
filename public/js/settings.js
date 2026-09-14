@@ -10,12 +10,17 @@ class SettingsManager {
     this.favorites = this.loadFavorites();
     this.activeTab = 'browser'; // 'browser' | 'upload' | 'url' | 'favorites'
     this.autoSaveTimer = null;
+    this.previewingWallpaper = null;
+    this.revertTheme = null;
     this.currentTheme = {
       transparency: 18,
       blur: 16,
       bg: '',
       bgType: 'image',
       themeMode: 'dark',
+      activeTheme: localStorage.getItem('mpanel_active_theme') || 'arix',
+      panelSoundsEnabled: localStorage.getItem('panelSounds') !== 'false',
+      arixPrimaryColor: '#4A35CF',
       autoSave: true
     };
   }
@@ -76,6 +81,105 @@ class SettingsManager {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Left 2 Cols: Main Controls & Wallpaper Engine -->
           <div class="lg:col-span-2 space-y-6">
+
+            <!-- Card 0: Active Theme Selection (NookTheme vs Arix Theme v2.1.3) -->
+            <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div>
+                  <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                    <i data-lucide="palette" class="w-4 h-4 text-purple-400"></i> Panel Theme Selection
+                  </h3>
+                  <p class="text-[11px] text-slate-400">Choose between the high-tech NookTheme and the premier Arix Theme v2.1.3</p>
+                </div>
+                <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}">
+                  ${this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : 'NookTheme Active'}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Option A: NookTheme -->
+                <div id="theme-card-nook" onclick="settingsManager.selectTheme('nook')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'nook' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
+                  <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-inner">
+                      <i data-lucide="terminal" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Cyber Glass</span>
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-white">NookTheme</h4>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Modern cyber aesthetics with glassmorphic cards, neon cyan/emerald accents, and sharp geometry.</p>
+                  </div>
+                  <div class="pt-2 flex items-center justify-between border-t border-white/5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-3 h-3 rounded-full bg-cyan-400"></span>
+                      <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                      <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+                    </div>
+                    <button type="button" id="btn-theme-nook" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'nook' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
+                      ${this.currentTheme.activeTheme === 'nook' ? '✓ Active Theme' : 'Activate Nook'}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Option B: Arix Theme v2.1.3 -->
+                <div id="theme-card-arix" onclick="settingsManager.selectTheme('arix')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'arix' ? 'active bg-purple-950/20 border-purple-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
+                  <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 p-2 flex items-center justify-center shadow-inner">
+                      <img src="/arix/Arix.png" alt="Arix Theme" class="w-full h-full object-contain">
+                    </div>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">Arix v2.1.3</span>
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-white flex items-center gap-1.5">
+                      Arix Theme <span class="text-xs text-purple-400 font-normal">v2.1.3</span>
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">The premier Pterodactyl theme with signature royal violet accents, midnight indigo cards, and audio sound effects.</p>
+                  </div>
+                  <div class="pt-2 flex items-center justify-between border-t border-white/5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-3 h-3 rounded-full bg-[#4A35CF]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#6E56CF]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#0B0D2A]"></span>
+                    </div>
+                    <button type="button" id="btn-theme-arix" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'arix' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
+                      ${this.currentTheme.activeTheme === 'arix' ? '✓ Active Theme' : 'Activate Arix'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Arix Theme Enhancements (Audio FX & Colors) -->
+              <div id="arix-options-panel" class="pt-2 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'arix' ? '' : 'opacity-60'}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-200 flex items-center gap-2">
+                      <i data-lucide="volume-2" class="w-4 h-4 text-purple-400"></i> Panel Audio Sound Effects (Arix Audio FX)
+                    </h4>
+                    <p class="text-[11px] text-slate-400">Play authentic audio feedback on server online, offline, and clipboard actions</p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="set-panel-sounds" class="sr-only peer" ${this.currentTheme.panelSoundsEnabled ? 'checked' : ''} onchange="settingsManager.togglePanelSounds(this.checked)">
+                      <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Quick Audio Preview Buttons -->
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                  <span class="text-[11px] text-slate-400 mr-1">Preview Sounds:</span>
+                  <button type="button" onclick="app.playSound('online')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 transition-colors">
+                    <i data-lucide="play" class="w-3 h-3"></i> Server Online
+                  </button>
+                  <button type="button" onclick="app.playSound('offline')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1 transition-colors">
+                    <i data-lucide="play" class="w-3 h-3"></i> Server Offline
+                  </button>
+                  <button type="button" onclick="app.playSound('copy')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors">
+                    <i data-lucide="copy" class="w-3 h-3"></i> Copy Sound
+                  </button>
+                </div>
+              </div>
+            </div>
 
             <!-- Card 1: Panel Background & Integrated 4K Wallpaper Browser -->
             <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
@@ -487,6 +591,20 @@ class SettingsManager {
       // Theme Mode UI
       this.updateThemeModeUI(this.currentTheme.themeMode);
 
+      // Active Theme & Arix Options
+      if (s.active_theme) {
+        this.currentTheme.activeTheme = s.active_theme;
+      }
+      if (s.panel_sounds_enabled !== undefined) {
+        this.currentTheme.panelSoundsEnabled = s.panel_sounds_enabled !== '0';
+        const soundsEl = document.getElementById('set-panel-sounds');
+        if (soundsEl) soundsEl.checked = this.currentTheme.panelSoundsEnabled;
+      }
+      if (s.arix_primary_color) {
+        this.currentTheme.arixPrimaryColor = s.arix_primary_color;
+      }
+      this.updateThemeSelectionUI();
+
       // Registration
       if (s.registration_enabled !== undefined) {
         document.getElementById('set-registration').checked = s.registration_enabled === '1';
@@ -495,6 +613,79 @@ class SettingsManager {
       this.updatePreviewCards();
     } catch (err) {
       console.error('Failed to load admin settings:', err);
+    }
+  }
+
+  selectTheme(themeName) {
+    this.currentTheme.activeTheme = themeName;
+    localStorage.setItem('mpanel_active_theme', themeName);
+    this.updateThemeSelectionUI();
+    app.applyBrandingAndTheme({
+      active_theme: themeName,
+      panel_sounds_enabled: this.currentTheme.panelSoundsEnabled ? '1' : '0',
+      arix_primary_color: this.currentTheme.arixPrimaryColor
+    });
+    if (themeName === 'arix') {
+      app.playSound('online');
+      app.toast('Arix Theme v2.1.3 activated!', 'success');
+    } else {
+      app.toast('NookTheme activated!', 'success');
+    }
+    this.saveSettings(true);
+  }
+
+  togglePanelSounds(enabled) {
+    this.currentTheme.panelSoundsEnabled = enabled;
+    localStorage.setItem('panelSounds', enabled ? 'true' : 'false');
+    if (enabled) {
+      app.playSound('copy');
+      app.toast('Panel sound effects enabled', 'info');
+    } else {
+      app.toast('Panel sound effects disabled', 'info');
+    }
+    this.saveSettings(true);
+  }
+
+  updateThemeSelectionUI() {
+    const isArix = this.currentTheme.activeTheme === 'arix';
+    const cardArix = document.getElementById('theme-card-arix');
+    const cardNook = document.getElementById('theme-card-nook');
+    const btnArix = document.getElementById('btn-theme-arix');
+    const btnNook = document.getElementById('btn-theme-nook');
+    const badge = document.getElementById('active-theme-badge');
+    const arixPanel = document.getElementById('arix-options-panel');
+
+    if (badge) {
+      badge.innerText = isArix ? 'Arix Theme v2.1.3 Active' : 'NookTheme Active';
+      badge.className = `text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${isArix ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}`;
+    }
+
+    if (cardArix && cardNook) {
+      if (isArix) {
+        cardArix.className = 'theme-select-card p-5 rounded-2xl border active bg-purple-950/20 border-purple-500/50 flex flex-col justify-between space-y-4';
+        cardNook.className = 'theme-select-card p-5 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-4';
+        if (btnArix) {
+          btnArix.innerText = '✓ Active Theme';
+          btnArix.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+        }
+        if (btnNook) {
+          btnNook.innerText = 'Activate Nook';
+          btnNook.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10';
+        }
+        if (arixPanel) arixPanel.classList.remove('opacity-60');
+      } else {
+        cardArix.className = 'theme-select-card p-5 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-4';
+        cardNook.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
+        if (btnArix) {
+          btnArix.innerText = 'Activate Arix';
+          btnArix.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10';
+        }
+        if (btnNook) {
+          btnNook.innerText = '✓ Active Theme';
+          btnNook.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+        }
+        if (arixPanel) arixPanel.classList.add('opacity-60');
+      }
     }
   }
 
@@ -510,12 +701,13 @@ class SettingsManager {
           select.innerHTML = this.categories.map(c => `
             <option value="${c.id}">${c.name}</option>
           `).join('');
+          select.value = this.activeCategory;
         }
 
-        // Populate Chips Bar
+        // Populate Chips Bar with all categories
         const chipsContainer = document.getElementById('wallpaper-category-chips');
         if (chipsContainer) {
-          chipsContainer.innerHTML = this.categories.slice(0, 16).map(c => `
+          chipsContainer.innerHTML = this.categories.map(c => `
             <button onclick="settingsManager.selectCategory('${c.id}')" id="cat-chip-${c.id}" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${c.id === this.activeCategory ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-slate-800/80 text-slate-300 border-white/10 hover:border-cyan-500/30'}">
               ${c.name}
             </button>
@@ -594,14 +786,17 @@ class SettingsManager {
               </a>
             </div>
 
-            <!-- Hover Overlay with One-Click Apply -->
-            <div class="wallpaper-overlay absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] p-3 flex flex-col justify-between">
+            <!-- Hover Overlay with Live Preview & One-Click Apply -->
+            <div class="wallpaper-overlay absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] p-3 flex flex-col justify-between">
               <div class="text-left">
                 <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-wider">${w.category || '4K UHD'}</span>
                 <h5 class="text-xs font-bold text-white line-clamp-1">${w.title}</h5>
               </div>
 
               <div class="space-y-1.5">
+                <button onclick="settingsManager.startLivePreview('${applyTarget}', 'image', '${w.title.replace(/'/g, "\\'")}', '${w.id}')" class="w-full py-1.5 rounded-lg text-[11px] font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition flex items-center justify-center gap-1.5">
+                  <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i> Live Preview
+                </button>
                 <button onclick="settingsManager.applyWallpaper('${applyTarget}', 'image', '${w.title.replace(/'/g, "\\'")}', '${w.id}')" class="btn-cyber w-full py-1.5 rounded-lg text-[11px] font-bold shadow-md shadow-cyan-500/20 flex items-center justify-center gap-1.5">
                   <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> One-Click Apply
                 </button>
@@ -739,14 +934,19 @@ class SettingsManager {
               </a>
             </div>
 
-            <div class="wallpaper-overlay absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] p-3 flex flex-col justify-between">
+            <div class="wallpaper-overlay absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] p-3 flex flex-col justify-between">
               <div>
                 <span class="text-[9px] font-bold text-cyan-400 uppercase">${w.category || 'Favorite'}</span>
                 <h5 class="text-xs font-bold text-white line-clamp-1">${w.title}</h5>
               </div>
-              <button onclick="settingsManager.applyWallpaper('${applyTarget}', 'image', '${w.title.replace(/'/g, "\\'")}', '${w.id}')" class="btn-cyber w-full py-1.5 rounded-lg text-[11px] font-bold shadow-md shadow-cyan-500/20 flex items-center justify-center gap-1.5">
-                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Apply Wallpaper
-              </button>
+              <div class="space-y-1.5">
+                <button onclick="settingsManager.startLivePreview('${applyTarget}', 'image', '${w.title.replace(/'/g, "\\'")}', '${w.id}')" class="w-full py-1.5 rounded-lg text-[11px] font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition flex items-center justify-center gap-1.5">
+                  <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i> Live Preview
+                </button>
+                <button onclick="settingsManager.applyWallpaper('${applyTarget}', 'image', '${w.title.replace(/'/g, "\\'")}', '${w.id}')" class="btn-cyber w-full py-1.5 rounded-lg text-[11px] font-bold shadow-md shadow-cyan-500/20 flex items-center justify-center gap-1.5">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Apply Wallpaper
+                </button>
+              </div>
             </div>
           </div>
           <div class="p-2 text-left bg-slate-900/60">
@@ -763,6 +963,9 @@ class SettingsManager {
 
     // Apply directly to live panel
     this.previewBackground(url, type, title);
+    this.removeFloatingPreviewBar();
+    this.previewingWallpaper = null;
+    this.revertTheme = null;
 
     app.toast(`Applied wallpaper: ${title || 'Custom Wallpaper'}!`, 'success');
 
@@ -770,6 +973,71 @@ class SettingsManager {
     if (this.currentTheme.autoSave) {
       this.triggerAutoSave();
     }
+  }
+
+  startLivePreview(url, type = 'image', title = '', id = '') {
+    if (!this.previewingWallpaper) {
+      this.revertTheme = {
+        bg: this.currentTheme.bg || '',
+        bgType: this.currentTheme.bgType || 'image'
+      };
+    }
+    this.previewingWallpaper = { url, type, title, id };
+
+    // Apply temporarily to live UI
+    this.previewBackground(url, type, title);
+
+    // Show floating bar
+    this.showFloatingPreviewBar(title);
+    app.toast(`Live previewing "${title || 'Wallpaper'}"`, 'info');
+  }
+
+  showFloatingPreviewBar(title = 'Wallpaper') {
+    let bar = document.getElementById('preview-floating-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'preview-floating-bar';
+      document.body.appendChild(bar);
+    }
+
+    bar.innerHTML = `
+      <div class="flex items-center gap-2.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping shrink-0"></span>
+        <span class="text-xs text-slate-200">Live Previewing: <strong class="text-white max-w-[200px] truncate inline-block align-bottom">${title}</strong></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="settingsManager.confirmPreviewApply()" class="btn-cyber px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/25 flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i> Apply Wallpaper
+        </button>
+        <button onclick="settingsManager.cancelPreview()" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 transition flex items-center gap-1.5">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i> Revert
+        </button>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  confirmPreviewApply() {
+    if (!this.previewingWallpaper) return;
+    const { url, type, title, id } = this.previewingWallpaper;
+    this.applyWallpaper(url, type, title, id);
+  }
+
+  cancelPreview() {
+    if (this.revertTheme) {
+      this.previewBackground(this.revertTheme.bg, this.revertTheme.bgType);
+      this.currentTheme.bg = this.revertTheme.bg;
+      this.currentTheme.bgType = this.revertTheme.bgType;
+    }
+    this.removeFloatingPreviewBar();
+    this.previewingWallpaper = null;
+    this.revertTheme = null;
+    app.toast('Preview cancelled. Reverted to previous wallpaper.', 'info');
+  }
+
+  removeFloatingPreviewBar() {
+    const bar = document.getElementById('preview-floating-bar');
+    if (bar) bar.remove();
   }
 
   testUrlBackground() {
@@ -787,8 +1055,7 @@ class SettingsManager {
       typeLabel.className = isVideo ? 'text-purple-400 font-bold' : 'text-cyan-400 font-bold';
     }
 
-    this.previewBackground(url, isVideo ? 'video' : 'image', 'Custom URL Background');
-    app.toast('Live previewing custom URL background', 'info');
+    this.startLivePreview(url, isVideo ? 'video' : 'image', 'Custom URL Media');
   }
 
   applyUrlBackground() {
@@ -1034,10 +1301,7 @@ class SettingsManager {
           const isVideo = data.isVideo || /\.(mp4|webm|mkv|mov)($|\?)/i.test(data.url);
           this.currentTheme.bg = data.url;
           this.currentTheme.bgType = isVideo ? 'video' : 'image';
-          this.previewBackground(data.url, this.currentTheme.bgType, file.name);
-          if (this.currentTheme.autoSave) {
-            this.triggerAutoSave();
-          }
+          this.startLivePreview(data.url, this.currentTheme.bgType, file.name);
         }
       }
     } catch (err) {
@@ -1075,6 +1339,9 @@ class SettingsManager {
       transparency_bar: String(this.currentTheme.transparency ?? 18),
       blur_bar: String(this.currentTheme.blur ?? 16),
       theme_mode: this.currentTheme.themeMode || 'dark',
+      active_theme: this.currentTheme.activeTheme || 'arix',
+      panel_sounds_enabled: this.currentTheme.panelSoundsEnabled ? '1' : '0',
+      arix_primary_color: this.currentTheme.arixPrimaryColor || '#4A35CF',
       registration_enabled: document.getElementById('set-registration')?.checked ? '1' : '0'
     };
 
