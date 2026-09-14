@@ -749,7 +749,9 @@ class MarketplaceController {
     if (this.currentPage > 0) {
       this.currentPage--;
       this.fetchAndRenderProjects();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const mc = document.getElementById('main-content');
+      if (mc) mc.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
@@ -757,7 +759,9 @@ class MarketplaceController {
     if ((this.currentPage + 1) * this.limit < this.totalHits) {
       this.currentPage++;
       this.fetchAndRenderProjects();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const mc = document.getElementById('main-content');
+      if (mc) mc.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 

@@ -44,9 +44,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=3.5.5">
 </head>
-<body class="min-h-screen text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
+<body class="h-screen max-h-screen overflow-hidden text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
 
   <!-- Wallpaper and Overlay Background Layers -->
   <div id="wallpaper-layer"></div>
@@ -57,7 +57,7 @@
   <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
   <!-- Top Navigation Header (NookTheme) -->
-  <header id="main-header" class="nook-topbar bg-[#17171b] border-b border-white/10 sticky top-0 z-30 px-5 py-2.5 flex items-center justify-between">
+  <header id="main-header" class="nook-topbar bg-[#17171b] border-b border-white/10 shrink-0 z-30 px-5 py-2.5 flex items-center justify-between">
     <!-- Brand / Logo & Server Title -->
     <div class="flex items-center gap-3 cursor-pointer" onclick="app.navigate('user-overview')">
       <button onclick="event.stopPropagation(); app.toggleMobileSidebar();" class="md:hidden text-slate-400 hover:text-white p-1 mr-1">
@@ -146,11 +146,12 @@
     </div>
   </header>
 
-  <!-- Main Layout Body -->
-  <div class="flex-1 flex overflow-hidden">
-    <!-- NookTheme Sidebar Navigation -->
-    <aside id="main-sidebar" class="w-60 nook-sidebar flex flex-col justify-between p-3 hidden md:flex shrink-0">
-      <div class="space-y-4 overflow-y-auto">
+  <!-- Main Layout Body (Strict Viewport Constraint) -->
+  <div id="app-layout-body" class="flex-1 flex min-h-0 h-[calc(100vh-58px)] overflow-hidden">
+    <!-- NookTheme Sidebar Navigation (Fixed height, independent scroll) -->
+    <aside id="main-sidebar" class="w-60 nook-sidebar flex flex-col justify-between p-3 hidden md:flex shrink-0 h-full max-h-full overflow-hidden">
+      <!-- Dedicated Independent Scrollable Sidebar Container -->
+      <div id="sidebar-scroll-container" class="space-y-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 custom-scrollbar">
         <!-- 1. Server Context Navigation (Shown when inside a server) -->
         <div id="sidebar-server-section" class="hidden">
           <nav class="space-y-1" id="server-nav-links">
@@ -295,8 +296,8 @@
         </div>
       </div>
 
-      <!-- NookTheme Quick SFTP / System Footer -->
-      <div class="p-2.5 rounded-xl bg-[#14151a] border border-white/5 text-[11px] text-slate-400 space-y-1 mt-3">
+      <!-- NookTheme Quick SFTP / System Footer (Pinned at bottom of sidebar) -->
+      <div id="sidebar-system-footer" class="p-2.5 rounded-xl bg-[#14151a] border border-white/5 text-[11px] text-slate-400 space-y-1 mt-3 shrink-0">
         <div class="flex justify-between items-center text-slate-300 font-semibold mb-1">
           <span>System Engine</span>
           <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-green"></span>
@@ -312,8 +313,8 @@
       </div>
     </aside>
 
-    <!-- Main Dynamic Content Container -->
-    <main id="main-content" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+    <!-- Main Dynamic Content Container (Independent Scroll) -->
+    <main id="main-content" class="flex-1 min-h-0 h-full max-h-full overflow-y-auto overscroll-contain p-6 md:p-8 space-y-6 custom-scrollbar">
       <!-- Dynamic Views injected via JS -->
       <div id="view-container"></div>
     </main>
@@ -324,11 +325,11 @@
 
   <!-- Application Javascript Modules -->
   <script src="/js/auth.js?v=2.3.3"></script>
-  <script src="/js/app.js?v=3.5.4"></script>
+  <script src="/js/app.js?v=3.5.5"></script>
   <script src="/js/settings.js?v=2.3.3"></script>
   <script src="/js/console.js?v=3.5.1"></script>
   <script src="/js/filemanager.js?v=3.5.1"></script>
-  <script src="/js/marketplace.js?v=2.3.3"></script>
+  <script src="/js/marketplace.js?v=2.3.4"></script>
   <script src="/js/versionChanger.js?v=2.3.3"></script>
   <script src="/js/playerManager.js?v=2.3.4"></script>
   <script src="/js/worldManager.js?v=2.3.3"></script>
