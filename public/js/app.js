@@ -483,6 +483,9 @@ class App {
     const dd = document.getElementById('user-dropdown-dropdown');
     if (dd) dd.classList.add('hidden');
 
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) mainContent.scrollTop = 0;
+
     if (!this.user && hash !== 'login' && hash !== 'register') {
       if (window.auth && typeof window.auth.showLoginModal === 'function') {
         window.auth.showLoginModal();
