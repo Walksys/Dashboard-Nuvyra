@@ -656,7 +656,7 @@ class AdminManager {
                       <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 min-w-0">
                           <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0 mt-0.5 shadow-inner">
-                            <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : 'terminal')}" class="w-5 h-5"></i>
+                            <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' ? 'server' : 'terminal'))}" class="w-5 h-5"></i>
                           </div>
                           <div class="min-w-0">
                             <div class="flex items-center gap-2">
@@ -858,7 +858,7 @@ class AdminManager {
                           <td class="px-4 py-3">
                             <div class="flex items-center gap-2.5">
                               <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0">
-                                <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : 'terminal')}" class="w-4 h-4"></i>
+                                <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' ? 'server' : 'terminal'))}" class="w-4 h-4"></i>
                               </div>
                               <div class="min-w-0">
                                 <div class="font-bold text-white hover:text-cyan-300 cursor-pointer truncate max-w-xs transition text-xs" onclick="app.navigate('server-manage/${s.id}/console')">
@@ -1295,6 +1295,7 @@ class AdminManager {
     let suffix = mcSuffixes[Math.floor(Math.random() * mcSuffixes.length)];
     if (type === 'nodejs') suffix = nodeSuffixes[Math.floor(Math.random() * nodeSuffixes.length)];
     if (type === 'python') suffix = pySuffixes[Math.floor(Math.random() * pySuffixes.length)];
+    if (type === 'lumenvm' || type === 'vm') suffix = ['VM', 'VPS', 'Cloud', 'Box', 'Node', 'Linux', 'Host'][Math.floor(Math.random() * 7)];
 
     const num = Math.floor(10 + Math.random() * 90);
     return `${prefix}-${suffix}-${num}`;
@@ -1303,6 +1304,7 @@ class AdminManager {
   generateServerDesc(type = 'minecraft', engine = 'Paper', ver = '1.21.4') {
     if (type === 'nodejs') return `Ultra-fast Node.js application container with automated process supervisor.`;
     if (type === 'python') return `Low-latency Python application container with automatic runtime environments.`;
+    if (type === 'lumenvm' || type === 'vm') return `KVM hardware-accelerated Virtual Machine instance (LumenVM) with zero license requirement.`;
     return `High-performance ${engine || 'Minecraft'} ${ver || '1.21.4'} server instance with auto-suspension telemetry.`;
   }
 
@@ -1600,12 +1602,12 @@ class AdminManager {
             <!-- 2. Server Type Selector -->
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-2">Supported Server Type</label>
-              <div class="grid grid-cols-3 gap-3">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-cyan-400 transition">
                   <input type="radio" name="create_srv_type" value="minecraft" checked onchange="admin.onServerTypeChange('minecraft')" class="accent-cyan-400">
                   <i data-lucide="box" class="w-6 h-6 text-cyan-400"></i>
                   <span class="text-xs font-bold text-white">Minecraft</span>
-                  <span class="text-[10px] text-slate-400 text-center">Paper, Purpur, Forge, Fabric...</span>
+                  <span class="text-[10px] text-slate-400 text-center">Paper, Purpur, Forge...</span>
                 </label>
                 <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-purple-400 transition">
                   <input type="radio" name="create_srv_type" value="nodejs" onchange="admin.onServerTypeChange('nodejs')" class="accent-purple-400">
@@ -1617,7 +1619,16 @@ class AdminManager {
                   <input type="radio" name="create_srv_type" value="python" onchange="admin.onServerTypeChange('python')" class="accent-emerald-400">
                   <i data-lucide="layers" class="w-6 h-6 text-emerald-400"></i>
                   <span class="text-xs font-bold text-white">Python</span>
-                  <span class="text-[10px] text-slate-400 text-center">v2.7, 3.7 - 3.13 Apps & Bots</span>
+                  <span class="text-[10px] text-slate-400 text-center">v2.7, 3.7 - 3.13 Apps</span>
+                </label>
+                <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-amber-400 transition">
+                  <input type="radio" name="create_srv_type" value="lumenvm" onchange="admin.onServerTypeChange('lumenvm')" class="accent-amber-400">
+                  <i data-lucide="server" class="w-6 h-6 text-amber-400"></i>
+                  <span class="text-xs font-bold text-white flex items-center gap-1">
+                    <span>LumenVM</span>
+                    <span class="px-1 py-0.2 rounded text-[8px] bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">Free</span>
+                  </span>
+                  <span class="text-[10px] text-slate-400 text-center">Debian, Ubuntu, Kali, Windows</span>
                 </label>
               </div>
             </div>
@@ -1884,6 +1895,63 @@ class AdminManager {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- LumenVM / VPS Configuration Box -->
+            <div id="lumenvm-config-box" class="hidden glass-card p-5 rounded-2xl border border-amber-500/30 space-y-4 bg-gradient-to-br from-amber-950/20 via-slate-900/40 to-slate-900/80">
+              <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <i data-lucide="server" class="w-4 h-4"></i>
+                  </span>
+                  <div>
+                    <h4 class="text-xs font-bold text-white flex items-center gap-2">
+                      LumenVM Virtual Machine Configuration
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        ✓ No License Required (Unlocked)
+                      </span>
+                    </h4>
+                    <p class="text-[10px] text-slate-400">Deploy pure Linux & Windows KVM Virtual Machines with zero license requirement</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono text-amber-400 font-semibold flex items-center gap-1">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Free & Open Source
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- Hostname -->
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">VM Hostname</label>
+                  <input type="text" id="vm-hostname" value="lumenvm" class="w-full glass-input px-3 py-1.5 rounded-xl text-xs font-mono" placeholder="lumenvm">
+                </div>
+
+                <!-- Root Password -->
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">Root / VNC Password</label>
+                  <input type="text" id="vm-password" value="admin123" class="w-full glass-input px-3 py-1.5 rounded-xl text-xs font-mono" placeholder="Password">
+                </div>
+
+                <!-- Display Mode -->
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">Display & Access Mode</label>
+                  <select id="vm-display-mode" class="w-full glass-input px-3 py-1.5 rounded-xl text-xs">
+                    <option value="ssh" selected>SSH Terminal Console (Port 22)</option>
+                    <option value="novnc">noVNC Web Desktop (GUI in Browser)</option>
+                    <option value="vnc">Native VNC Client (Port 5900)</option>
+                    <option value="spice">SPICE Client</option>
+                    <option value="rdp">RDP (Windows Remote Desktop)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-black/40 border border-white/5 text-[11px] text-slate-300 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                  <span>Hardware Virtualization (KVM): <strong class="text-emerald-400">Active & Accelerated</strong></span>
+                </div>
+                <span class="text-emerald-400 text-[10px] font-bold">100% License-Free</span>
               </div>
             </div>
 
@@ -2230,7 +2298,26 @@ class AdminManager {
       { label: 'Python 2.7 (ghcr.io/ptero-eggs/yolks:python_2.7)', value: 'ghcr.io/ptero-eggs/yolks:python_2.7' }
     ];
 
-    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages };
+    const vmImages = [
+      { label: 'Debian 12 (Ready to use, Recommended)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-12' },
+      { label: 'Ubuntu 24.04 LTS (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04' },
+      { label: 'Ubuntu 22.04 LTS (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-22.04' },
+      { label: 'Ubuntu 20.04 LTS (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-20.04' },
+      { label: 'Debian 13 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-13' },
+      { label: 'Debian 11 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-11' },
+      { label: 'Debian 10 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-10' },
+      { label: 'Kali Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-kali' },
+      { label: 'Fedora 40 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-fedora' },
+      { label: 'Arch Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-arch' },
+      { label: 'Rocky Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-rockylinux' },
+      { label: 'Alma Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-almalinux' },
+      { label: 'Debian 12 Desktop (GUI Preinstalled)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-12-desktop' },
+      { label: 'Ubuntu 24.04 Desktop (GUI Preinstalled)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04-desktop' },
+      { label: 'Alpine (Blank Disk / Custom ISO / Windows)', value: 'ghcr.io/sosuku325/aerovm:alpine' },
+      { label: 'Shell (Debug / Rescue Mode)', value: 'ghcr.io/sosuku325/aerovm:shell' }
+    ];
+
+    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, lumenvm: vmImages, vm: vmImages };
     const list = map[type] || mcImages;
 
     select.innerHTML = list.map(item => `
@@ -2240,9 +2327,14 @@ class AdminManager {
 
   onServerTypeChange(type) {
     const mcBox = document.getElementById('mcjars-config-box');
+    const vmBox = document.getElementById('lumenvm-config-box');
     if (mcBox) {
       if (type === 'minecraft') mcBox.classList.remove('hidden');
       else mcBox.classList.add('hidden');
+    }
+    if (vmBox) {
+      if (type === 'lumenvm' || type === 'vm') vmBox.classList.remove('hidden');
+      else vmBox.classList.add('hidden');
     }
     this.populateDockerImages(type);
     if (type === 'minecraft') {
@@ -2291,9 +2383,21 @@ class AdminManager {
 
     let mc_jar_type = null;
     let mc_jar_version = null;
+    let env_vars = {};
     if (server_type === 'minecraft') {
       mc_jar_type = document.getElementById('mc-jar-type')?.value;
       mc_jar_version = document.getElementById('mc-jar-version')?.value;
+    } else if (server_type === 'lumenvm' || server_type === 'vm') {
+      env_vars = {
+        OS_HOSTNAME: document.getElementById('vm-hostname')?.value.trim() || 'lumenvm',
+        OS_PASSWORD: document.getElementById('vm-password')?.value || 'admin123',
+        DISPLAY_MODE: document.getElementById('vm-display-mode')?.value || 'ssh',
+        VM_RAM_MB: 'auto',
+        VM_DISK_GB: 'auto',
+        IPV4_MODE: 'open',
+        PACKAGE_UPDATE: '0',
+        UEFI: '0'
+      };
     }
 
     try {
@@ -2310,7 +2414,8 @@ class AdminManager {
           disk_mb,
           user_id,
           mc_jar_type,
-          mc_jar_version
+          mc_jar_version,
+          env_vars
         })
       });
 
