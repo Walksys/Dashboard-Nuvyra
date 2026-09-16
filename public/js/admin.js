@@ -1920,7 +1920,7 @@ class AdminManager {
                 </span>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <!-- Hostname -->
                 <div>
                   <label class="block text-[11px] font-semibold text-slate-300 mb-1">VM Hostname</label>
@@ -1944,12 +1944,25 @@ class AdminManager {
                     <option value="rdp">RDP (Windows Remote Desktop)</option>
                   </select>
                 </div>
+
+                <!-- KVM Acceleration (On / No-KVM Off / Auto) -->
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                    <span>KVM Mode</span>
+                    <span id="vm-kvm-badge" class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">KVM ON</span>
+                  </label>
+                  <select id="vm-kvm-mode" class="w-full glass-input px-3 py-1.5 rounded-xl text-xs font-semibold" onchange="admin.onVmKvmModeChange(this.value)">
+                    <option value="on" selected>⚡ KVM ON (Hardware Accelerated)</option>
+                    <option value="off">🛡️ No-KVM / OFF (Software Emulation)</option>
+                    <option value="auto">🔄 Auto (Detect Host Support)</option>
+                  </select>
+                </div>
               </div>
 
               <div class="p-2.5 rounded-xl bg-black/40 border border-white/5 text-[11px] text-slate-300 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
-                  <span>Hardware Virtualization (KVM): <strong class="text-emerald-400">Active & Accelerated</strong></span>
+                  <span id="vm-kvm-status-text">Hardware Virtualization: <strong class="text-emerald-400">KVM ON (Hardware Accelerated)</strong></span>
                 </div>
                 <span class="text-emerald-400 text-[10px] font-bold">100% License-Free</span>
               </div>
@@ -2355,6 +2368,36 @@ class AdminManager {
     }
   }
 
+  onVmKvmModeChange(val) {
+    const badge = document.getElementById('vm-kvm-badge');
+    const statusText = document.getElementById('vm-kvm-status-text');
+    if (val === 'off') {
+      if (badge) {
+        badge.textContent = 'NO-KVM (OFF)';
+        badge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      }
+      if (statusText) {
+        statusText.innerHTML = 'Hardware Virtualization: <strong class="text-amber-400">No-KVM / OFF (Software Emulation - Runs anywhere)</strong>';
+      }
+    } else if (val === 'auto') {
+      if (badge) {
+        badge.textContent = 'AUTO';
+        badge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30';
+      }
+      if (statusText) {
+        statusText.innerHTML = 'Hardware Virtualization: <strong class="text-blue-400">AUTO (Detects /dev/kvm support)</strong>';
+      }
+    } else {
+      if (badge) {
+        badge.textContent = 'KVM ON';
+        badge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      }
+      if (statusText) {
+        statusText.innerHTML = 'Hardware Virtualization: <strong class="text-emerald-400">KVM ON (Hardware Accelerated)</strong>';
+      }
+    }
+  }
+
   async handleCreateServer(e) {
     e.preventDefault();
     if (!app.user || app.user.role !== 'admin') {
@@ -2392,6 +2435,7 @@ class AdminManager {
         OS_HOSTNAME: document.getElementById('vm-hostname')?.value.trim() || 'lumenvm',
         OS_PASSWORD: document.getElementById('vm-password')?.value || 'admin123',
         DISPLAY_MODE: document.getElementById('vm-display-mode')?.value || 'ssh',
+        KVM: document.getElementById('vm-kvm-mode')?.value || 'on',
         VM_RAM_MB: 'auto',
         VM_DISK_GB: 'auto',
         IPV4_MODE: 'open',

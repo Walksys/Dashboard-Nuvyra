@@ -92,9 +92,27 @@ class DockerService {
 
     const hostBinds = [`${serverDir}:/home/container:rw`];
 
+    // Environment variables
+    let envArray = ['TERM=xterm-256color', `SERVER_PORT=${port || 25565}`, `SERVER_MEMORY=${server.memory_mb || 1024}`];
+    let parsedEnv = {};
+    try {
+      parsedEnv = typeof server.env_vars === 'string' ? JSON.parse(server.env_vars || '{}') : (server.env_vars || {});
+      for (const [k, v] of Object.entries(parsedEnv)) {
+        envArray.push(`${k}=${v}`);
+      }
+    } catch (e) {}
+
+    // Check KVM mode (on / off / auto / nokvm)
+    const rawKvm = String(parsedEnv.KVM || 'on').toLowerCase();
+    const isKvmOff = rawKvm === 'off' || rawKvm === 'nokvm' || rawKvm === '0' || rawKvm === 'false';
+    const effectiveKvm = isKvmOff ? 'off' : (rawKvm === 'auto' ? 'auto' : 'on');
+
     // Check for KVM acceleration
     const devices = [];
-    if (fs.existsSync('/dev/kvm')) {
+    if (!isKvmOff && fs.existsSync('/dev/kvm')) {
+      try {
+        require('child_process').execSync('chmod 666 /dev/kvm 2>/dev/null || sudo chmod 666 /dev/kvm 2>/dev/null || true');
+      } catch (e) {}
       devices.push({
         PathOnHost: '/dev/kvm',
         PathInContainer: '/dev/kvm',
@@ -126,18 +144,11 @@ class DockerService {
     }
     const cmdParts = ['/bin/sh', '-c', finalCmd];
 
-    // Environment variables
-    let envArray = ['TERM=xterm-256color', `SERVER_PORT=${port || 25565}`, `SERVER_MEMORY=${server.memory_mb || 1024}`];
-    let parsedEnv = {};
-    try {
-      parsedEnv = JSON.parse(server.env_vars || '{}');
-      for (const [k, v] of Object.entries(parsedEnv)) {
-        envArray.push(`${k}=${v}`);
-      }
-    } catch (e) {}
-
     if (isVmServer) {
       envArray.push('LICENSE=UNLOCKED_NO_LICENSE_NEEDED');
+      if (parsedEnv.KVM === undefined) {
+        envArray.push(`KVM=${effectiveKvm}`);
+      }
       if (!parsedEnv.SERVER_PORT) envArray.push(`SERVER_PORT=${port || 2222}`);
       if (!parsedEnv.VM_RAM_MB) envArray.push(`VM_RAM_MB=${Math.round((server.memory_mb || 2048) * 0.8)}`);
       if (!parsedEnv.VM_DISK_GB) envArray.push(`VM_DISK_GB=${Math.round((server.disk_mb || 10240) / 1024 * 0.8) || 10}`);

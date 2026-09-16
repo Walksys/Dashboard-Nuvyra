@@ -1253,6 +1253,7 @@ class ServerConsole {
       if (envVars.REQUIREMENTS_FILE === undefined) envVars.REQUIREMENTS_FILE = 'requirements.txt';
       if (envVars.PYTHON_VERSION === undefined) envVars.PYTHON_VERSION = '3.12';
     } else if (isVm) {
+      if (envVars.KVM === undefined) envVars.KVM = 'on';
       if (envVars.OS_HOSTNAME === undefined) envVars.OS_HOSTNAME = 'mpanel-vm';
       if (envVars.OS_PASSWORD === undefined) envVars.OS_PASSWORD = 'root';
       if (envVars.DISPLAY_MODE === undefined) envVars.DISPLAY_MODE = 'ssh';
@@ -1362,6 +1363,14 @@ class ServerConsole {
         label: 'PYTHON VERSION',
         desc: 'The Python runtime release version.'
       },
+      KVM: {
+        label: 'KVM ACCELERATION (NO-KVM / KVM ON-OFF)',
+        desc: 'Hardware virtualization: on (KVM hardware acceleration - fastest), off (No-KVM software emulation, runs on any VPS/cloud host), or auto (safe fallback).'
+      },
+      DISPLAY_MODE: {
+        label: 'DISPLAY / ACCESS MODE',
+        desc: 'Access method: ssh (port 22), novnc (browser web desktop), vnc (port 5900), or rdp (port 3389).'
+      },
       OS_HOSTNAME: {
         label: 'VM HOSTNAME',
         desc: 'Hostname configured inside the virtual machine.'
@@ -1369,10 +1378,6 @@ class ServerConsole {
       OS_PASSWORD: {
         label: 'ROOT PASSWORD',
         desc: 'Default root / user password inside the virtual machine.'
-      },
-      DISPLAY_MODE: {
-        label: 'DISPLAY / ACCESS MODE',
-        desc: 'Access method: ssh (port 22), novnc (browser web desktop), vnc (port 5900), or rdp (port 3389).'
       },
       VM_RAM_MB: {
         label: 'VM MEMORY (MB)',
@@ -1388,7 +1393,7 @@ class ServerConsole {
     const orderedKeys = isMinecraft
       ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER']
       : (isVm
-        ? ['OS_HOSTNAME', 'OS_PASSWORD', 'DISPLAY_MODE', 'VM_RAM_MB', 'VM_DISK_GB']
+        ? ['KVM', 'DISPLAY_MODE', 'OS_HOSTNAME', 'OS_PASSWORD', 'VM_RAM_MB', 'VM_DISK_GB']
         : (isNode ? ['MAIN_FILE', 'NODE_VERSION', 'ADDITIONAL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'PYTHON_VERSION']));
 
     // Build variables cards HTML matching screenshot
@@ -1396,6 +1401,50 @@ class ServerConsole {
     orderedKeys.forEach(key => {
       const meta = varMeta[key] || { label: key.replace(/_/g, ' '), desc: `Runtime variable for ${key}.` };
       const val = this.currentStartupEnvVars[key] !== undefined ? this.currentStartupEnvVars[key] : '';
+
+      if (key === 'KVM') {
+        const isOff = String(val).toLowerCase() === 'off' || String(val).toLowerCase() === 'nokvm';
+        const isAuto = String(val).toLowerCase() === 'auto';
+        variablesCardsHtml += `
+          <div class="startup-card flex flex-col justify-between border-cyan-500/30" id="var-card-${key}">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="startup-label mb-0" for="startup-var-${key}">${meta.label}</label>
+                <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${isOff ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : (isAuto ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30')}">
+                  ${isOff ? '🛡️ NO-KVM (OFF)' : (isAuto ? '🔄 AUTO' : '⚡ KVM (ON)')}
+                </span>
+              </div>
+              <select id="startup-var-${key}" data-var-key="${key}" class="startup-input font-semibold" onchange="serverConsole.onStartupVariableChange('${key}')">
+                <option value="on" ${!isOff && !isAuto ? 'selected' : ''}>⚡ KVM ON (Hardware Accelerated - Fastest)</option>
+                <option value="off" ${isOff ? 'selected' : ''}>🛡️ No-KVM / OFF (Software Emulation - Runs anywhere)</option>
+                <option value="auto" ${isAuto ? 'selected' : ''}>🔄 Auto (Detect Host Support)</option>
+              </select>
+            </div>
+            <p class="startup-desc">${meta.desc}</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (key === 'DISPLAY_MODE') {
+        variablesCardsHtml += `
+          <div class="startup-card flex flex-col justify-between" id="var-card-${key}">
+            <div>
+              <label class="startup-label" for="startup-var-${key}">${meta.label}</label>
+              <select id="startup-var-${key}" data-var-key="${key}" class="startup-input font-semibold" onchange="serverConsole.onStartupVariableChange('${key}')">
+                <option value="ssh" ${val === 'ssh' || !val ? 'selected' : ''}>SSH Terminal Console (Port 22)</option>
+                <option value="novnc" ${val === 'novnc' ? 'selected' : ''}>noVNC Web Desktop (GUI in Browser)</option>
+                <option value="vnc" ${val === 'vnc' ? 'selected' : ''}>Native VNC Client (Port 5900)</option>
+                <option value="spice" ${val === 'spice' ? 'selected' : ''}>SPICE Client</option>
+                <option value="rdp" ${val === 'rdp' ? 'selected' : ''}>RDP (Windows Remote Desktop)</option>
+              </select>
+            </div>
+            <p class="startup-desc">${meta.desc}</p>
+          </div>
+        `;
+        return;
+      }
+
       variablesCardsHtml += `
         <div class="startup-card flex flex-col justify-between" id="var-card-${key}">
           <div>

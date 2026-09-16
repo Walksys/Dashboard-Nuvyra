@@ -117,16 +117,21 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
       defaultCmd = defaultCmd || '/start.sh';
       let parsed = {};
       try { parsed = typeof env_vars === 'string' ? JSON.parse(env_vars || '{}') : (env_vars || {}); } catch (e) {}
+      const rawKvm = String(parsed.KVM || 'on').toLowerCase();
+      const isKvmOff = rawKvm === 'off' || rawKvm === 'nokvm' || rawKvm === '0' || rawKvm === 'false';
+      const kvmVal = isKvmOff ? 'off' : (rawKvm === 'auto' ? 'auto' : 'on');
       env_vars = {
         OS_HOSTNAME: parsed.OS_HOSTNAME || 'lumenvm',
         OS_PASSWORD: parsed.OS_PASSWORD || 'admin',
         DISPLAY_MODE: parsed.DISPLAY_MODE || 'ssh',
+        KVM: kvmVal,
         VM_RAM_MB: parsed.VM_RAM_MB || 'auto',
         VM_DISK_GB: parsed.VM_DISK_GB || 'auto',
         IPV4_MODE: parsed.IPV4_MODE || 'open',
         PACKAGE_UPDATE: parsed.PACKAGE_UPDATE || '0',
         UEFI: parsed.UEFI || '0',
-        ...parsed
+        ...parsed,
+        KVM: kvmVal
       };
     }
 
@@ -199,7 +204,7 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
       fs.writeFileSync(path.join(serverDir, 'app.py'), `# Mpanel Python Application\nimport os\nfrom http.server import HTTPServer, BaseHTTPRequestHandler\n\nport = int(os.environ.get('PORT', 5000))\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        self.send_response(200)\n        self.send_header('Content-type', 'text/plain')\n        self.end_headers()\n        self.wfile.write(b'Hello from Mpanel Python App!')\n\nprint(f"Starting Python server on port {port}...")\nhttpd = HTTPServer(('0.0.0.0', port), Handler)\nhttpd.serve_forever()\n`, 'utf8');
     } else if (server_type === 'lumenvm' || server_type === 'vm') {
       const vmEnv = typeof env_vars === 'object' ? env_vars : {};
-      fs.writeFileSync(path.join(serverDir, 'README.txt'), `=== LumenVM Virtual Machine ===\nOS Image: ${defaultImg}\nHostname: ${vmEnv.OS_HOSTNAME || 'lumenvm'}\nAccess Mode: ${vmEnv.DISPLAY_MODE || 'ssh'}\nAssigned Port: ${assignedPort}\n\nQEMU virtual disk and machine storage are managed in this directory.\n`, 'utf8');
+      fs.writeFileSync(path.join(serverDir, 'README.txt'), `=== LumenVM Virtual Machine ===\nOS Image: ${defaultImg}\nHostname: ${vmEnv.OS_HOSTNAME || 'lumenvm'}\nAccess Mode: ${vmEnv.DISPLAY_MODE || 'ssh'}\nKVM Mode: ${vmEnv.KVM || 'on'}\nAssigned Port: ${assignedPort}\n\nQEMU virtual disk and machine storage are managed in this directory.\n`, 'utf8');
     }
 
     logActivity(req.user.id, newServerId, 'SERVER_CREATE', `Created server ${name} (${server_type})`, req);

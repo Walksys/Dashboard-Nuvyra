@@ -160,10 +160,13 @@ if [ -n "$BLOCKED_PORTS" ]; then
     [ "${#BLOCKED_SET[@]}" -gt 0 ] && echo "INFO: keeping ${#BLOCKED_SET[@]} port(s) closed: ${BLOCKED_PORTS}"
 fi
 
-case "$KVM" in
-    auto|on|off) ;;
+KVM_LOWER="$(echo "${KVM:-auto}" | tr '[:upper:]' '[:lower:]')"
+case "$KVM_LOWER" in
+    1|true|yes|on) KVM="on" ;;
+    0|false|no|off|nokvm) KVM="off" ;;
+    auto) KVM="auto" ;;
     *)
-        echo "ERROR: KVM must be one of: auto, on, off" >&2
+        echo "ERROR: KVM must be one of: on, off, nokvm, auto (got: '$KVM')" >&2
         exit 1
         ;;
 esac
