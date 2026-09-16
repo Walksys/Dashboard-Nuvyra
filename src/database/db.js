@@ -1,9 +1,9 @@
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config/config');
 
-// Ensure data directory exists
+// Ensure runtime directories exist
 if (!fs.existsSync(config.DATA_DIR)) {
   fs.mkdirSync(config.DATA_DIR, { recursive: true });
 }
@@ -17,214 +17,325 @@ if (!fs.existsSync(config.UPLOADS_DIR)) {
   fs.mkdirSync(config.UPLOADS_DIR, { recursive: true });
 }
 
-const db = new sqlite3.Database(config.DB_PATH, (err) => {
-  if (err) {
-    console.error('❌ Failed to connect to SQLite database:', err.message);
-  } else {
-    console.log('✅ Connected to SQLite database at:', config.DB_PATH);
-  }
+// MariaDB / MySQL Connection Pool
+const pool = mysql.createPool({
+  host: config.DB_HOST,
+  port: config.DB_PORT,
+  user: config.DB_USER,
+  password: config.DB_PASSWORD,
+  database: config.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 15,
+  queueLimit: 0,
+  multipleStatements: true,
+  dateStrings: true
 });
 
-// Enable WAL mode and foreign keys for high concurrency & safety
-db.serialize(() => {
-  db.run('PRAGMA journal_mode = WAL;');
-  db.run('PRAGMA foreign_keys = ON;');
-});
+function sanitizeParams(params) {
+  if (!Array.isArray(params)) return [];
+  return params.map(p => (p === undefined ? null : p));
+}
 
-// Promisified helper methods
+// Promisified helper methods matching the SQLite interface
 const query = {
-  get: (sql, params = []) => {
-    return new Promise((resolve, reject) => {
-      db.get(sql, params, (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
+  get: async (sql, params = []) => {
+    const [rows] = await pool.query(sql, sanitizeParams(params));
+    return Array.isArray(rows) && rows.length > 0 ? rows[0] : undefined;
   },
-  all: (sql, params = []) => {
-    return new Promise((resolve, reject) => {
-      db.all(sql, params, (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
-      });
-    });
+  all: async (sql, params = []) => {
+    const [rows] = await pool.query(sql, sanitizeParams(params));
+    return Array.isArray(rows) ? rows : [];
   },
-  run: (sql, params = []) => {
-    return new Promise((resolve, reject) => {
-      db.run(sql, params, function (err) {
-        if (err) reject(err);
-        else resolve({ lastID: this.lastID, changes: this.changes });
-      });
-    });
+  run: async (sql, params = []) => {
+    const [result] = await pool.query(sql, sanitizeParams(params));
+    return {
+      lastID: result ? result.insertId : null,
+      changes: result ? result.affectedRows : 0
+    };
   },
-  exec: (sql) => {
-    return new Promise((resolve, reject) => {
-      db.exec(sql, (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+  exec: async (sql) => {
+    await pool.query(sql);
   }
 };
 
+async function waitForDatabase(maxRetries = 15, delayMs = 2000) {
+  for (let i = 1; i <= maxRetries; i++) {
+    try {
+      const conn = await pool.getConnection();
+      conn.release();
+      console.log(`✅ Connected to MariaDB database [${config.DB_NAME}] on ${config.DB_HOST}:${config.DB_PORT}`);
+      return;
+    } catch (err) {
+      console.warn(`⏳ Waiting for MariaDB connection (attempt ${i}/${maxRetries}): ${err.message}`);
+      if (i === maxRetries) {
+        console.error('❌ Failed to connect to MariaDB database after maximum retries:', err.message);
+        throw err;
+      }
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+}
+
 async function initDatabase() {
+  // 1. Ensure connectivity
+  await waitForDatabase();
+
+  // 2. Execute table migrations
   const schema = `
     CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT,
-      type TEXT DEFAULT 'string',
-      description TEXT,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+      \`key\` VARCHAR(191) PRIMARY KEY,
+      \`value\` LONGTEXT,
+      \`type\` VARCHAR(50) DEFAULT 'string',
+      \`description\` TEXT,
+      \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT UNIQUE NOT NULL,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      role TEXT DEFAULT 'user', -- 'admin' | 'user'
-      two_factor_secret TEXT,
-      two_factor_enabled INTEGER DEFAULT 0,
-      suspended INTEGER DEFAULT 0,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid VARCHAR(64) NOT NULL,
+      username VARCHAR(100) NOT NULL,
+      email VARCHAR(191) NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      role VARCHAR(50) DEFAULT 'user',
+      two_factor_secret VARCHAR(255),
+      two_factor_enabled TINYINT(1) DEFAULT 0,
+      suspended TINYINT(1) DEFAULT 0,
       avatar TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_users_uuid (uuid),
+      UNIQUE KEY uq_users_username (username),
+      UNIQUE KEY uq_users_email (email)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS locations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      short_code TEXT UNIQUE NOT NULL,
-      name TEXT NOT NULL,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      short_code VARCHAR(50) NOT NULL,
+      name VARCHAR(191) NOT NULL,
       description TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_locations_short_code (short_code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS nodes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      fqdn TEXT NOT NULL,
-      daemon_port INTEGER DEFAULT 3003,
-      sftp_port INTEGER DEFAULT 3004,
-      memory_mb INTEGER DEFAULT 8192,
-      disk_mb INTEGER DEFAULT 51200,
-      location_id INTEGER,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(191) NOT NULL,
+      fqdn VARCHAR(191) NOT NULL,
+      daemon_port INT DEFAULT 3003,
+      sftp_port INT DEFAULT 3004,
+      memory_mb INT DEFAULT 8192,
+      disk_mb INT DEFAULT 51200,
+      location_id INT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE SET NULL
-    );
+      INDEX idx_nodes_location (location_id),
+      CONSTRAINT fk_nodes_location FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS allocations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      node_id INTEGER NOT NULL,
-      ip TEXT NOT NULL,
-      port INTEGER NOT NULL,
-      server_id INTEGER,
-      assigned INTEGER DEFAULT 0,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      node_id INT NOT NULL,
+      ip VARCHAR(64) NOT NULL,
+      port INT NOT NULL,
+      server_id INT,
+      assigned TINYINT(1) DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
-    );
+      INDEX idx_allocations_node (node_id),
+      CONSTRAINT fk_allocations_node FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS servers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT UNIQUE NOT NULL,
-      name TEXT NOT NULL,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid VARCHAR(64) NOT NULL,
+      name VARCHAR(191) NOT NULL,
       description TEXT,
-      user_id INTEGER NOT NULL,
-      node_id INTEGER NOT NULL,
-      allocation_id INTEGER,
-      server_type TEXT NOT NULL, -- 'minecraft' | 'python' | 'nodejs'
-      docker_image TEXT NOT NULL,
+      user_id INT NOT NULL,
+      node_id INT NOT NULL,
+      allocation_id INT,
+      server_type VARCHAR(50) NOT NULL,
+      docker_image VARCHAR(255) NOT NULL,
       startup_cmd TEXT NOT NULL,
-      memory_mb INTEGER DEFAULT 1024,
-      cpu_limit INTEGER DEFAULT 100,
-      disk_mb INTEGER DEFAULT 5120,
-      status TEXT DEFAULT 'offline', -- 'offline' | 'starting' | 'running' | 'stopping'
-      env_vars TEXT DEFAULT '{}',
-      jar_type TEXT,
-      jar_version TEXT,
-      jar_build TEXT,
-      container_id TEXT,
+      memory_mb INT DEFAULT 1024,
+      cpu_limit INT DEFAULT 100,
+      disk_mb INT DEFAULT 5120,
+      status VARCHAR(50) DEFAULT 'offline',
+      env_vars LONGTEXT,
+      jar_type VARCHAR(50),
+      jar_version VARCHAR(50),
+      jar_build VARCHAR(50),
+      container_id VARCHAR(128),
+      expiration_date DATETIME,
+      is_suspended TINYINT(1) DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE RESTRICT
-    );
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_servers_uuid (uuid),
+      INDEX idx_servers_user (user_id),
+      INDEX idx_servers_node (node_id),
+      CONSTRAINT fk_servers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      CONSTRAINT fk_servers_node FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE RESTRICT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS subusers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      server_id INTEGER NOT NULL,
-      user_id INTEGER NOT NULL,
-      permissions TEXT DEFAULT '[]',
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      server_id INT NOT NULL,
+      user_id INT NOT NULL,
+      permissions LONGTEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      UNIQUE(server_id, user_id)
-    );
+      UNIQUE KEY uq_subusers_server_user (server_id, user_id),
+      INDEX idx_subusers_server (server_id),
+      INDEX idx_subusers_user (user_id),
+      CONSTRAINT fk_subusers_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE,
+      CONSTRAINT fk_subusers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS backups (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      server_id INTEGER NOT NULL,
-      name TEXT NOT NULL,
-      file_name TEXT NOT NULL,
-      file_size INTEGER DEFAULT 0,
-      path TEXT NOT NULL,
-      is_locked INTEGER DEFAULT 0,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      server_id INT NOT NULL,
+      name VARCHAR(191) NOT NULL,
+      file_name VARCHAR(255) NOT NULL,
+      file_size BIGINT DEFAULT 0,
+      path VARCHAR(500) NOT NULL,
+      is_locked TINYINT(1) DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
-    );
+      INDEX idx_backups_server (server_id),
+      CONSTRAINT fk_backups_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS schedules (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      server_id INTEGER NOT NULL,
-      name TEXT NOT NULL,
-      cron_expression TEXT NOT NULL,
-      action_type TEXT NOT NULL, -- 'restart' | 'command' | 'backup' | 'start' | 'stop'
-      payload TEXT,
-      is_active INTEGER DEFAULT 1,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      server_id INT NOT NULL,
+      name VARCHAR(191) NOT NULL,
+      cron_expression VARCHAR(100) NOT NULL,
+      action_type VARCHAR(50) NOT NULL,
+      payload LONGTEXT,
+      is_active TINYINT(1) DEFAULT 1,
       last_run_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
-    );
+      INDEX idx_schedules_server (server_id),
+      CONSTRAINT fk_schedules_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS api_keys (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      key_token TEXT UNIQUE NOT NULL,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      key_token VARCHAR(191) NOT NULL,
       description TEXT,
-      permissions TEXT DEFAULT '["*"]',
+      permissions LONGTEXT,
       last_used_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    );
+      UNIQUE KEY uq_api_keys_token (key_token),
+      INDEX idx_api_keys_user (user_id),
+      CONSTRAINT fk_api_keys_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
     CREATE TABLE IF NOT EXISTS activity_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      server_id INTEGER,
-      action TEXT NOT NULL,
-      details TEXT,
-      ip_address TEXT,
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT,
+      server_id INT,
+      action VARCHAR(100) NOT NULL,
+      details LONGTEXT,
+      ip_address VARCHAR(64),
       user_agent TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_activity_logs_user (user_id),
+      INDEX idx_activity_logs_server (server_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    CREATE TABLE IF NOT EXISTS database_hosts (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(191) NOT NULL,
+      host VARCHAR(191) NOT NULL,
+      port INT NOT NULL DEFAULT 27017,
+      username VARCHAR(191) NOT NULL DEFAULT 'root',
+      password VARCHAR(191) NOT NULL DEFAULT 'RootPass123!',
+      node_id INT DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    CREATE TABLE IF NOT EXISTS server_databases (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      server_id INT NOT NULL,
+      database_host_id INT DEFAULT 1,
+      database_name VARCHAR(64) NOT NULL,
+      username VARCHAR(64) NOT NULL,
+      password VARCHAR(128) NOT NULL,
+      remote_connections VARCHAR(64) DEFAULT '%',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_sdb_server (server_id),
+      CONSTRAINT fk_sdb_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    CREATE TABLE IF NOT EXISTS social_providers (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      enabled TINYINT(1) DEFAULT 0,
+      name VARCHAR(100) NOT NULL,
+      short_name VARCHAR(50) NOT NULL,
+      client_id TEXT,
+      client_secret TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_social_providers_short_name (short_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    CREATE TABLE IF NOT EXISTS social_connections (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      provider_id INT NOT NULL,
+      auth_id VARCHAR(255) NOT NULL,
+      auth_name VARCHAR(255) NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_social_connections_user (user_id),
+      INDEX idx_social_connections_provider (provider_id),
+      CONSTRAINT fk_social_connections_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      CONSTRAINT fk_social_connections_provider FOREIGN KEY (provider_id) REFERENCES social_providers(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `;
 
   await query.exec(schema);
 
-  // SAGA Auto Suspension v1 Migrations
+  // Seed default database host if none exists
   try {
-    await query.run('ALTER TABLE servers ADD COLUMN expiration_date DATETIME');
-  } catch (e) {}
-  try {
-    await query.run('ALTER TABLE servers ADD COLUMN is_suspended INTEGER DEFAULT 0');
+    const existingHost = await query.get('SELECT id FROM database_hosts LIMIT 1');
+    if (!existingHost) {
+      await query.run(
+        'INSERT INTO database_hosts (name, host, port, username, password, node_id) VALUES (?, ?, ?, ?, ?, ?)',
+        ['Local MariaDB 11', '127.0.0.1', 27017, 'root', 'RootPass123!', 1]
+      );
+    }
   } catch (e) {}
 
-  console.log('✅ SQLite Schema initialized successfully.');
+  // Seed default social login settings
+  try {
+    const regSetting = await query.get("SELECT `key` FROM settings WHERE `key` = 'sociallogin_allow_register'");
+    if (!regSetting) {
+      await query.run(
+        "INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('sociallogin_allow_register', '1', 'boolean', 'Allow user registration via social OAuth providers')"
+      );
+    }
+    const connectSetting = await query.get("SELECT `key` FROM settings WHERE `key` = 'sociallogin_allow_connecting'");
+    if (!connectSetting) {
+      await query.run(
+        "INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('sociallogin_allow_connecting', '1', 'boolean', 'Allow connecting social account with existing email')"
+      );
+    }
+    const tutSetting = await query.get("SELECT `key` FROM settings WHERE `key` = 'tutorials_enabled'");
+    if (!tutSetting) {
+      await query.run(
+        "INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('tutorials_enabled', '1', 'boolean', 'Enable or disable the interactive Tutorials page in client portal')"
+      );
+    }
+    const autoTutSetting = await query.get("SELECT `key` FROM settings WHERE `key` = 'tutorials_autostart_enabled'");
+    if (!autoTutSetting) {
+      await query.run(
+        "INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('tutorials_autostart_enabled', '0', 'boolean', 'Automatically launch the interactive auto-tutorial for new users on their first login')"
+      );
+    }
+  } catch (e) {}
+
+  console.log('✅ MariaDB Schema initialized successfully.');
 }
 
 module.exports = {
-  db,
+  db: pool,
+  pool,
   query,
   initDatabase
 };
-

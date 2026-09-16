@@ -27,10 +27,10 @@ async function seedDatabase() {
   ];
 
   for (const s of defaultSettings) {
-    const existing = await query.get('SELECT key FROM settings WHERE key = ?', [s.key]);
+    const existing = await query.get('SELECT `key` FROM settings WHERE `key` = ?', [s.key]);
     if (!existing) {
       await query.run(
-        'INSERT INTO settings (key, value, description) VALUES (?, ?, ?)',
+        'INSERT INTO settings (`key`, `value`, `description`) VALUES (?, ?, ?)',
         [s.key, s.value, s.description]
       );
     }

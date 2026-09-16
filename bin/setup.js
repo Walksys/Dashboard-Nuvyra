@@ -72,16 +72,23 @@ JWT_SECRET=${jwtSecret}
 JWT_EXPIRES_IN=7d
 CURSEFORGE_API_KEY=$2a$10$2LouREiMl.mx0kVBK.RlK.nloje4XS3oF8uSw809VZr07O.0A5cLq
 CURSEFORGE_BASE_URL=https://api.curseforge.com/v1
+
+# Database Configuration (MariaDB / MySQL)
+DB_HOST=127.0.0.1
+DB_PORT=27017
+DB_USER=panel
+DB_PASSWORD=PanelPass123!
+DB_NAME=panel
 `;
     fs.writeFileSync(envPath, envContent, 'utf8');
     log('🔐 Generated secure .env configuration file.');
     envCreated = true;
   }
 
-  // 3. Initialize SQLite database schema
+  // 3. Initialize MariaDB database schema
   const { initDatabase, query } = require('../src/database/db');
   await initDatabase();
-  log('📦 SQLite schema initialized.');
+  log('📦 MariaDB schema initialized.');
 
   // 4. Seed initial data (settings, location, node, port allocations)
   const { seedDatabase } = require('../src/database/seed');
@@ -101,21 +108,21 @@ CURSEFORGE_BASE_URL=https://api.curseforge.com/v1
     const existing = await query.get('SELECT id, uuid FROM users WHERE username = ? OR email = ?', [username, email]);
     if (existing) {
       await query.run(
-        'UPDATE users SET password_hash = ?, role = "admin", updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        'UPDATE users SET password_hash = ?, role = \'admin\', updated_at = CURRENT_TIMESTAMP WHERE id = ?',
         [passwordHash, existing.id]
       );
       adminDetails = { id: existing.id, username, email, password, role: 'admin', updated: true };
       log(`👑 Admin user "${username}" password updated.`);
     } else {
       const res = await query.run(
-        'INSERT INTO users (uuid, username, email, password_hash, role) VALUES (?, ?, ?, ?, "admin")',
+        'INSERT INTO users (uuid, username, email, password_hash, role) VALUES (?, ?, ?, ?, \'admin\')',
         [uuid, username, email, passwordHash]
       );
       adminDetails = { id: res.lastID, username, email, password, role: 'admin', created: true };
       log(`👑 Admin user "${username}" created.`);
     }
   } else if (options.resetAdmin) {
-    const existingAdmin = await query.get('SELECT id, username, email FROM users WHERE role = "admin" ORDER BY id ASC LIMIT 1');
+    const existingAdmin = await query.get('SELECT id, username, email FROM users WHERE role = \'admin\' ORDER BY id ASC LIMIT 1');
     if (existingAdmin) {
       const newPassword = crypto.randomBytes(6).toString('hex'); // 12-char secure password
       const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -127,7 +134,7 @@ CURSEFORGE_BASE_URL=https://api.curseforge.com/v1
       log(`🔑 Admin password for "${existingAdmin.username}" has been reset to: ${newPassword}`);
     }
   } else if (!options.skipAdmin) {
-    const existingAdmin = await query.get('SELECT id, username, email FROM users WHERE role = "admin" ORDER BY id ASC LIMIT 1');
+    const existingAdmin = await query.get('SELECT id, username, email FROM users WHERE role = \'admin\' ORDER BY id ASC LIMIT 1');
     if (existingAdmin) {
       adminDetails = { id: existingAdmin.id, username: existingAdmin.username, email: existingAdmin.email, role: 'admin' };
     }

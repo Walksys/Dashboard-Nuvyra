@@ -85,6 +85,7 @@ show_banner() {
     echo -e "${CYAN}║${NC}  • Web Panel UI:    ${GREEN}http://${host_ip}:3001${NC}"
     echo -e "${CYAN}║${NC}  • Daemon/API Port: ${GREEN}http://${host_ip}:3003${NC}"
     echo -e "${CYAN}║${NC}  • SFTP Port:       ${GREEN}sftp://${host_ip}:3004${NC}"
+    echo -e "${CYAN}║${NC}  • Database:        ${GREEN}MariaDB / MySQL (Docker)${NC}"
     echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
@@ -148,19 +149,19 @@ auto_install_mpanel() {
         case "$pkg_mgr" in
             apt)
                 $SUDO apt-get update -qq
-                $SUDO apt-get install -y -qq "${missing_pkgs[@]}" build-essential sqlite3
+                $SUDO apt-get install -y -qq "${missing_pkgs[@]}" build-essential
                 ;;
             dnf)
-                $SUDO dnf install -y "${missing_pkgs[@]}" gcc gcc-c++ make sqlite
+                $SUDO dnf install -y "${missing_pkgs[@]}" gcc gcc-c++ make
                 ;;
             yum)
-                $SUDO yum install -y "${missing_pkgs[@]}" gcc gcc-c++ make sqlite
+                $SUDO yum install -y "${missing_pkgs[@]}" gcc gcc-c++ make
                 ;;
             apk)
-                $SUDO apk add --no-cache "${missing_pkgs[@]}" build-base sqlite
+                $SUDO apk add --no-cache "${missing_pkgs[@]}" build-base
                 ;;
             pacman)
-                $SUDO pacman -Sy --noconfirm "${missing_pkgs[@]}" base-devel sqlite
+                $SUDO pacman -Sy --noconfirm "${missing_pkgs[@]}" base-devel
                 ;;
             *)
                 echo -e "${YELLOW}ℹ️ Unknown package manager. Please ensure git, curl, and build tools are installed.${NC}"
@@ -275,6 +276,9 @@ auto_install_mpanel() {
             setup_args+=(--admin-email "$admin_email")
         fi
     fi
+
+    # Ensure MariaDB / MySQL database container is active
+    ensure_mariadb_container
 
     # Run automated setup script
     node bin/setup.js "${setup_args[@]}"
@@ -493,7 +497,310 @@ pm2_menu() {
 }
 
 # ==============================================================================
-# 5. START IN FOREGROUND (Debug Mode)
+# 5. DATABASE MANAGER (MariaDB / MySQL Docker & Migrations)
+# ==============================================================================
+update_db_env() {
+    local host="$1"
+    local port="$2"
+    local user="$3"
+    local pass="$4"
+    local name="$5"
+
+    touch .env
+    for key in DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME; do
+        sed -i "/^${key}=/d" .env
+    done
+
+    echo "DB_HOST=${host}" >> .env
+    echo "DB_PORT=${port}" >> .env
+    echo "DB_USER=${user}" >> .env
+    echo "DB_PASSWORD=${pass}" >> .env
+    echo "DB_NAME=${name}" >> .env
+
+    if [ -f "ecosystem.config.js" ]; then
+        sed -i "s/DB_PORT: .*/DB_PORT: ${port},/" ecosystem.config.js
+    fi
+}
+
+start_mariadb_container() {
+    echo -e "${CYAN}======================================================${NC}"
+    echo -e "${WHITE}  🚀 Launching MariaDB 11 Container (Port 27017)      ${NC}"
+    echo -e "${CYAN}======================================================${NC}"
+    echo ""
+
+    if ! command -v docker &>/dev/null; then
+        echo -e "${RED}❌ Docker is not installed. Please install Docker first.${NC}"
+        wait_prompt
+        return 1
+    fi
+
+    if docker ps --format '{{.Names}}' | grep -q "^panel-mariadb$"; then
+        echo -e "${GREEN}✅ Container 'panel-mariadb' is already running on port 27017.${NC}"
+    elif docker ps -a --format '{{.Names}}' | grep -q "^panel-mariadb$"; then
+        echo -e "${YELLOW}Container 'panel-mariadb' exists but is stopped. Starting...${NC}"
+        docker start panel-mariadb
+    else
+        echo -e "${CYAN}Creating & running MariaDB container (panel-mariadb)...${NC}"
+        docker run -d \
+          --name panel-mariadb \
+          --restart unless-stopped \
+          -e MARIADB_ROOT_PASSWORD=RootPass123! \
+          -e MARIADB_DATABASE=panel \
+          -e MARIADB_USER=panel \
+          -e MARIADB_PASSWORD=PanelPass123! \
+          -v panel_db:/var/lib/mysql \
+          -p 27017:3306 \
+          mariadb:11
+    fi
+
+    update_db_env "127.0.0.1" "27017" "panel" "PanelPass123!" "panel"
+    echo -e "${GREEN}✅ Configuration updated to MariaDB (Port 27017).${NC}"
+
+    echo -e "${CYAN}⏳ Waiting for MariaDB to accept connections...${NC}"
+    local retries=15
+    while [ $retries -gt 0 ]; do
+        if docker logs panel-mariadb 2>&1 | grep -q "ready for connections"; then
+            echo -e "${GREEN}✅ MariaDB is ready for connections!${NC}"
+            break
+        fi
+        sleep 1
+        retries=$((retries - 1))
+    done
+
+    echo ""
+    echo -e "${CYAN}🔄 Running schema migrations...${NC}"
+    npm run migrate
+
+    if pm2 list 2>/dev/null | grep -q "mpanel"; then
+        echo -e "${CYAN}🔄 Restarting Mpanel in PM2 to apply DB configuration...${NC}"
+        pm2 restart mpanel --update-env
+    fi
+
+    wait_prompt
+}
+
+start_mysql_container() {
+    echo -e "${CYAN}======================================================${NC}"
+    echo -e "${WHITE}    🐬 Launching MySQL 8.0 Container (Port 27016)     ${NC}"
+    echo -e "${CYAN}======================================================${NC}"
+    echo ""
+
+    if ! command -v docker &>/dev/null; then
+        echo -e "${RED}❌ Docker is not installed. Please install Docker first.${NC}"
+        wait_prompt
+        return 1
+    fi
+
+    if docker ps --format '{{.Names}}' | grep -q "^mysql-db$"; then
+        echo -e "${GREEN}✅ Container 'mysql-db' is already running on port 27016.${NC}"
+    elif docker ps -a --format '{{.Names}}' | grep -q "^mysql-db$"; then
+        echo -e "${YELLOW}Container 'mysql-db' exists but is stopped. Starting...${NC}"
+        docker start mysql-db
+    else
+        echo -e "${CYAN}Creating & running MySQL container (mysql-db)...${NC}"
+        docker run -d \
+          --name mysql-db \
+          --restart unless-stopped \
+          -e MYSQL_ROOT_PASSWORD=StrongPassword123 \
+          -e MYSQL_DATABASE=panel \
+          -e MYSQL_USER=panel \
+          -e MYSQL_PASSWORD=PanelPassword123 \
+          -p 27016:3306 \
+          -v mysql_data:/var/lib/mysql \
+          mysql:8.0
+    fi
+
+    update_db_env "127.0.0.1" "27016" "panel" "PanelPassword123" "panel"
+    echo -e "${GREEN}✅ Configuration updated to MySQL (Port 27016).${NC}"
+
+    echo -e "${CYAN}⏳ Waiting for MySQL to accept connections...${NC}"
+    local retries=20
+    while [ $retries -gt 0 ]; do
+        if docker logs mysql-db 2>&1 | grep -q "ready for connections"; then
+            echo -e "${GREEN}✅ MySQL is ready for connections!${NC}"
+            break
+        fi
+        sleep 2
+        retries=$((retries - 1))
+    done
+
+    echo ""
+    echo -e "${CYAN}🔄 Running schema migrations...${NC}"
+    npm run migrate
+
+    if pm2 list 2>/dev/null | grep -q "mpanel"; then
+        echo -e "${CYAN}🔄 Restarting Mpanel in PM2 to apply DB configuration...${NC}"
+        pm2 restart mpanel --update-env
+    fi
+
+    wait_prompt
+}
+
+run_db_migration() {
+    echo -e "${CYAN}🔄 Running database migrations (npm run migrate)...${NC}"
+    npm run migrate
+    wait_prompt
+}
+
+db_status_view() {
+    echo -e "${CYAN}======================================================${NC}"
+    echo -e "${WHITE}              📊 Database Status                      ${NC}"
+    echo -e "${CYAN}======================================================${NC}"
+    echo ""
+    
+    if command -v docker &>/dev/null; then
+        echo -e "${WHITE}Docker Database Containers:${NC}"
+        docker ps -a --filter "name=panel-mariadb" --filter "name=mysql-db" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+    else
+        echo -e "${YELLOW}Docker is not installed.${NC}"
+    fi
+
+    echo ""
+    local db_host db_port db_name
+    db_host=$(grep "^DB_HOST=" .env 2>/dev/null | cut -d '=' -f2 || echo "127.0.0.1")
+    db_port=$(grep "^DB_PORT=" .env 2>/dev/null | cut -d '=' -f2 || echo "27017")
+    db_name=$(grep "^DB_NAME=" .env 2>/dev/null | cut -d '=' -f2 || echo "panel")
+    echo -e "Current Config Target: ${CYAN}${db_host}:${db_port}/${db_name}${NC}"
+
+    if node -e "
+      const mysql = require('mysql2/promise');
+      require('dotenv').config();
+      mysql.createConnection({
+        host: process.env.DB_HOST || '127.0.0.1',
+        port: parseInt(process.env.DB_PORT || '27017', 10),
+        user: process.env.DB_USER || 'panel',
+        password: process.env.DB_PASSWORD || 'PanelPass123!',
+        database: process.env.DB_NAME || 'panel'
+      }).then(c => { c.end(); process.exit(0); }).catch(e => process.exit(1));
+    " &>/dev/null; then
+        echo -e "Connection Test:       ${GREEN}CONNECTED (Success)${NC}"
+    else
+        echo -e "Connection Test:       ${RED}DISCONNECTED (Failed to connect)${NC}"
+    fi
+
+    echo ""
+    wait_prompt
+}
+
+db_logs_view() {
+    echo -e "${CYAN}Select container logs to view:${NC}"
+    echo -e "  [1] MariaDB (panel-mariadb)"
+    echo -e "  [2] MySQL (mysql-db)"
+    read -p "Select [1-2]: " log_opt
+    if [ "$log_opt" == "2" ]; then
+        docker logs --tail 50 mysql-db
+    else
+        docker logs --tail 50 panel-mariadb
+    fi
+    echo ""
+    wait_prompt
+}
+
+stop_db_container() {
+    echo -e "${YELLOW}Stopping database containers...${NC}"
+    docker stop panel-mariadb 2>/dev/null || true
+    docker stop mysql-db 2>/dev/null || true
+    echo -e "${GREEN}Database containers stopped.${NC}"
+    wait_prompt
+}
+
+restart_db_container() {
+    echo -e "${CYAN}Restarting database containers...${NC}"
+    docker restart panel-mariadb 2>/dev/null || true
+    docker restart mysql-db 2>/dev/null || true
+    echo -e "${GREEN}Database containers restarted.${NC}"
+    wait_prompt
+}
+
+ensure_mariadb_container() {
+    if ! command -v docker &>/dev/null; then
+        echo -e "${YELLOW}⚠️ Docker is required for MariaDB container.${NC}"
+        return 0
+    fi
+
+    if docker ps --format '{{.Names}}' | grep -qE '^(panel-mariadb|mysql-db)$'; then
+        return 0
+    fi
+
+    if docker ps -a --format '{{.Names}}' | grep -q "^panel-mariadb$"; then
+        echo -e "${CYAN}Starting existing 'panel-mariadb' container...${NC}"
+        docker start panel-mariadb
+    else
+        echo -e "${CYAN}Launching MariaDB 11 container on port 27017...${NC}"
+        docker run -d \
+          --name panel-mariadb \
+          --restart unless-stopped \
+          -e MARIADB_ROOT_PASSWORD=RootPass123! \
+          -e MARIADB_DATABASE=panel \
+          -e MARIADB_USER=panel \
+          -e MARIADB_PASSWORD=PanelPass123! \
+          -v panel_db:/var/lib/mysql \
+          -p 27017:3306 \
+          mariadb:11
+    fi
+    sleep 3
+}
+
+db_menu() {
+    if [ "$1" == "start-mariadb" ] || [ "$1" == "mariadb" ]; then
+        start_mariadb_container
+        return
+    elif [ "$1" == "start-mysql" ] || [ "$1" == "mysql" ]; then
+        start_mysql_container
+        return
+    elif [ "$1" == "stop" ]; then
+        stop_db_container
+        return
+    elif [ "$1" == "restart" ]; then
+        restart_db_container
+        return
+    elif [ "$1" == "migrate" ]; then
+        run_db_migration
+        return
+    elif [ "$1" == "status" ]; then
+        db_status_view
+        return
+    elif [ "$1" == "logs" ]; then
+        db_logs_view
+        return
+    fi
+
+    while true; do
+        clear
+        echo -e "${PURPLE}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${PURPLE}║${WHITE}           🗄️  DATABASE MANAGER (MariaDB / MySQL)             ${PURPLE}║${NC}"
+        echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "  ${CYAN}[1]${NC} 🚀 Run / Start MariaDB Docker Container (Port 27017) [Default]"
+        echo -e "  ${CYAN}[2]${NC} 🐬 Run / Start MySQL 8.0 Docker Container (Port 27016)"
+        echo -e "  ${CYAN}[3]${NC} 🔄 Run Database Migrations (npm run migrate)"
+        echo -e "  ${CYAN}[4]${NC} 📊 Check Database Status & Connection"
+        echo -e "  ${CYAN}[5]${NC} 📜 View Database Container Logs"
+        echo -e "  ${CYAN}[6]${NC} ⏹️  Stop Database Containers"
+        echo -e "  ${CYAN}[7]${NC} 🔁 Restart Database Containers"
+        echo -e "  ${CYAN}[0]${NC} ↩️  Back to Main Menu"
+        echo ""
+        read -p "Select an option [0-7]: " db_opt
+
+        case $db_opt in
+            1) start_mariadb_container ;;
+            2) start_mysql_container ;;
+            3) run_db_migration ;;
+            4) db_status_view ;;
+            5) db_logs_view ;;
+            6) stop_db_container ;;
+            7) restart_db_container ;;
+            0) break ;;
+            *)
+                echo -e "${RED}Invalid selection.${NC}"
+                sleep 1
+                ;;
+        esac
+    done
+}
+
+# ==============================================================================
+# 6. START IN FOREGROUND (Debug Mode)
 # ==============================================================================
 start_foreground() {
     echo -e "${CYAN}Starting Mpanel in foreground (Press Ctrl+C to stop)...${NC}"
@@ -501,7 +808,7 @@ start_foreground() {
 }
 
 # ==============================================================================
-# 6. STATUS & PORT CHECK
+# 7. STATUS & PORT CHECK
 # ==============================================================================
 status_check() {
     echo -e "${CYAN}======================================================${NC}"
@@ -517,7 +824,7 @@ status_check() {
     # Check Ports
     echo ""
     echo -e "${WHITE}Port Status:${NC}"
-    for port in 3001 3003 3004; do
+    for port in 3001 3003 3004 27017 27016; do
         if ss -tuln 2>/dev/null | grep -q ":$port " || netstat -tuln 2>/dev/null | grep -q ":$port "; then
             echo -e " • Port ${CYAN}$port${NC}: ${GREEN}ACTIVE (Listening)${NC}"
         else
@@ -526,13 +833,42 @@ status_check() {
     done
 
     echo ""
-    # Database
-    if [ -f "data/mpanel.sqlite" ]; then
-        local db_size
-        db_size=$(du -h data/mpanel.sqlite | awk '{print $1}')
-        echo -e "Database: ${GREEN}data/mpanel.sqlite (${db_size})${NC}"
+    # Database Status (MariaDB / MySQL)
+    echo -e "${WHITE}Database Status:${NC}"
+    local db_host db_port db_name
+    db_host=$(grep "^DB_HOST=" .env 2>/dev/null | cut -d '=' -f2 || echo "127.0.0.1")
+    db_port=$(grep "^DB_PORT=" .env 2>/dev/null | cut -d '=' -f2 || echo "27017")
+    db_name=$(grep "^DB_NAME=" .env 2>/dev/null | cut -d '=' -f2 || echo "panel")
+    echo -e " • Target: ${CYAN}${db_host}:${db_port}/${db_name}${NC}"
+
+    if command -v docker &>/dev/null; then
+        if docker ps --format '{{.Names}}' | grep -q "^panel-mariadb$"; then
+            echo -e " • Container ${CYAN}panel-mariadb${NC}: ${GREEN}ONLINE (Running)${NC}"
+        elif docker ps -a --format '{{.Names}}' | grep -q "^panel-mariadb$"; then
+            echo -e " • Container ${CYAN}panel-mariadb${NC}: ${YELLOW}STOPPED${NC}"
+        fi
+
+        if docker ps --format '{{.Names}}' | grep -q "^mysql-db$"; then
+            echo -e " • Container ${CYAN}mysql-db${NC}: ${GREEN}ONLINE (Running)${NC}"
+        elif docker ps -a --format '{{.Names}}' | grep -q "^mysql-db$"; then
+            echo -e " • Container ${CYAN}mysql-db${NC}: ${YELLOW}STOPPED${NC}"
+        fi
+    fi
+
+    if node -e "
+      const mysql = require('mysql2/promise');
+      require('dotenv').config();
+      mysql.createConnection({
+        host: process.env.DB_HOST || '127.0.0.1',
+        port: parseInt(process.env.DB_PORT || '27017', 10),
+        user: process.env.DB_USER || 'panel',
+        password: process.env.DB_PASSWORD || 'PanelPass123!',
+        database: process.env.DB_NAME || 'panel'
+      }).then(c => { c.end(); process.exit(0); }).catch(e => process.exit(1));
+    " &>/dev/null; then
+        echo -e " • Connection: ${GREEN}CONNECTED (Success)${NC}"
     else
-        echo -e "Database: ${RED}Not initialized${NC}"
+        echo -e " • Connection: ${RED}DISCONNECTED / ERROR${NC}"
     fi
 
     echo ""
@@ -641,30 +977,32 @@ main_menu() {
         echo -e "  ${CYAN}[1]${NC} 🚀 Auto Install & Setup (Full Automated Setup & Start)"
         echo -e "  ${CYAN}[2]${NC} 👤 Create User / Admin (createuser)"
         echo -e "  ${CYAN}[3]${NC} ⚡ PM2 Process Manager (Start/Stop/Restart/Logs)"
-        echo -e "  ${CYAN}[4]${NC} 🔄 Auto Update Mpanel (Git pull, DB migrate & PM2 restart)"
-        echo -e "  ${CYAN}[5]${NC} 🐞 Start in Foreground (Debug Mode)"
-        echo -e "  ${CYAN}[6]${NC} 📊 Check System & Port Status"
-        echo -e "  ${CYAN}[7]${NC} 🌐 Install Playit.gg System Tunnel (playit CLI)"
-        echo -e "  ${CYAN}[8]${NC} 🗑️  Uninstall Mpanel"
+        echo -e "  ${CYAN}[4]${NC} 🗄️  Database Manager (MariaDB / MySQL Docker & Migrations)"
+        echo -e "  ${CYAN}[5]${NC} 🔄 Auto Update Mpanel (Git pull, DB migrate & PM2 restart)"
+        echo -e "  ${CYAN}[6]${NC} 🐞 Start in Foreground (Debug Mode)"
+        echo -e "  ${CYAN}[7]${NC} 📊 Check System & Port Status"
+        echo -e "  ${CYAN}[8]${NC} 🌐 Install Playit.gg System Tunnel (playit CLI)"
+        echo -e "  ${CYAN}[9]${NC} 🗑️  Uninstall Mpanel"
         echo -e "  ${CYAN}[0]${NC} 🚪 Exit"
         echo ""
-        read -p "Please select an option [0-8]: " choice
+        read -p "Please select an option [0-9]: " choice
 
         case $choice in
             1) auto_install_mpanel ;;
             2) create_user ;;
             3) pm2_menu ;;
-            4) update_mpanel ;;
-            5) start_foreground ;;
-            6) status_check ;;
-            7) install_playit_cli ;;
-            8) uninstall_mpanel ;;
+            4) db_menu ;;
+            5) update_mpanel ;;
+            6) start_foreground ;;
+            7) status_check ;;
+            8) install_playit_cli ;;
+            9) uninstall_mpanel ;;
             0)
                 echo -e "${GREEN}Goodbye!${NC}"
                 exit 0
                 ;;
             *)
-                echo -e "${RED}Invalid selection. Please choose 0-8.${NC}"
+                echo -e "${RED}Invalid selection. Please choose 0-9.${NC}"
                 sleep 1
                 ;;
         esac
@@ -689,6 +1027,18 @@ case "$CMD" in
         ;;
     pm2)
         pm2_menu "$@"
+        ;;
+    db|database)
+        db_menu "$@"
+        ;;
+    migrate)
+        run_db_migration "$@"
+        ;;
+    mariadb)
+        start_mariadb_container "$@"
+        ;;
+    mysql)
+        start_mysql_container "$@"
         ;;
     status)
         status_check "$@"

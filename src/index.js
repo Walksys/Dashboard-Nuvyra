@@ -15,6 +15,7 @@ const { createDaemonServer } = require('./api/daemonServer');
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const adminSettingsRoutes = require('./routes/adminSettingsRoutes');
 const userRoutes = require('./routes/userRoutes');
 const nodeRoutes = require('./routes/nodeRoutes');
@@ -32,6 +33,9 @@ const serverPlayerRoutes = require('./routes/serverPlayerRoutes');
 const serverWorldRoutes = require('./routes/serverWorldRoutes');
 const serverImporterRoutes = require('./routes/serverImporterRoutes');
 const serverPropertiesRoutes = require('./routes/serverPropertiesRoutes');
+const socialLoginRoutes = require('./routes/socialLoginRoutes');
+const adminUpdateRoutes = require('./routes/adminUpdateRoutes');
+
 
 async function bootstrap() {
   console.log('🚀 Initializing Mpanel Core Engine...');
@@ -62,11 +66,14 @@ async function bootstrap() {
 
   // REST API Routes
   app.use('/api/auth', authRoutes);
+  app.use('/api/admin/updates', adminUpdateRoutes);
   app.use('/api/admin/settings', adminSettingsRoutes);
   app.use('/api/admin/users', userRoutes);
   app.use('/api/admin/nodes', nodeRoutes);
   app.use('/api/admin/locations', locationRoutes);
   app.use('/api/admin/api-keys', apiKeyRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api', socialLoginRoutes);
   app.use('/api/servers', serverRoutes);
   app.use('/api/servers/:serverId/files', serverFilesRoutes);
   app.use('/api/servers/:serverId/backups', serverBackupRoutes);

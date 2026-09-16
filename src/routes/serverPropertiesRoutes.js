@@ -10,14 +10,15 @@ const { logActivity } = require('../services/activityService');
 // Initialize subdomains table
 query.exec(`
   CREATE TABLE IF NOT EXISTS server_subdomains (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    server_id INTEGER NOT NULL,
-    subdomain TEXT NOT NULL,
-    domain TEXT NOT NULL,
-    full_domain TEXT NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    server_id INT NOT NULL,
+    subdomain VARCHAR(191) NOT NULL,
+    domain VARCHAR(191) NOT NULL,
+    full_domain VARCHAR(191) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
-  );
+    INDEX idx_subdomains_server (server_id),
+    CONSTRAINT fk_subdomains_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `).catch(e => console.error('Failed to init server_subdomains table:', e.message));
 
 function parseProperties(content) {

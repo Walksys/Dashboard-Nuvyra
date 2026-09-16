@@ -3,13 +3,14 @@ const url = require('url');
 const config = require('../config/config');
 const { query } = require('../database/db');
 const runnerService = require('../services/runnerService');
+const updateService = require('../services/updateService');
 const { logActivity } = require('../services/activityService');
 
 function setupWebSocket(wss) {
   wss.on('connection', async (ws, req) => {
     try {
       const parsedUrl = url.parse(req.url, true);
-      const pathname = parsedUrl.pathname; // e.g. /ws/servers/1/console
+      const pathname = parsedUrl.pathname; // e.g. /ws/servers/1/console or /ws/admin/updates
       const token = parsedUrl.query.token;
 
       if (!token) {
@@ -30,6 +31,44 @@ function setupWebSocket(wss) {
       if (!user || user.suspended) {
         ws.send(JSON.stringify({ type: 'error', message: 'User suspended or invalid.' }));
         return ws.close(4003, 'Forbidden');
+      }
+
+      // Handler for System Updates Terminal: /ws/admin/updates
+      if (pathname.startsWith('/ws/admin/updates')) {
+        if (user.role !== 'admin') {
+          ws.send(JSON.stringify({ type: 'error', message: 'Admin access required.' }));
+          return ws.close(4003, 'Forbidden');
+        }
+
+        updateService.subscribeSocket(ws);
+
+        ws.on('message', async (data) => {
+          try {
+            const msg = JSON.parse(data.toString());
+            if (msg.action === 'start_update') {
+              updateService.runUpdate({ mode: msg.mode || 'standard' }, user.id, req)
+                .catch(e => console.error('WS Update error:', e.message));
+            } else if (msg.action === 'sync') {
+              updateService.runSyncOnly(user.id, req)
+                .catch(e => console.error('WS Sync error:', e.message));
+            } else if (msg.action === 'check') {
+              const status = await updateService.checkUpdates(true);
+              ws.send(JSON.stringify({ type: 'status', data: status }));
+            }
+          } catch (e) {
+            ws.send(JSON.stringify({ type: 'error', message: e.message }));
+          }
+        });
+
+        ws.on('close', () => {
+          updateService.unsubscribeSocket(ws);
+        });
+
+        ws.on('error', () => {
+          updateService.unsubscribeSocket(ws);
+        });
+
+        return;
       }
 
       // Match path: /ws/servers/:id/console

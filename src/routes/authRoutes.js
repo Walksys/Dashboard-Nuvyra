@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const regSetting = await query.get('SELECT value FROM settings WHERE key = ?', ['registration_enabled']);
+    const regSetting = await query.get('SELECT `value` FROM settings WHERE `key` = ?', ['registration_enabled']);
     if (regSetting && regSetting.value === '0') {
       return res.status(403).json({ success: false, error: 'Public registration is currently disabled.' });
     }

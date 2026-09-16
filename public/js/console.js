@@ -27,10 +27,14 @@ class ServerConsole {
   formatUptime(sec) {
     if (sec === undefined || sec === null || sec < 0) return 'Offline';
     if (sec === 0) return '0s';
-    const h = Math.floor(sec / 3600);
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
     const m = Math.floor((sec % 3600) / 60);
     const s = Math.floor(sec % 60);
-    return `${h}h ${m}m ${s}s`;
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
   }
 
   async renderServerManagementSuite(serverId, subTab = 'console') {
@@ -94,8 +98,8 @@ class ServerConsole {
       const descEl = document.getElementById('srv-header-desc');
       if (descEl) descEl.innerText = s.description || `${s.server_type.toUpperCase()} Server Instance`;
 
-      const headerTitle = document.getElementById('header-panel-name');
-      if (headerTitle) headerTitle.innerText = s.name;
+      const subNameEl = document.getElementById('header-sub-name');
+      if (subNameEl) subNameEl.innerText = `Server: ${s.name}`;
 
       const titleEl = document.getElementById('terminal-server-title');
       if (titleEl) titleEl.innerText = `Terminal - ${s.name}`;
@@ -219,6 +223,10 @@ class ServerConsole {
       if (window.worldManager) worldManager.renderWorldManagerTab(area, this.serverId);
     } else if (tabName === 'marketplace') {
       this.renderMarketplaceTab(area);
+    } else if (tabName === 'databases') {
+      this.renderDatabasesTab(area);
+    } else if (tabName === 'network') {
+      this.renderNetworkTab(area);
     } else if (tabName === 'backups') {
       this.renderBackupsTab(area);
     } else if (tabName === 'schedules') {
@@ -249,17 +257,41 @@ class ServerConsole {
           <!-- Terminal Window (Col 1-3) -->
           <div class="lg:col-span-3 flex flex-col">
             <div class="nook-terminal-box flex-1 flex flex-col min-h-[460px]">
-              <!-- Terminal Titlebar -->
-              <div class="px-4 py-2 bg-[#12141a] border-b border-white/5 flex items-center justify-between">
+              <!-- Terminal Titlebar with Auto Size & Font Controls -->
+              <div class="px-4 py-2 bg-[#12141a] border-b border-white/5 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
                   <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
                   <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                  <span id="terminal-server-title" class="font-mono text-[11px] text-slate-400 ml-2">Terminal - ${s.name || 'server'}</span>
+                  <span id="terminal-server-title" class="font-mono text-[11px] text-slate-400 ml-2 truncate max-w-[140px] sm:max-w-none">Terminal - ${s.name || 'server'}</span>
                 </div>
-                <button onclick="serverConsole.clearTerminal()" title="Clear Console" class="text-[11px] text-slate-400 hover:text-white flex items-center gap-1">
-                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear
-                </button>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <!-- Auto Fit button -->
+                  <button type="button" onclick="serverConsole.autoFitTerminal()" title="Auto Fit Terminal to Container" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300 hover:text-cyan-400 flex items-center gap-1 border border-white/5 transition">
+                    <i data-lucide="maximize-2" class="w-3 h-3 text-cyan-400"></i>
+                    <span class="hidden sm:inline font-medium">Auto Fit</span>
+                  </button>
+                  <!-- Text Size Controls (A- / Presets / A+) -->
+                  <div class="flex items-center bg-black/40 rounded-lg border border-white/10 px-1 py-0.5 text-[11px]">
+                    <button type="button" onclick="serverConsole.changeTerminalFontSize(-1)" title="Smaller text (A-)" class="px-1.5 py-0.5 text-slate-400 hover:text-white font-mono font-bold hover:bg-white/10 rounded transition">A-</button>
+                    <select id="term-font-select" onchange="serverConsole.onFontSizeSelect(this.value)" class="bg-transparent text-slate-200 text-[11px] font-mono border-none focus:ring-0 cursor-pointer px-1.5 py-0.5">
+                      <option value="10" class="bg-slate-900 text-white">10px</option>
+                      <option value="11" class="bg-slate-900 text-white">11px</option>
+                      <option value="12" class="bg-slate-900 text-white">12px (Default)</option>
+                      <option value="13" class="bg-slate-900 text-white">13px</option>
+                      <option value="14" class="bg-slate-900 text-white">14px</option>
+                      <option value="16" class="bg-slate-900 text-white">16px</option>
+                      <option value="18" class="bg-slate-900 text-white">18px</option>
+                      <option value="custom" class="bg-slate-900 text-white">Custom...</option>
+                    </select>
+                    <button type="button" onclick="serverConsole.changeTerminalFontSize(1)" title="Larger text (A+)" class="px-1.5 py-0.5 text-slate-400 hover:text-white font-mono font-bold hover:bg-white/10 rounded transition">A+</button>
+                  </div>
+                  <!-- Clear Console -->
+                  <button type="button" onclick="serverConsole.clearTerminal()" title="Clear Console Screen" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-400 hover:text-rose-400 flex items-center gap-1 border border-white/5 transition">
+                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                    <span class="hidden sm:inline">Clear</span>
+                  </button>
+                </div>
               </div>
 
               <!-- xterm.js Container -->
@@ -412,6 +444,8 @@ class ServerConsole {
     const termContainer = document.getElementById('terminal-container');
     if (!termContainer) return;
 
+    const savedFontSize = parseInt(localStorage.getItem('mpanel_term_fontsize') || '12', 10);
+
     this.term = new Terminal({
       theme: {
         background: '#0b0d12',
@@ -428,7 +462,7 @@ class ServerConsole {
         white: '#f1f5f9'
       },
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-      fontSize: 12,
+      fontSize: savedFontSize,
       lineHeight: 1.25,
       cursorBlink: true,
       convertEol: true,
@@ -445,6 +479,76 @@ class ServerConsole {
     window.addEventListener('resize', () => {
       if (this.fitAddon) this.fitAddon.fit();
     });
+
+    const select = document.getElementById('term-font-select');
+    if (select) {
+      const match = Array.from(select.options).find(o => o.value === savedFontSize.toString());
+      if (match) select.value = savedFontSize.toString();
+      else select.value = 'custom';
+    }
+  }
+
+  autoFitTerminal() {
+    if (this.fitAddon && this.term) {
+      try {
+        this.fitAddon.fit();
+        app.showToast('Terminal auto-fitted', 'info');
+      } catch (e) {
+        console.warn('Auto fit error:', e);
+      }
+    }
+  }
+
+  setTerminalFontSize(size, save = true) {
+    const s = Math.min(28, Math.max(9, parseInt(size, 10) || 12));
+    if (this.term) {
+      this.term.options.fontSize = s;
+      if (this.fitAddon) {
+        setTimeout(() => {
+          try { this.fitAddon.fit(); } catch (e) {}
+        }, 30);
+      }
+    }
+    if (save) {
+      localStorage.setItem('mpanel_term_fontsize', s.toString());
+    }
+    const select = document.getElementById('term-font-select');
+    if (select) {
+      const match = Array.from(select.options).find(o => o.value === s.toString());
+      if (match) {
+        select.value = s.toString();
+      } else {
+        select.value = 'custom';
+      }
+    }
+  }
+
+  changeTerminalFontSize(delta) {
+    const current = parseInt(localStorage.getItem('mpanel_term_fontsize') || (this.term ? this.term.options.fontSize : 12), 10) || 12;
+    const next = Math.min(28, Math.max(9, current + delta));
+    this.setTerminalFontSize(next, true);
+    app.showToast(`Font size: ${next}px`, 'info');
+  }
+
+  onFontSizeSelect(val) {
+    if (val === 'custom') {
+      const current = localStorage.getItem('mpanel_term_fontsize') || '12';
+      const customVal = prompt('Enter custom terminal font size (9 - 28 px):', current);
+      if (customVal) {
+        const num = parseInt(customVal, 10);
+        if (!isNaN(num) && num >= 9 && num <= 28) {
+          this.setTerminalFontSize(num, true);
+          app.showToast(`Custom font size set to ${num}px`, 'success');
+        } else {
+          app.showToast('Font size must be between 9 and 28 px', 'error');
+        }
+      } else {
+        // Reset select back to current value
+        this.setTerminalFontSize(parseInt(current, 10), false);
+      }
+    } else {
+      this.setTerminalFontSize(parseInt(val, 10), true);
+    }
   }
 
   initCharts() {
@@ -1703,106 +1807,187 @@ class ServerConsole {
   }
 
   // Render Server Settings & SFTP Info Tab
+  // Render Server Settings & SFTP Info Tab
   async renderSettingsTab(container) {
     const s = this.serverData || {};
+    const username = app.user?.username || 'admin';
+    const shortUuid = s.uuid ? s.uuid.split('-')[0] : (s.id || '1');
+    const sftpUser = `${username}.${shortUuid}`;
+    const sftpHost = s.sftp_host || s.node_fqdn || window.location.hostname || '127.0.0.1';
+    const sftpPort = s.sftp_port || 3004;
+    const sftpAddress = `sftp://${sftpHost}:${sftpPort}`;
+    const sftpLaunchUrl = `sftp://${sftpUser}@${sftpHost}:${sftpPort}`;
+
     container.innerHTML = `
-      <div class="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h3 class="text-base font-bold text-white flex items-center gap-2">
-            <i data-lucide="settings" class="w-5 h-5 text-cyan-400"></i> Server Settings & SFTP Connection
-          </h3>
-          <p class="text-xs text-slate-400">Configure connection details and server lifecycle options</p>
-        </div>
+      <div class="max-w-6xl mx-auto space-y-6">
+        <!-- 2-Column Grid matching reference UI -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <!-- Embedded SFTP Details Card -->
-        <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
-          <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <h4 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
-              <i data-lucide="hard-drive" class="w-4 h-4"></i> SFTP Connection Information (Port 3004)
-            </h4>
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">ONLINE</span>
+          <!-- Card 1: SFTP DETAILS (Top Left) -->
+          <div class="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col justify-between space-y-4 shadow-xl">
+            <div class="space-y-4">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">SFTP DETAILS</h4>
+
+              <div class="space-y-1.5">
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">SERVER ADDRESS</label>
+                <div class="relative">
+                  <input type="text" readonly value="${sftpAddress}" class="w-full bg-[#1b1c24] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-200 focus:outline-none cursor-pointer select-all pr-10" onclick="this.select(); app.copyToClipboard('${sftpAddress}')" title="Click to copy">
+                  <button type="button" onclick="app.copyToClipboard('${sftpAddress}')" title="Copy SFTP Address" class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white transition rounded-lg">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">USERNAME</label>
+                <div class="relative">
+                  <input type="text" readonly value="${sftpUser}" class="w-full bg-[#1b1c24] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-200 focus:outline-none cursor-pointer select-all pr-10" onclick="this.select(); app.copyToClipboard('${sftpUser}')" title="Click to copy">
+                  <button type="button" onclick="app.copyToClipboard('${sftpUser}')" title="Copy Username" class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white transition rounded-lg">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-white/5">
+              <div class="border-l-2 border-cyan-400 pl-3 py-0.5">
+                <p class="text-xs text-slate-400 leading-snug">Your SFTP password is the same as the password you use to access this panel.</p>
+              </div>
+              <a href="${sftpLaunchUrl}" class="px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all flex items-center gap-1.5 shrink-0">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Launch SFTP
+              </a>
+            </div>
           </div>
 
-          <p class="text-xs text-slate-300">Use FileZilla, WinSCP, or Cyberduck to connect directly to this server file directory:</p>
+          <!-- Card 2: CHANGE SERVER DETAILS (Top Right) -->
+          <div class="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col justify-between space-y-4 shadow-xl">
+            <div class="space-y-4">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">CHANGE SERVER DETAILS</h4>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-            <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5 space-y-1">
-              <span class="text-[10px] text-slate-400">Server Host / IP</span>
-              <p class="font-bold text-white">${s.sftp_host || '127.0.0.1'}</p>
-            </div>
-            <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5 space-y-1">
-              <span class="text-[10px] text-slate-400">SFTP Port</span>
-              <p class="font-bold text-emerald-400">${s.sftp_port || 3004}</p>
-            </div>
-            <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5 space-y-1">
-              <span class="text-[10px] text-slate-400">Username</span>
-              <p class="font-bold text-cyan-400">${s.sftp_username || `${app.user?.username}.${s.id}`}</p>
-            </div>
-          </div>
-          <p class="text-[11px] text-slate-400">Password is your regular Mpanel account login password.</p>
-        </div>
+              <div class="space-y-1.5">
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">SERVER NAME</label>
+                <input type="text" id="srv-edit-name" value="${app.escapeHtml(s.name || '')}" class="w-full bg-[#1b1c24] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-cyan-500/50 focus:outline-none transition">
+              </div>
 
-        <!-- Rename Server Card -->
-        <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
-          <h4 class="text-sm font-bold text-white flex items-center gap-2">
-            <i data-lucide="edit-3" class="w-4 h-4 text-cyan-400"></i> Rename Server
-          </h4>
-          <div class="flex flex-col sm:flex-row gap-3">
-            <input type="text" id="rename-srv-name" value="${s.name || ''}" class="flex-1 glass-input px-3.5 py-2 rounded-xl text-xs">
-            <button onclick="serverConsole.handleRenameServer()" class="btn-cyber px-5 py-2 rounded-xl text-xs font-bold">
-              Save Name
-            </button>
-          </div>
-        </div>
+              <div class="space-y-1.5">
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">SERVER DESCRIPTION</label>
+                <textarea id="srv-edit-description" rows="3" class="w-full bg-[#1b1c24] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-cyan-500/50 focus:outline-none resize-none transition" placeholder="A brief description of this server...">${app.escapeHtml(s.description || '')}</textarea>
+              </div>
+            </div>
 
-        <!-- Danger Zone (Reinstall / Delete) -->
-        <div class="glass-panel p-6 rounded-3xl border border-rose-500/20 bg-rose-950/10 space-y-4">
-          <h4 class="text-sm font-bold text-rose-400 flex items-center gap-2">
-            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Danger Zone
-          </h4>
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
-            <div>
-              <h5 class="text-xs font-bold text-white">Reinstall Server</h5>
-              <p class="text-[11px] text-slate-400">Re-downloads default software / jar files and resets basic templates</p>
+            <div class="pt-2 flex justify-end">
+              <button id="btn-save-server-details" onclick="serverConsole.handleSaveServerDetails()" class="px-6 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all flex items-center gap-1.5">
+                Save
+              </button>
             </div>
-            <button onclick="serverConsole.handleReinstallServer()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white">
-              Reinstall Server
-            </button>
           </div>
-          <div class="border-t border-rose-500/20 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h5 class="text-xs font-bold text-white">Delete Server</h5>
-              <p class="text-[11px] text-slate-400">Permanently delete this container and all associated data</p>
+
+          <!-- Card 3: DEBUG INFORMATION (Bottom Left) -->
+          <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 shadow-xl">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">DEBUG INFORMATION</h4>
+
+            <div class="space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between p-3 rounded-xl bg-[#1b1c24] border border-white/5">
+                <span class="text-xs text-slate-400 font-sans font-semibold">Node</span>
+                <span class="text-xs font-mono font-bold text-slate-200">${app.escapeHtml(s.node_name || 'Node - ' + (s.node_id || 1))}</span>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-xl bg-[#1b1c24] border border-white/5">
+                <span class="text-xs text-slate-400 font-sans font-semibold shrink-0">Server ID</span>
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <span class="text-xs font-mono text-slate-300 select-all truncate max-w-[200px] sm:max-w-[320px]" title="${s.uuid || ''}">${s.uuid || 'N/A'}</span>
+                  <button type="button" onclick="app.copyToClipboard('${s.uuid || ''}')" title="Copy UUID" class="p-1 rounded-lg text-slate-400 hover:text-white transition">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
             </div>
-            <button onclick="serverConsole.handleDeleteServer()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white">
-              Delete Server
-            </button>
           </div>
+
+          <!-- Card 4: REINSTALL SERVER (Bottom Right) -->
+          <div class="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col justify-between space-y-4 shadow-xl">
+            <div class="space-y-3">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">REINSTALL SERVER</h4>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Reinstalling your server will stop it, and then re-run the installation script that initially set it up. Some files may be deleted or modified during this process, please back up your data before continuing.
+              </p>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+              <button onclick="serverConsole.handleReinstallServer()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/20 transition-all flex items-center gap-1.5">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reinstall Server
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 5: DELETE SERVER (Bottom Full Width) -->
+          <div class="col-span-full glass-panel p-6 rounded-3xl border border-rose-500/20 bg-rose-950/10 space-y-3 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="alert-triangle" class="w-4 h-4"></i> Delete Server Instance
+                </h4>
+                <p class="text-xs text-slate-400 mt-1">
+                  Permanently delete this server container, its files, databases, and all backups. This action cannot be undone.
+                </p>
+              </div>
+              <button onclick="serverConsole.handleDeleteServer()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/20 transition-all shrink-0 flex items-center gap-1.5">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Server
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     `;
     if (window.lucide) lucide.createIcons();
   }
 
-  async handleRenameServer() {
-    const name = document.getElementById('rename-srv-name').value.trim();
-    if (!name) return;
+  async handleSaveServerDetails() {
+    const nameInput = document.getElementById('srv-edit-name');
+    const descInput = document.getElementById('srv-edit-description');
+    const name = nameInput ? nameInput.value.trim() : '';
+    const description = descInput ? descInput.value.trim() : '';
+
+    if (!name) {
+      app.toast('Server name cannot be empty.', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-server-details');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-spin mr-1">⏳</span> Saving...';
+    }
+
     try {
       const data = await app.api(`/api/servers/${this.serverId}`, {
         method: 'PUT',
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name, description })
       });
       if (data.success) {
-        app.toast('Server renamed successfully!', 'success');
-        this.loadServerHeader(this.serverId);
+        app.toast('Server details saved successfully!', 'success');
+        if (this.serverData) {
+          this.serverData.name = name;
+          this.serverData.description = description;
+        }
+        await this.loadServerHeader(this.serverId);
       }
     } catch (err) {
-      app.toast(err.message, 'error');
+      app.toast(err.message || 'Failed to update server details', 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'Save';
+      }
     }
   }
 
+  handleRenameServer() {
+    return this.handleSaveServerDetails();
+  }
+
   async handleReinstallServer() {
-    if (!confirm('Are you sure you want to reinstall this server?')) return;
+    if (!confirm('Are you sure you want to reinstall this server? Reinstalling will stop the server and re-apply default configuration.')) return;
     try {
       app.toast('Reinstalling server base files...', 'info');
       const data = await app.api(`/api/servers/${this.serverId}/reinstall`, { method: 'POST' });
@@ -1877,6 +2062,378 @@ class ServerConsole {
       console.error(e);
     }
     if (window.lucide) lucide.createIcons();
+  }
+
+  // ==========================================
+  // SERVER DATABASES TAB
+  // ==========================================
+  async renderDatabasesTab(container) {
+    container.innerHTML = `
+      <div class="space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i> Server Databases
+            </h3>
+            <p class="text-xs text-slate-400">Create, manage and connect MariaDB and MySQL databases for plugins and services</p>
+          </div>
+          <button type="button" onclick="serverConsole.showCreateDatabaseModal()" class="nook-btn-primary flex items-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> New Database
+          </button>
+        </div>
+
+        <div id="server-databases-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="col-span-full text-center py-10 text-slate-400">Loading databases...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const data = await app.api(`/api/servers/${this.serverId}/databases`);
+      const databases = data.databases || [];
+      this.availableDbHosts = data.hosts || [];
+      const listEl = document.getElementById('server-databases-container');
+      if (!listEl) return;
+
+      if (databases.length === 0) {
+        listEl.innerHTML = `
+          <div class="glass-card p-10 rounded-2xl text-center col-span-full border border-dashed border-white/20 text-slate-400 space-y-3">
+            <i data-lucide="database" class="w-10 h-10 text-slate-500 mx-auto"></i>
+            <p class="text-sm font-semibold text-white">No databases created yet</p>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">Create a database to store plugin data, user accounts, economies, and web stats.</p>
+            <button onclick="serverConsole.showCreateDatabaseModal()" class="nook-btn-primary inline-flex items-center gap-2 text-xs mt-2">
+              <i data-lucide="plus" class="w-4 h-4"></i> Create First Database
+            </button>
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = databases.map(db => {
+          const hostDisplay = `${db.host || '127.0.0.1'}:${db.host_port || 3306}`;
+          const jdbcStr = `jdbc:mysql://${hostDisplay}/${db.database_name}`;
+          return `
+            <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-4 hover:border-cyan-500/30 transition">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm shrink-0">
+                    <i data-lucide="database" class="w-5 h-5"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-sm font-bold text-white truncate">${db.database_name}</h4>
+                    <p class="text-[11px] text-slate-400 flex items-center gap-1">
+                      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+                      ${db.host_name || 'MariaDB Host'} (${hostDisplay})
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button onclick="serverConsole.resetDatabasePassword(${db.id})" title="Reset Password" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-amber-400 transition">
+                    <i data-lucide="key" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="serverConsole.deleteDatabase(${db.id})" title="Delete Database" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-rose-400 transition">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Database Credentials Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-black/40 p-3 rounded-xl border border-white/5">
+                <div>
+                  <span class="text-[10px] uppercase font-bold text-slate-500 block">Database</span>
+                  <div class="flex items-center justify-between mt-0.5">
+                    <span class="font-mono text-slate-200 select-all truncate">${db.database_name}</span>
+                    <button onclick="app.copyToClipboard('${db.database_name}')" class="text-slate-400 hover:text-cyan-400 ml-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                  </div>
+                </div>
+                <div>
+                  <span class="text-[10px] uppercase font-bold text-slate-500 block">Username</span>
+                  <div class="flex items-center justify-between mt-0.5">
+                    <span class="font-mono text-slate-200 select-all truncate">${db.username}</span>
+                    <button onclick="app.copyToClipboard('${db.username}')" class="text-slate-400 hover:text-cyan-400 ml-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                  </div>
+                </div>
+                <div class="sm:col-span-2">
+                  <span class="text-[10px] uppercase font-bold text-slate-500 block">Password</span>
+                  <div class="flex items-center justify-between mt-0.5">
+                    <span id="db-pwd-${db.id}" class="font-mono text-slate-200 select-all">••••••••••••</span>
+                    <div class="flex items-center gap-1.5">
+                      <button onclick="serverConsole.toggleDbPassword(${db.id}, '${db.password}')" id="db-pwd-eye-${db.id}" class="text-slate-400 hover:text-white"><i data-lucide="eye" class="w-3.5 h-3.5"></i></button>
+                      <button onclick="app.copyToClipboard('${db.password}')" class="text-slate-400 hover:text-cyan-400"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                  </div>
+                </div>
+                <div class="sm:col-span-2">
+                  <span class="text-[10px] uppercase font-bold text-slate-500 block">Endpoint / Host</span>
+                  <div class="flex items-center justify-between mt-0.5">
+                    <span class="font-mono text-slate-300 text-[11px] truncate">${hostDisplay}</span>
+                    <button onclick="app.copyToClipboard('${hostDisplay}')" class="text-slate-400 hover:text-cyan-400 ml-1"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- JDBC String helper -->
+              <div class="flex items-center justify-between bg-slate-900/60 px-3 py-2 rounded-xl text-[11px] border border-white/5">
+                <span class="font-mono text-slate-400 truncate mr-2">${jdbcStr}</span>
+                <button onclick="app.copyToClipboard('${jdbcStr}')" title="Copy JDBC URI" class="text-cyan-400 hover:text-cyan-300 text-xs shrink-0 flex items-center gap-1">
+                  <i data-lucide="copy" class="w-3 h-3"></i> Copy JDBC
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    } catch (err) {
+      console.error(err);
+      app.showToast('Failed to load databases: ' + err.message, 'error');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  toggleDbPassword(dbId, pwd) {
+    const el = document.getElementById(`db-pwd-${dbId}`);
+    const eye = document.getElementById(`db-pwd-eye-${dbId}`);
+    if (!el) return;
+    if (el.innerText === '••••••••••••') {
+      el.innerText = pwd;
+      if (eye) eye.innerHTML = '<i data-lucide="eye-off" class="w-3.5 h-3.5"></i>';
+    } else {
+      el.innerText = '••••••••••••';
+      if (eye) eye.innerHTML = '<i data-lucide="eye" class="w-3.5 h-3.5"></i>';
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  showCreateDatabaseModal() {
+    const hosts = this.availableDbHosts || [];
+    const modalContainer = document.getElementById('modal-container');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-white/15 shadow-2xl space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i> New Database
+            </h3>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="text-slate-400 hover:text-white">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <form onsubmit="serverConsole.handleCreateDatabase(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Database Name Suffix</label>
+              <input type="text" id="new-db-name" placeholder="e.g. plugins, luckperms, core" pattern="[a-zA-Z0-9_]{1,16}" title="Alphanumeric up to 16 characters" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" required>
+              <span class="text-[10px] text-slate-500 mt-1 block">Prefix will automatically be s${this.serverId}_</span>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Database Host</label>
+              <select id="new-db-host-id" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs bg-slate-900">
+                ${hosts.length > 0 ? hosts.map(h => `<option value="${h.id}">${h.name} (${h.host}:${h.port})</option>`).join('') : '<option value="1">Default MariaDB / MySQL Host</option>'}
+              </select>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+              <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-white/5">Cancel</button>
+              <button type="submit" class="nook-btn-primary text-xs">Create Database</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async handleCreateDatabase(e) {
+    e.preventDefault();
+    const dbName = document.getElementById('new-db-name').value.trim();
+    const hostId = document.getElementById('new-db-host-id').value;
+    try {
+      await app.api(`/api/servers/${this.serverId}/databases`, {
+        method: 'POST',
+        body: JSON.stringify({ database_name: dbName, host_id: hostId })
+      });
+      document.getElementById('modal-container').innerHTML = '';
+      app.showToast('Database created successfully!', 'success');
+      this.renderDatabasesTab(document.getElementById('subtab-content-area'));
+    } catch (err) {
+      app.showToast('Failed to create database: ' + err.message, 'error');
+    }
+  }
+
+  async resetDatabasePassword(dbId) {
+    if (!confirm('Are you sure you want to reset this database password? Any plugins currently connected with the old password will fail to authenticate until reconfigured.')) return;
+    try {
+      await app.api(`/api/servers/${this.serverId}/databases/${dbId}/reset-password`, { method: 'POST' });
+      app.showToast('Database password reset successfully!', 'success');
+      this.renderDatabasesTab(document.getElementById('subtab-content-area'));
+    } catch (err) {
+      app.showToast('Failed to reset password: ' + err.message, 'error');
+    }
+  }
+
+  async deleteDatabase(dbId) {
+    if (!confirm('CAUTION: Are you sure you want to completely drop and delete this database? All stored tables and data will be permanently removed!')) return;
+    try {
+      await app.api(`/api/servers/${this.serverId}/databases/${dbId}`, { method: 'DELETE' });
+      app.showToast('Database deleted successfully.', 'success');
+      this.renderDatabasesTab(document.getElementById('subtab-content-area'));
+    } catch (err) {
+      app.showToast('Failed to delete database: ' + err.message, 'error');
+    }
+  }
+
+  // ==========================================
+  // SERVER NETWORK TAB
+  // ==========================================
+  async renderNetworkTab(container) {
+    container.innerHTML = `
+      <div class="space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="network" class="w-5 h-5 text-cyan-400"></i> Network Allocations
+            </h3>
+            <p class="text-xs text-slate-400">Manage primary port bindings and extra network ports allocated to this server</p>
+          </div>
+          <button type="button" onclick="serverConsole.showAssignPortModal()" class="nook-btn-primary flex items-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> Assign Port
+          </button>
+        </div>
+
+        <div id="server-network-list" class="space-y-3">
+          <div class="text-center py-10 text-slate-400">Loading network allocations...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const data = await app.api(`/api/servers/${this.serverId}/network`);
+      const allocations = data.allocations || [];
+      const primaryId = data.primary_allocation_id;
+      this.availableAllocations = data.available_allocations || [];
+      const listEl = document.getElementById('server-network-list');
+      if (!listEl) return;
+
+      if (allocations.length === 0) {
+        listEl.innerHTML = `<div class="glass-card p-8 rounded-2xl text-center border border-dashed border-white/20 text-slate-400 text-xs">No allocations found for this server.</div>`;
+      } else {
+        listEl.innerHTML = allocations.map(a => {
+          const isPrimary = (a.id === primaryId);
+          const fullAddr = `${a.ip}:${a.port}`;
+          return `
+            <div class="glass-card p-4 rounded-2xl border ${isPrimary ? 'border-cyan-500/50 bg-cyan-950/10' : 'border-white/10'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl ${isPrimary ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-800 text-slate-400'} flex items-center justify-center font-bold text-xs shrink-0">
+                  <i data-lucide="${isPrimary ? 'radio' : 'network'}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold font-mono text-white">${fullAddr}</span>
+                    ${isPrimary ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">PRIMARY</span>' : ''}
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Node: <span class="text-slate-300 font-medium">${a.node_name || 'Node'}</span> &bull; Port: <span class="font-mono text-slate-300">${a.port}</span></p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 self-end sm:self-center">
+                <button type="button" onclick="app.copyToClipboard('${fullAddr}')" title="Copy Address" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1.5 transition">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+                </button>
+                ${!isPrimary ? `
+                  <button type="button" onclick="serverConsole.handleSetPrimaryPort(${a.id})" title="Set as Primary Bind Port" class="px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-semibold flex items-center gap-1.5 border border-cyan-500/20 transition">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Make Primary
+                  </button>
+                  <button type="button" onclick="serverConsole.handleUnassignPort(${a.id})" title="Remove Port Allocation" class="p-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    } catch (err) {
+      console.error(err);
+      app.showToast('Failed to load network allocations: ' + err.message, 'error');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  showAssignPortModal() {
+    const available = this.availableAllocations || [];
+    const modalContainer = document.getElementById('modal-container');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-white/15 shadow-2xl space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="network" class="w-5 h-5 text-cyan-400"></i> Assign Network Port
+            </h3>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="text-slate-400 hover:text-white">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <form onsubmit="serverConsole.handleAssignPortSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Available Node Ports</label>
+              ${available.length > 0 ? `
+                <select id="assign-port-select" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs bg-slate-900 font-mono">
+                  <option value="">-- Automatically Assign Next Free Port --</option>
+                  ${available.map(a => `<option value="${a.id}">${a.ip}:${a.port} (${a.node_name})</option>`).join('')}
+                </select>
+              ` : `
+                <div class="p-3 bg-white/5 rounded-xl text-xs text-slate-400">
+                  Will automatically pick and bind the next unallocated port on this server's node.
+                </div>
+              `}
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+              <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-white/5">Cancel</button>
+              <button type="submit" class="nook-btn-primary text-xs">Assign Port</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async handleAssignPortSubmit(e) {
+    e.preventDefault();
+    const select = document.getElementById('assign-port-select');
+    const allocationId = select ? select.value : '';
+    try {
+      const payload = allocationId ? { allocation_id: parseInt(allocationId, 10) } : {};
+      await app.api(`/api/servers/${this.serverId}/network/assign`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      document.getElementById('modal-container').innerHTML = '';
+      app.showToast('Port assigned successfully!', 'success');
+      this.renderNetworkTab(document.getElementById('subtab-content-area'));
+    } catch (err) {
+      app.showToast('Failed to assign port: ' + err.message, 'error');
+    }
+  }
+
+  async handleSetPrimaryPort(allocId) {
+    try {
+      await app.api(`/api/servers/${this.serverId}/network/primary`, {
+        method: 'POST',
+        body: JSON.stringify({ allocation_id: allocId })
+      });
+      app.showToast('Primary port updated!', 'success');
+      this.renderNetworkTab(document.getElementById('subtab-content-area'));
+    } catch (err) {
+      app.showToast('Failed to set primary port: ' + err.message, 'error');
+    }
+  }
+
+  async handleUnassignPort(allocId) {
+    if (!confirm('Are you sure you want to unassign this port from the server?')) return;
+    try {
+      await app.api(`/api/servers/${this.serverId}/network/${allocId}`, { method: 'DELETE' });
+      app.showToast('Port unassigned.', 'success');
+      this.renderNetworkTab(document.getElementById('subtab-content-area'));
+    } catch (err) {
+      app.showToast('Failed to unassign port: ' + err.message, 'error');
+    }
   }
 }
 

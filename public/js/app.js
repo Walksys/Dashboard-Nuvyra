@@ -6,14 +6,52 @@ class App {
     this.currentView = 'user-overview';
     this.currentServerId = null;
     this.settings = {};
+    this.deviceMode = localStorage.getItem('mpanel_device_mode') || 'auto';
     this.init();
   }
 
   async init() {
+    this.initDeviceMode();
+
+    // Handle OAuth Callback query parameters
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('social_token')) {
+        const token = urlParams.get('social_token');
+        localStorage.setItem('mpanel_token', token);
+        this.token = token;
+        window.history.replaceState({}, document.title, window.location.pathname + (window.location.hash || '#overview'));
+        setTimeout(() => this.toast('Signed in via Social Login successfully!', 'success'), 300);
+      } else if (urlParams.has('social_error')) {
+        const errorMsg = urlParams.get('social_error') || 'Social login failed.';
+        window.history.replaceState({}, document.title, window.location.pathname + (window.location.hash || '#overview'));
+        setTimeout(() => this.toast(decodeURIComponent(errorMsg), 'error'), 300);
+      } else if (urlParams.has('social_success')) {
+        const msg = urlParams.get('social_success') || 'Social account linked successfully!';
+        window.history.replaceState({}, document.title, window.location.pathname + (window.location.hash || '#overview'));
+        setTimeout(() => this.toast(decodeURIComponent(msg), 'success'), 300);
+      }
+    } catch (e) {
+      console.warn('Error handling OAuth URL parameters:', e);
+    }
+
     await this.loadPublicSettings();
     await this.checkAuth();
     this.bindHashChange();
     this.handleRoute();
+
+    // Auto-Tutorial Guided Tour on first login
+    try {
+      const autoTourEnabled = (this.settings?.tutorials_autostart_enabled === '1' || localStorage.getItem('mpanel_tutorials_autostart_enabled') === '1');
+      const autoTourDone = localStorage.getItem('mpanel_autotour_done') === '1';
+      if (autoTourEnabled && !autoTourDone && window.autoTutorial && this.user) {
+        setTimeout(() => {
+          if (this.user && !document.getElementById('tutorial-tooltip-card')) {
+            autoTutorial.startTour('panel-tour', true);
+          }
+        }, 1200);
+      }
+    } catch (e) {}
   }
 
   // Toast Notification System
@@ -168,34 +206,54 @@ class App {
       }
     }
 
-    // Active UI Theme (Arix Theme vs NookTheme)
+    // Active UI Theme (Arix Theme vs NookTheme vs LiquidX Theme vs PteroX Theme)
     const activeTheme = s.active_theme || localStorage.getItem('mpanel_active_theme') || 'arix';
     localStorage.setItem('mpanel_active_theme', activeTheme);
     this.activeTheme = activeTheme;
 
-    if (activeTheme === 'arix') {
+    document.documentElement.classList.remove('theme-arix', 'theme-nook', 'theme-liquidx', 'theme-pterox');
+
+    const logoEl = document.getElementById('header-logo-img');
+    const subNameEl = document.getElementById('header-sub-name');
+
+    if (activeTheme === 'pterox') {
+      document.documentElement.classList.add('theme-pterox');
+      const pteroxLogo = localStorage.getItem('pterox_header_logo') || s.pterox_header_logo || '/images/pterox-header-logo.webp';
+      if (logoEl) {
+        logoEl.src = pteroxLogo;
+      }
+      const pteroxBrand = localStorage.getItem('pterox_brand_name') || s.pterox_brand_name || 'PteroX';
+      if (subNameEl) {
+        subNameEl.innerText = `${pteroxBrand} v2.0.2`;
+      }
+    } else if (activeTheme === 'liquidx') {
+      document.documentElement.classList.add('theme-liquidx');
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/mpanel-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/images/pterox-header-logo.webp')) {
+        logoEl.src = '/assets/liquidx-logo.svg';
+      }
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Mpanel' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('PteroX'))) {
+        subNameEl.innerText = 'LiquidX Theme v1.0';
+      }
+      if (s.liquidx_primary_color) {
+        document.documentElement.style.setProperty('--liquidx-gold', s.liquidx_primary_color);
+      }
+    } else if (activeTheme === 'arix') {
       document.documentElement.classList.add('theme-arix');
-      document.documentElement.classList.remove('theme-nook');
-      const logoEl = document.getElementById('header-logo-img');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/mpanel-logo.svg')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/mpanel-logo.svg' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
         logoEl.src = '/arix/Arix.png';
       }
-      const subNameEl = document.getElementById('header-sub-name');
-      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Mpanel')) {
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Mpanel' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('PteroX'))) {
         subNameEl.innerText = 'Arix Theme v2.1.3';
       }
       if (s.arix_primary_color) {
         document.documentElement.style.setProperty('--arix-primary', s.arix_primary_color);
       }
     } else {
-      document.documentElement.classList.remove('theme-arix');
       document.documentElement.classList.add('theme-nook');
-      const logoEl = document.getElementById('header-logo-img');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
         logoEl.src = '/assets/mpanel-logo.svg';
       }
-      const subNameEl = document.getElementById('header-sub-name');
-      if (subNameEl && subNameEl.innerText === 'Arix Theme v2.1.3') {
+      if (subNameEl && (subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('PteroX'))) {
         subNameEl.innerText = 'Mpanel Server Engine';
       }
     }
@@ -215,6 +273,25 @@ class App {
     if (s.blur_bar !== undefined) {
       const blur = parseInt(s.blur_bar, 10);
       document.documentElement.style.setProperty('--card-blur', `${Math.max(0, Math.min(40, blur))}px`);
+    }
+
+    // Auto Tutorials Page Toggle
+    if (s.tutorials_enabled !== undefined) {
+      const isTut = s.tutorials_enabled === '1' || s.tutorials_enabled === 1 || s.tutorials_enabled === true;
+      localStorage.setItem('mpanel_tutorials_enabled', isTut ? '1' : '0');
+      this.tutorialsEnabled = isTut;
+      const tutNav = document.getElementById('nav-user-tutorials');
+      if (tutNav) {
+        if (isTut) {
+          tutNav.classList.remove('hidden');
+        } else {
+          tutNav.classList.add('hidden');
+        }
+      }
+    }
+
+    if (s.tutorials_autostart_enabled !== undefined) {
+      localStorage.setItem('mpanel_tutorials_autostart_enabled', s.tutorials_autostart_enabled === '1' ? '1' : '0');
     }
   }
 
@@ -293,6 +370,7 @@ class App {
         if (headerAdminToggleBtn) headerAdminToggleBtn.classList.remove('hidden');
         if (dropdownAdminDivider) dropdownAdminDivider.classList.remove('hidden');
         if (dropdownAdminLink) dropdownAdminLink.classList.remove('hidden');
+        this.checkAdminUpdateBadge();
       } else {
         if (portalAdminSwitchCard) portalAdminSwitchCard.classList.add('hidden');
         if (headerAdminToggleBtn) headerAdminToggleBtn.classList.add('hidden');
@@ -308,6 +386,22 @@ class App {
       if (headerAdminToggleBtn) headerAdminToggleBtn.classList.add('hidden');
     }
     if (window.lucide) lucide.createIcons();
+  }
+
+  async checkAdminUpdateBadge() {
+    if (!this.currentUser || this.currentUser.role !== 'admin') return;
+    try {
+      const data = await this.api('/api/admin/updates/status');
+      if (data && data.has_update) {
+        const badge = document.getElementById('nav-update-badge');
+        if (badge) {
+          badge.classList.remove('hidden');
+          badge.innerText = 'UPDATE';
+        }
+      }
+    } catch (e) {
+      // Background check failure is non-blocking
+    }
   }
 
   toggleAdminPortalMode() {
@@ -329,6 +423,7 @@ class App {
   }
 
   navigate(viewName, params = {}) {
+    this.closeMobileSidebar();
     if (params.serverId) {
       this.currentServerId = params.serverId;
     }
@@ -341,16 +436,178 @@ class App {
     }
   }
 
+  // Device Layout & Auto-Sizing Engine (Phone, Tablet, PC)
+  getDetectedProfile() {
+    const w = window.innerWidth;
+    if (w < 640) return 'phone';
+    if (w < 1024) return 'tablet';
+    return 'pc';
+  }
+
+  initDeviceMode() {
+    this.applyDeviceMode(this.deviceMode);
+
+    // Auto adapt layout dynamically when resized
+    window.addEventListener('resize', () => {
+      if (this.deviceMode === 'auto') {
+        this.applyDeviceMode('auto', false);
+      } else {
+        this.updateDetectedScreenInfo();
+      }
+    });
+
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        if (this.deviceMode === 'auto') {
+          this.applyDeviceMode('auto', false);
+        } else {
+          this.updateDetectedScreenInfo();
+        }
+      }, 100);
+    });
+
+    // Close header dropdowns on outside click
+    document.addEventListener('click', (e) => {
+      const deviceContainer = document.getElementById('header-device-mode-container');
+      const deviceDropdown = document.getElementById('header-device-dropdown');
+      if (deviceDropdown && !deviceDropdown.classList.contains('hidden')) {
+        if (deviceContainer && !deviceContainer.contains(e.target)) {
+          deviceDropdown.classList.add('hidden');
+        }
+      }
+
+      const userMenu = document.getElementById('header-user-menu');
+      const userDropdown = document.getElementById('user-dropdown-dropdown');
+      if (userDropdown && !userDropdown.classList.contains('hidden')) {
+        if (userMenu && !userMenu.contains(e.target)) {
+          userDropdown.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  toggleDeviceModeDropdown(e) {
+    if (e) e.stopPropagation();
+    const dd = document.getElementById('header-device-dropdown');
+    if (dd) {
+      dd.classList.toggle('hidden');
+      this.updateDetectedScreenInfo();
+    }
+  }
+
+  setDeviceMode(mode) {
+    const validModes = ['auto', 'phone', 'tablet', 'pc'];
+    if (!validModes.includes(mode)) mode = 'auto';
+
+    this.deviceMode = mode;
+    localStorage.setItem('mpanel_device_mode', mode);
+    this.applyDeviceMode(mode, true);
+
+    const dd = document.getElementById('header-device-dropdown');
+    if (dd) dd.classList.add('hidden');
+
+    const labels = {
+      auto: 'Auto Adaptive (Screen Scaled)',
+      phone: 'Phone Mode (<640px)',
+      tablet: 'Tablet Mode (640-1024px)',
+      pc: 'PC / Laptop Mode (>1024px)'
+    };
+    this.toast(`Screen Layout: ${labels[mode] || mode}`, 'info');
+  }
+
+  applyDeviceMode(mode = this.deviceMode, notify = false) {
+    const detected = this.getDetectedProfile();
+    const activeProfile = mode === 'auto' ? detected : mode;
+
+    const html = document.documentElement;
+    html.classList.remove('panel-mode-phone', 'panel-mode-tablet', 'panel-mode-pc');
+    html.classList.remove('panel-pref-auto', 'panel-pref-phone', 'panel-pref-tablet', 'panel-pref-pc');
+
+    html.classList.add(`panel-mode-${activeProfile}`);
+    html.classList.add(`panel-pref-${mode}`);
+
+    // Update Topbar button icon
+    const iconEl = document.getElementById('header-device-icon');
+    if (iconEl) {
+      const iconMap = {
+        auto: 'sparkles',
+        phone: 'smartphone',
+        tablet: 'tablet',
+        pc: 'monitor'
+      };
+      iconEl.setAttribute('data-lucide', iconMap[mode] || 'monitor');
+    }
+
+    // Update dropdown header badge
+    const badge = document.getElementById('device-current-badge');
+    if (badge) {
+      badge.textContent = mode.toUpperCase();
+    }
+
+    // Update dropdown checkmarks
+    document.querySelectorAll('.device-opt-btn').forEach(btn => {
+      const bMode = btn.getAttribute('data-mode');
+      const check = btn.querySelector('.check-icon');
+      if (check) {
+        if (bMode === mode) {
+          check.classList.remove('hidden');
+        } else {
+          check.classList.add('hidden');
+        }
+      }
+    });
+
+    this.updateDetectedScreenInfo();
+
+    if (window.lucide) lucide.createIcons();
+
+    // If Settings page is loaded, update settings UI
+    if (window.settingsManager && typeof settingsManager.updateDeviceModeUI === 'function') {
+      settingsManager.updateDeviceModeUI();
+    }
+
+    // Trigger auto-fit on terminal if console is open
+    if (window.serverConsole && serverConsole.fitAddon) {
+      setTimeout(() => {
+        try {
+          serverConsole.fitAddon.fit();
+        } catch (e) {}
+      }, 50);
+    }
+  }
+
+  updateDetectedScreenInfo() {
+    const dimEl = document.getElementById('device-screen-dimensions');
+    const detected = this.getDetectedProfile();
+    const profileLabel = detected === 'phone' ? 'Phone' : (detected === 'tablet' ? 'Tablet' : 'PC');
+    const txt = `${window.innerWidth} × ${window.innerHeight} (${profileLabel})`;
+    if (dimEl) dimEl.textContent = txt;
+  }
+
   toggleMobileSidebar() {
     const sidebar = document.getElementById('main-sidebar');
-    if (sidebar) {
-      sidebar.classList.toggle('hidden');
-      sidebar.classList.toggle('fixed');
-      sidebar.classList.toggle('inset-y-0');
-      sidebar.classList.toggle('left-0');
-      sidebar.classList.toggle('z-50');
-      sidebar.classList.toggle('shadow-2xl');
+    const backdrop = document.getElementById('sidebar-mobile-backdrop');
+    if (!sidebar) return;
+
+    const isHidden = sidebar.classList.contains('hidden');
+    if (isHidden) {
+      sidebar.classList.remove('hidden');
+      sidebar.classList.add('fixed', 'inset-y-0', 'left-0', 'z-50', 'shadow-2xl', 'bg-[#121317]');
+      if (backdrop) backdrop.classList.remove('hidden');
+    } else {
+      this.closeMobileSidebar();
     }
+  }
+
+  closeMobileSidebar() {
+    const sidebar = document.getElementById('main-sidebar');
+    const backdrop = document.getElementById('sidebar-mobile-backdrop');
+    const isPhoneMode = document.documentElement.classList.contains('panel-mode-phone');
+    if (sidebar && (window.innerWidth < 768 || isPhoneMode)) {
+      sidebar.classList.add('hidden');
+      sidebar.classList.remove('fixed', 'inset-y-0', 'left-0', 'z-50', 'shadow-2xl', 'bg-[#121317]');
+    }
+    if (backdrop) backdrop.classList.add('hidden');
   }
 
   toggleTheme() {
@@ -514,6 +771,11 @@ class App {
       }
     }
 
+    this.closeMobileSidebar();
+    if (hash !== 'admin-overview' && window.admin && typeof window.admin.stopOverviewPolling === 'function') {
+      window.admin.stopOverviewPolling();
+    }
+
     if (isServerContext) {
       if (portalSection) portalSection.classList.add('hidden');
       if (adminSection) adminSection.classList.add('hidden');
@@ -546,18 +808,28 @@ class App {
       // Admin route handling
       if (hash === 'admin-overview') {
         await admin.renderAdminOverview();
+      } else if (hash === 'admin-updates') {
+        admin.renderUpdatesView();
       } else if (hash === 'admin-settings') {
         await settingsManager.renderSettingsView();
       } else if (hash === 'admin-servers') {
         await admin.renderServersView();
       } else if (hash === 'admin-users') {
         await admin.renderUsersView();
+      } else if (hash === 'admin-databases') {
+        await admin.renderDatabasesView();
+      } else if (hash === 'admin-backups') {
+        await admin.renderBackupsView();
+      } else if (hash === 'admin-network') {
+        await admin.renderNetworkView();
       } else if (hash === 'admin-nodes') {
         await admin.renderNodesView();
       } else if (hash === 'admin-locations') {
         await admin.renderLocationsView();
       } else if (hash === 'admin-api') {
         await admin.renderApiKeysView();
+      } else if (hash === 'admin-sociallogin') {
+        await admin.renderSocialLoginView();
       }
     } else {
       if (serverSection) serverSection.classList.add('hidden');
@@ -566,7 +838,9 @@ class App {
 
       // Update active nav links in portal sidebar
       document.querySelectorAll('.nook-nav-item').forEach(el => el.classList.remove('active'));
-      const activeNav = document.getElementById(`nav-${hash}`) || document.getElementById(`nav-user-${hash}`);
+      const activeNav = document.getElementById(`nav-${hash}`) || 
+                        document.getElementById(`nav-user-${hash}`) || 
+                        ((hash === 'tutorials' || hash === 'knowledge') ? (document.getElementById('nav-user-tutorials') || document.getElementById('nav-user-knowledge')) : null);
       if (activeNav) activeNav.classList.add('active');
 
       // Route handling
@@ -577,6 +851,20 @@ class App {
       } else if (hash === 'marketplace') {
         if (window.marketplace) {
           await marketplace.renderGlobalMarketplaceView();
+        }
+      } else if (hash === 'tutorials' || hash === 'user-tutorials' || hash === 'knowledge' || hash === 'user-knowledge') {
+        const isTut = this.settings?.tutorials_enabled !== '0' && localStorage.getItem('mpanel_tutorials_enabled') !== '0';
+        if (!isTut && (!this.user || this.user.role !== 'admin')) {
+          this.toast('Tutorials page is currently disabled by administrator.', 'warning');
+          this.navigate('user-overview');
+          return;
+        }
+        if (window.knowledgeManager) {
+          knowledgeManager.renderKnowledgeView();
+        }
+      } else if (hash === 'billing' || hash === 'user-billing') {
+        if (window.billingManager) {
+          billingManager.renderBillingView();
         }
       } else if (hash === 'profile' || hash === 'user-profile') {
         await this.renderUserProfile();
@@ -602,9 +890,15 @@ class App {
             <h2 class="text-2xl font-black text-white">Welcome back, ${this.user?.username || 'User'}!</h2>
             <p class="text-xs text-slate-300 max-w-xl">Manage your Minecraft servers, Python bots, and Node.js applications with ultra-low latency container orchestration.</p>
           </div>
-          <button onclick="admin.showCreateServerModal()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Deploy New Server
-          </button>
+          ${this.user?.role === 'admin' ? `
+            <button onclick="admin.showCreateServerModal()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Deploy New Server
+            </button>
+          ` : `
+            <button onclick="app.navigate('user-servers')" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
+              <i data-lucide="server" class="w-4 h-4"></i> My Servers
+            </button>
+          `}
         </div>
 
         <!-- Metric Statistics Cards -->
@@ -688,10 +982,14 @@ class App {
           <div class="glass-card p-10 rounded-2xl text-center col-span-full border border-dashed border-white/20">
             <i data-lucide="server-off" class="w-12 h-12 text-slate-500 mx-auto mb-3"></i>
             <h4 class="text-sm font-bold text-slate-200">No servers deployed yet</h4>
-            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your first Minecraft, Python, or Node.js server to get started.</p>
-            <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4">
-              + Create Server
-            </button>
+            ${this.user?.role === 'admin' ? `
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your first Minecraft, Python, or Node.js server to get started.</p>
+              <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4">
+                + Create Server
+              </button>
+            ` : `
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">No servers assigned yet. Contact your panel administrator to allocate a server instance to your account.</p>
+            `}
           </div>
         `;
       } else {
@@ -719,9 +1017,11 @@ class App {
             <button onclick="app.renderUserServers()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300">
               <i data-lucide="refresh-cw" class="w-4 h-4"></i>
             </button>
-            <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Server
-            </button>
+            ${this.user?.role === 'admin' ? `
+              <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Server
+              </button>
+            ` : ''}
           </div>
         </div>
 
@@ -741,10 +1041,14 @@ class App {
           <div class="glass-card p-12 rounded-2xl text-center col-span-full border border-dashed border-white/20">
             <i data-lucide="box" class="w-12 h-12 text-slate-500 mx-auto mb-3"></i>
             <h4 class="text-base font-bold text-slate-200">No servers deployed yet</h4>
-            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You have not created or been assigned any game or application servers.</p>
-            <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4">
-              Deploy Your First Server
-            </button>
+            ${this.user?.role === 'admin' ? `
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You have not created or been assigned any game or application servers.</p>
+              <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4">
+                Deploy Your First Server
+              </button>
+            ` : `
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You do not have any active servers assigned. Please contact your panel administrator to allocate a server to your account.</p>
+            `}
           </div>
         `;
       } else {
@@ -758,6 +1062,9 @@ class App {
 
   // HTML Template for Server Card
   renderServerCardHTML(s) {
+    if (this.activeTheme === 'pterox') {
+      return this.renderPteroxServerCardHTML(s);
+    }
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
     const isRunning = !isSuspended && s.status === 'running';
     const isStarting = !isSuspended && s.status === 'starting';
@@ -840,6 +1147,101 @@ class App {
               : `<button onclick="serverConsole.triggerPower(${s.id}, 'start')" title="Start" class="w-8 h-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center"><i data-lucide="play" class="w-3.5 h-3.5"></i></button>`
             )
           }
+        </div>
+      </div>
+    `;
+  }
+
+  // PteroX Server Card HTML Template with Banner & Resource Telemetry
+  renderPteroxServerCardHTML(s) {
+    const isSuspended = !!s.is_suspended || s.status === 'suspended';
+    const isRunning = !isSuspended && s.status === 'running';
+    const isStarting = !isSuspended && s.status === 'starting';
+
+    const bannerImg = localStorage.getItem('pterox_server_banner') || '/images/server-banner.jpg';
+    const ipPort = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
+
+    let statusText = 'Offline';
+    let statusBadgeColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+    if (isSuspended) {
+      statusText = 'Suspended';
+      statusBadgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+    } else if (isRunning) {
+      statusText = 'Online';
+      statusBadgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    } else if (isStarting) {
+      statusText = 'Starting';
+      statusBadgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+    }
+
+    return `
+      <div class="pterox-server-card flex flex-col justify-between group">
+        <!-- Top Banner Header -->
+        <div class="pterox-server-card-banner" style="background-image: url('${bannerImg}');">
+          <div class="pterox-server-card-banner-overlay"></div>
+          <div class="pterox-server-card-top relative z-10 flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-cyan-400 border border-cyan-500/30 backdrop-blur-sm">
+              ${(s.server_type || 'generic').toUpperCase()}
+            </span>
+            <span class="flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm ${statusBadgeColor}">
+              <span class="w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : (isStarting ? 'bg-amber-400 animate-ping' : 'bg-rose-400')}"></span>
+              ${statusText}
+            </span>
+          </div>
+
+          <div class="relative z-10">
+            <h4 class="text-lg font-bold text-white group-hover:text-cyan-400 cursor-pointer truncate transition-colors drop-shadow-md" onclick="app.navigate('server-manage/${s.id}/console')">
+              ${this.escapeHtml(s.name)}
+            </h4>
+            <p class="text-[11px] font-mono text-slate-300 truncate flex items-center gap-1.5 drop-shadow">
+              <span>${ipPort}</span>
+              <button onclick="event.stopPropagation(); app.copyToClipboard('${ipPort}')" class="text-slate-400 hover:text-white" title="Copy Host:Port">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+              </button>
+            </p>
+          </div>
+        </div>
+
+        <!-- Metrics & Telemetry Body -->
+        <div class="pterox-server-card-body p-4 space-y-3 flex-1 flex flex-col justify-between">
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="bg-black/30 p-2 rounded-xl border border-white/5">
+              <span class="text-[9px] uppercase tracking-wider text-slate-400 block mb-0.5">RAM</span>
+              <span class="font-bold font-mono text-white text-xs">${s.memory_mb || 1024} MB</span>
+              <div class="w-full bg-slate-800 h-1 rounded-full mt-1.5 overflow-hidden">
+                <div class="bg-cyan-500 h-full rounded-full" style="width: ${isRunning ? '45%' : '0%'}"></div>
+              </div>
+            </div>
+            <div class="bg-black/30 p-2 rounded-xl border border-white/5">
+              <span class="text-[9px] uppercase tracking-wider text-slate-400 block mb-0.5">CPU</span>
+              <span class="font-bold font-mono text-white text-xs">${s.cpu_limit || 100}%</span>
+              <div class="w-full bg-slate-800 h-1 rounded-full mt-1.5 overflow-hidden">
+                <div class="bg-orange-500 h-full rounded-full" style="width: ${isRunning ? '30%' : '0%'}"></div>
+              </div>
+            </div>
+            <div class="bg-black/30 p-2 rounded-xl border border-white/5">
+              <span class="text-[9px] uppercase tracking-wider text-slate-400 block mb-0.5">SSD</span>
+              <span class="font-bold font-mono text-white text-xs">${s.disk_mb || 5120} MB</span>
+              <div class="w-full bg-slate-800 h-1 rounded-full mt-1.5 overflow-hidden">
+                <div class="bg-indigo-500 h-full rounded-full" style="width: 25%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Footer -->
+          <div class="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+            <button onclick="app.navigate('server-manage/${s.id}/console')" class="pterox-btn-primary flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Manage
+            </button>
+            ${isSuspended
+              ? `<span class="px-2.5 py-1 text-[10px] font-bold text-amber-400 bg-amber-950/40 rounded-lg border border-amber-500/20">Suspended</span>`
+              : (isRunning
+                ? `<button onclick="serverConsole.triggerPower(${s.id}, 'restart')" title="Restart Server" class="w-8 h-8 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 flex items-center justify-center transition"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
+                   <button onclick="serverConsole.triggerPower(${s.id}, 'stop')" title="Stop Server" class="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 flex items-center justify-center transition"><i data-lucide="square" class="w-3.5 h-3.5"></i></button>`
+                : `<button onclick="serverConsole.triggerPower(${s.id}, 'start')" title="Start Server" class="w-8 h-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center transition"><i data-lucide="play" class="w-3.5 h-3.5"></i></button>`
+              )
+            }
+          </div>
         </div>
       </div>
     `;
