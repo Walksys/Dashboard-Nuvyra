@@ -63,7 +63,7 @@ router.get('/', authenticate, async (req, res) => {
 // Create Server (Admin Only)
 router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
-    const {
+    let {
       name,
       description,
       server_type,
@@ -112,6 +112,22 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
     } else if (server_type === 'python') {
       defaultImg = defaultImg || imagesConfig.python[1].value; // Python 3.12
       defaultCmd = defaultCmd || 'if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python3 app.py';
+    } else if (server_type === 'lumenvm' || server_type === 'vm') {
+      defaultImg = defaultImg || imagesConfig.lumenvm[0].value; // Debian 12
+      defaultCmd = defaultCmd || '/start.sh';
+      let parsed = {};
+      try { parsed = typeof env_vars === 'string' ? JSON.parse(env_vars || '{}') : (env_vars || {}); } catch (e) {}
+      env_vars = {
+        OS_HOSTNAME: parsed.OS_HOSTNAME || 'lumenvm',
+        OS_PASSWORD: parsed.OS_PASSWORD || 'admin',
+        DISPLAY_MODE: parsed.DISPLAY_MODE || 'ssh',
+        VM_RAM_MB: parsed.VM_RAM_MB || 'auto',
+        VM_DISK_GB: parsed.VM_DISK_GB || 'auto',
+        IPV4_MODE: parsed.IPV4_MODE || 'open',
+        PACKAGE_UPDATE: parsed.PACKAGE_UPDATE || '0',
+        UEFI: parsed.UEFI || '0',
+        ...parsed
+      };
     }
 
     const serverUuid = uuidv4();
@@ -181,6 +197,9 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
     } else if (server_type === 'python') {
       fs.writeFileSync(path.join(serverDir, 'requirements.txt'), '# Add your Python dependencies here\nflask\n', 'utf8');
       fs.writeFileSync(path.join(serverDir, 'app.py'), `# Mpanel Python Application\nimport os\nfrom http.server import HTTPServer, BaseHTTPRequestHandler\n\nport = int(os.environ.get('PORT', 5000))\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        self.send_response(200)\n        self.send_header('Content-type', 'text/plain')\n        self.end_headers()\n        self.wfile.write(b'Hello from Mpanel Python App!')\n\nprint(f"Starting Python server on port {port}...")\nhttpd = HTTPServer(('0.0.0.0', port), Handler)\nhttpd.serve_forever()\n`, 'utf8');
+    } else if (server_type === 'lumenvm' || server_type === 'vm') {
+      const vmEnv = typeof env_vars === 'object' ? env_vars : {};
+      fs.writeFileSync(path.join(serverDir, 'README.txt'), `=== LumenVM Virtual Machine ===\nOS Image: ${defaultImg}\nHostname: ${vmEnv.OS_HOSTNAME || 'lumenvm'}\nAccess Mode: ${vmEnv.DISPLAY_MODE || 'ssh'}\nAssigned Port: ${assignedPort}\n\nQEMU virtual disk and machine storage are managed in this directory.\n`, 'utf8');
     }
 
     logActivity(req.user.id, newServerId, 'SERVER_CREATE', `Created server ${name} (${server_type})`, req);
@@ -531,39 +550,91 @@ router.post('/:id/change-version', authenticate, requireServerAccess('settings.e
 
 // Delete Server
 router.delete('/:id', authenticate, requireServerAccess('settings.delete'), async (req, res) => {
+  const serverId = req.params.id;
   try {
-    const serverId = req.params.id;
     const server = req.server;
 
-    // Stop server
-    if (runnerService.isServerRunning(serverId)) {
-      await runnerService.killServer(serverId);
+    // Stop server process and stats monitoring
+    try {
+      if (typeof runnerService.stopStatsMonitoring === 'function') {
+        runnerService.stopStatsMonitoring(Number(serverId));
+      }
+      if (runnerService.isServerRunning(serverId)) {
+        await runnerService.killServer(serverId);
+      }
+    } catch (procErr) {
+      console.warn(`[Delete Server ${serverId}] Server stop warning:`, procErr.message);
     }
 
     // Clean up Docker container if available
-    if (dockerService.isAvailable) {
-      await dockerService.removeContainer(serverId, server.uuid);
+    try {
+      if (dockerService.isAvailable && dockerService.docker) {
+        await dockerService.removeContainer(serverId, server.uuid);
+      } else {
+        // Direct container removal fallback
+        const { execSync } = require('child_process');
+        const containerName = `mpanel-server-${serverId}-${(server.uuid || '').substring(0, 8)}`;
+        try {
+          execSync(`docker rm -f ${containerName} 2>/dev/null`);
+        } catch (e) {}
+      }
+    } catch (dockerErr) {
+      console.warn(`[Delete Server ${serverId}] Docker cleanup warning:`, dockerErr.message);
     }
 
-    // Release allocation
-    if (server.allocation_id) {
-      await query.run('UPDATE allocations SET server_id = NULL, assigned = 0 WHERE id = ?', [server.allocation_id]);
+    // Release all allocations associated with this server
+    try {
+      await query.run('UPDATE allocations SET server_id = NULL, assigned = 0 WHERE server_id = ? OR id = ?', [serverId, server.allocation_id || 0]);
+    } catch (allocErr) {
+      console.warn(`[Delete Server ${serverId}] Allocation release warning:`, allocErr.message);
     }
 
-    // Remove server files on disk
+    // Remove server files on disk safely (handle root or Docker file permissions)
     const serverDir = path.join(config.SERVERS_DIR, `server${serverId}`);
     if (fs.existsSync(serverDir)) {
-      fs.rmSync(serverDir, { recursive: true, force: true });
+      try {
+        fs.rmSync(serverDir, { recursive: true, force: true });
+      } catch (rmErr) {
+        console.warn(`[Delete Server ${serverId}] fs.rmSync warning: ${rmErr.message}. Attempting force removal...`);
+        try {
+          const { execSync } = require('child_process');
+          execSync(`sudo rm -rf "${serverDir}" 2>/dev/null || rm -rf "${serverDir}" 2>/dev/null`);
+        } catch (execErr) {
+          console.error(`[Delete Server ${serverId}] Disk cleanup notice:`, execErr.message);
+        }
+      }
     }
 
-    // Delete DB record (cascades subusers, backups, schedules)
+    // Explicitly clean up related child tables in case of foreign key constraints
+    try {
+      await query.run('DELETE FROM subusers WHERE server_id = ?', [serverId]);
+    } catch (e) {}
+    try {
+      await query.run('DELETE FROM backups WHERE server_id = ?', [serverId]);
+    } catch (e) {}
+    try {
+      await query.run('DELETE FROM schedules WHERE server_id = ?', [serverId]);
+    } catch (e) {}
+    try {
+      await query.run('DELETE FROM server_subdomains WHERE server_id = ?', [serverId]);
+    } catch (e) {}
+    try {
+      await query.run('DELETE FROM server_databases WHERE server_id = ?', [serverId]);
+    } catch (e) {}
+
+    // Delete DB record
     await query.run('DELETE FROM servers WHERE id = ?', [serverId]);
 
-    logActivity(req.user.id, serverId, 'SERVER_DELETE', `Deleted server ${server.name}`, req);
+    try {
+      logActivity(req.user.id, serverId, 'SERVER_DELETE', `Deleted server ${server.name}`, req);
+    } catch (logErr) {
+      console.warn(`[Delete Server ${serverId}] Activity log notice:`, logErr.message);
+    }
 
     res.json({ success: true, message: 'Server deleted successfully.' });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Failed to delete server.' });
+    console.error(`[Delete Server ${serverId}] Error:`, err);
+    res.status(500).json({ success: false, error: err.message || 'Failed to delete server.' });
   }
 });
 

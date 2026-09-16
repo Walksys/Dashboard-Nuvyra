@@ -970,3 +970,4 @@ class McToolsController {
 }
 
 window.mctools = new McToolsController();
+

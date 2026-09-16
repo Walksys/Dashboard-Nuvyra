@@ -32,6 +32,23 @@ module.exports = {
     { label: "Python 3.7",  value: "ghcr.io/ptero-eggs/yolks:python_3.7",  defaultCmd: "if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python3 app.py", mainFile: "app.py" },
     { label: "Python 2.7",  value: "ghcr.io/ptero-eggs/yolks:python_2.7",  defaultCmd: "if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python2 app.py", mainFile: "app.py" }
   ],
+  lumenvm: [
+    { label: "Debian 12 (Ready to use, Recommended)", value: "ghcr.io/sosuku325/aerovm:guest-debian-12", defaultCmd: "/start.sh" },
+    { label: "Ubuntu 24.04 LTS (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04", defaultCmd: "/start.sh" },
+    { label: "Ubuntu 22.04 LTS (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-ubuntu-22.04", defaultCmd: "/start.sh" },
+    { label: "Ubuntu 20.04 LTS (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-ubuntu-20.04", defaultCmd: "/start.sh" },
+    { label: "Debian 13 (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-debian-13", defaultCmd: "/start.sh" },
+    { label: "Debian 11 (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-debian-11", defaultCmd: "/start.sh" },
+    { label: "Kali Linux (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-kali", defaultCmd: "/start.sh" },
+    { label: "Fedora 40 (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-fedora", defaultCmd: "/start.sh" },
+    { label: "Arch Linux (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-arch", defaultCmd: "/start.sh" },
+    { label: "Rocky Linux (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-rockylinux", defaultCmd: "/start.sh" },
+    { label: "Alma Linux (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-almalinux", defaultCmd: "/start.sh" },
+    { label: "Debian 12 Desktop (GUI Preinstalled)", value: "ghcr.io/sosuku325/aerovm:guest-debian-12-desktop", defaultCmd: "/start.sh" },
+    { label: "Ubuntu 24.04 Desktop (GUI Preinstalled)", value: "ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04-desktop", defaultCmd: "/start.sh" },
+    { label: "Alpine (Blank Disk / Custom ISO / Windows)", value: "ghcr.io/sosuku325/aerovm:alpine", defaultCmd: "/start.sh" },
+    { label: "Shell (Debug / Rescue Mode)", value: "ghcr.io/sosuku325/aerovm:shell", defaultCmd: "/start.sh" }
+  ],
   categoriesWallpapers: [
     { id: "black-dark", name: "Black & Dark Aesthetic", preview: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80" },
     { id: "space", name: "Deep Space & Nebula", preview: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=80" },

@@ -239,11 +239,13 @@ class RunnerService {
 
     // Prepare startup command
     let startupCmd = server.startup_cmd || '';
-    if (!startupCmd) {
+    if (!startupCmd || startupCmd.trim() === '#Powered by LumenVM') {
       if (server.server_type === 'minecraft') {
         startupCmd = `java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}`;
       } else if (server.server_type === 'python') {
         startupCmd = 'python3 {{MAIN_FILE}}';
+      } else if (server.server_type === 'lumenvm' || server.server_type === 'vm') {
+        startupCmd = '/start.sh';
       } else {
         startupCmd = 'node {{MAIN_FILE}}';
       }

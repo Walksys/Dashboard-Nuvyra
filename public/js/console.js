@@ -1237,6 +1237,7 @@ class ServerConsole {
     const isMinecraft = s.server_type === 'minecraft' || !s.server_type;
     const isPython = s.server_type === 'python';
     const isNode = s.server_type === 'nodejs' || s.server_type === 'node';
+    const isVm = s.server_type === 'lumenvm' || s.server_type === 'vm';
 
     // Set standard variables based on server type if not yet defined
     if (isMinecraft) {
@@ -1251,17 +1252,25 @@ class ServerConsole {
       if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'app.py';
       if (envVars.REQUIREMENTS_FILE === undefined) envVars.REQUIREMENTS_FILE = 'requirements.txt';
       if (envVars.PYTHON_VERSION === undefined) envVars.PYTHON_VERSION = '3.12';
+    } else if (isVm) {
+      if (envVars.OS_HOSTNAME === undefined) envVars.OS_HOSTNAME = 'mpanel-vm';
+      if (envVars.OS_PASSWORD === undefined) envVars.OS_PASSWORD = 'root';
+      if (envVars.DISPLAY_MODE === undefined) envVars.DISPLAY_MODE = 'ssh';
+      if (envVars.VM_RAM_MB === undefined) envVars.VM_RAM_MB = String(s.memory_mb || 2048);
+      if (envVars.VM_DISK_GB === undefined) envVars.VM_DISK_GB = String(Math.round((s.disk_mb || 10240) / 1024) || 10);
     }
 
     this.currentStartupEnvVars = { ...envVars };
 
     // Default startup command template
     let rawCmd = s.startup_cmd || '';
-    if (!rawCmd || rawCmd.includes('-Xmx{{SERVER_MEMORY}}M -jar server.jar nogui')) {
+    if (!rawCmd || rawCmd.includes('-Xmx{{SERVER_MEMORY}}M -jar server.jar nogui') || rawCmd.startsWith('#Powered by LumenVM')) {
       if (isMinecraft) {
         rawCmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';
       } else if (isPython) {
         rawCmd = 'python3 {{MAIN_FILE}}';
+      } else if (isVm) {
+        rawCmd = '/start.sh';
       } else {
         rawCmd = 'node {{MAIN_FILE}}';
       }
@@ -1294,9 +1303,22 @@ class ServerConsole {
         { label: 'Python 3.11', value: 'ghcr.io/parkervcp/yolks:python_3.11' },
         { label: 'Python 3.10', value: 'ghcr.io/parkervcp/yolks:python_3.10' }
       ];
+    } else if (isVm) {
+      dockerOptions = [
+        { label: 'Debian 12 (Bookworm)', value: 'ghcr.io/david1117dev/lumenvm:debian-12' },
+        { label: 'Debian 13 (Trixie)', value: 'ghcr.io/david1117dev/lumenvm:debian-13' },
+        { label: 'Debian Desktop GUI', value: 'ghcr.io/david1117dev/lumenvm:debian-desktop' },
+        { label: 'Ubuntu 24.04 LTS', value: 'ghcr.io/david1117dev/lumenvm:ubuntu-24' },
+        { label: 'Ubuntu 22.04 LTS', value: 'ghcr.io/david1117dev/lumenvm:ubuntu-22' },
+        { label: 'Ubuntu Desktop GUI', value: 'ghcr.io/david1117dev/lumenvm:ubuntu-desktop' },
+        { label: 'Kali Linux', value: 'ghcr.io/david1117dev/lumenvm:kali' },
+        { label: 'Fedora 40', value: 'ghcr.io/david1117dev/lumenvm:fedora-40' },
+        { label: 'Arch Linux', value: 'ghcr.io/david1117dev/lumenvm:arch' },
+        { label: 'Alpine (Blank Disk / Custom ISO)', value: 'ghcr.io/david1117dev/lumenvm:alpine' }
+      ];
     }
 
-    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isNode ? 'ghcr.io/parkervcp/yolks:nodejs_20' : 'ghcr.io/parkervcp/yolks:python_3.12'));
+    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isVm ? 'ghcr.io/david1117dev/lumenvm:debian-12' : (isNode ? 'ghcr.io/parkervcp/yolks:nodejs_20' : 'ghcr.io/parkervcp/yolks:python_3.12')));
     const matchedPreset = dockerOptions.find(o => o.value === currentDocker);
     const isCustomDocker = !matchedPreset;
 
@@ -1339,13 +1361,35 @@ class ServerConsole {
       PYTHON_VERSION: {
         label: 'PYTHON VERSION',
         desc: 'The Python runtime release version.'
+      },
+      OS_HOSTNAME: {
+        label: 'VM HOSTNAME',
+        desc: 'Hostname configured inside the virtual machine.'
+      },
+      OS_PASSWORD: {
+        label: 'ROOT PASSWORD',
+        desc: 'Default root / user password inside the virtual machine.'
+      },
+      DISPLAY_MODE: {
+        label: 'DISPLAY / ACCESS MODE',
+        desc: 'Access method: ssh (port 22), novnc (browser web desktop), vnc (port 5900), or rdp (port 3389).'
+      },
+      VM_RAM_MB: {
+        label: 'VM MEMORY (MB)',
+        desc: 'Amount of host RAM allocated to the QEMU Virtual Machine.'
+      },
+      VM_DISK_GB: {
+        label: 'VM DISK SIZE (GB)',
+        desc: 'Size of the virtual QCOW2 hard drive in Gigabytes.'
       }
     };
 
-    // Priority order for Minecraft: MINECRAFT_VERSION, SERVER_JARFILE, BUILD_NUMBER
+    // Priority order
     const orderedKeys = isMinecraft
       ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER']
-      : (isNode ? ['MAIN_FILE', 'NODE_VERSION', 'ADDITIONAL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'PYTHON_VERSION']);
+      : (isVm
+        ? ['OS_HOSTNAME', 'OS_PASSWORD', 'DISPLAY_MODE', 'VM_RAM_MB', 'VM_DISK_GB']
+        : (isNode ? ['MAIN_FILE', 'NODE_VERSION', 'ADDITIONAL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'PYTHON_VERSION']));
 
     // Build variables cards HTML matching screenshot
     let variablesCardsHtml = '';
@@ -1429,8 +1473,10 @@ class ServerConsole {
 
   evaluateStartupCommand(template, envVars) {
     let cmd = template || '';
-    if (!cmd.trim()) {
-      if (this.serverData?.server_type === 'minecraft' || !this.serverData?.server_type) {
+    if (!cmd.trim() || cmd.startsWith('#Powered by LumenVM')) {
+      if (this.serverData?.server_type === 'lumenvm' || this.serverData?.server_type === 'vm') {
+        cmd = '/start.sh';
+      } else if (this.serverData?.server_type === 'minecraft' || !this.serverData?.server_type) {
         cmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';
       } else if (this.serverData?.server_type === 'python') {
         cmd = 'python3 {{MAIN_FILE}}';

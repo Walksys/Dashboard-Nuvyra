@@ -72,7 +72,8 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
       dockerTemplates: {
         minecraft: imagesConfig.minecraft,
         nodejs: imagesConfig.nodejs,
-        python: imagesConfig.python
+        python: imagesConfig.python,
+        lumenvm: imagesConfig.lumenvm
       }
     });
   } catch (err) {

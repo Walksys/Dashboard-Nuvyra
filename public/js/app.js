@@ -1072,7 +1072,9 @@ class App {
     const typeIcons = {
       minecraft: '🎮 Minecraft',
       nodejs: '⚡ Node.js',
-      python: '🐍 Python'
+      python: '🐍 Python',
+      lumenvm: '🖥️ LumenVM (VPS)',
+      vm: '🖥️ Virtual Machine'
     };
 
     let expBadge = '';
