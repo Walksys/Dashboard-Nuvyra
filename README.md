@@ -301,6 +301,22 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 
 ---
 
+## 👨‍💻 Creator & Developer
+
+<p align="center">
+  <a href="https://discord.com/users/924366651443527710" target="_blank">
+    <img src="public/images/nobita-discord.png" alt="Nobita Discord Profile" width="280px" style="border-radius: 16px; box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);" />
+  </a>
+</p>
+
+<p align="center">
+  <b>Developed &amp; Engineered by Nobita (<code>nobita.dev</code>)</b><br/>
+  💬 Discord: <a href="https://discord.com/users/924366651443527710" target="_blank"><code>nobita.dev</code> (ID: <code>924366651443527710</code>)</a> • Mention: <code>&lt;@924366651443527710&gt;</code><br/>
+  🌐 Official Website: <a href="https://nobitahost.in/" target="_blank"><b>https://nobitahost.in/</b></a>
+</p>
+
+---
+
 <p align="center">
   <a href="https://nobitahost.in">
     <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=21,16,11,6,2&height=120&section=footer" width="100%" alt="Footer Wave" />
@@ -308,5 +324,5 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 </p>
 
 <p align="center">
-  <b>Mpanel</b> &copy; 2026 • Designed & Engineered with ❤️ by <a href="https://nobitahost.in"><b>NobitaHost</b></a> • Licensed under the <a href="LICENSE">MIT License</a>
+  <b>Mpanel</b> &copy; 2026 • Designed &amp; Engineered with ❤️ by <a href="https://nobitahost.in"><b>Nobita</b> (nobitahost.in)</a> • Licensed under the <a href="LICENSE">MIT License</a>
 </p>

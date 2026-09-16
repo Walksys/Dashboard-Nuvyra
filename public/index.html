@@ -200,6 +200,10 @@
             <a id="dropdown-admin-link" href="#admin-overview" onclick="app.navigate('admin-overview')" class="flex items-center gap-2.5 px-4 py-2 text-xs text-purple-300 hover:bg-purple-500/20 transition">
               <i data-lucide="shield" class="w-4 h-4"></i> Admin Portal
             </a>
+            <div class="border-t border-white/10 my-1"></div>
+            <a href="javascript:void(0)" onclick="app.showDeveloperCardModal()" class="flex items-center gap-2.5 px-4 py-2 text-xs text-cyan-300 hover:bg-cyan-500/20 transition">
+              <i data-lucide="sparkles" class="w-4 h-4"></i> Developer (Nobita)
+            </a>
           </div>
         </div>
 
@@ -424,12 +428,62 @@
           <span class="text-emerald-400 font-mono">3004</span>
         </div>
       </div>
+
+      <!-- Permanent Non-Removable Developer Watermark -->
+      <div id="sidebar-permanent-watermark" class="p-2.5 rounded-xl bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-cyan-950/40 border border-purple-500/20 text-[11px] mt-2 shrink-0 select-none shadow-md">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0 cursor-pointer" onclick="app.showDeveloperCardModal()" title="View Nobita Developer Profile">
+            <div class="relative w-7 h-7 rounded-full overflow-hidden border border-purple-400/50 bg-slate-900 shrink-0">
+              <img src="/images/nobita-discord.png" class="w-[85px] max-w-none absolute -top-2.5 -left-2.5" alt="Nobita">
+              <span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-slate-900" title="Do Not Disturb"></span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1">
+                <span class="font-bold text-white text-[11px] truncate">Nobita</span>
+                <span class="text-[9px] font-mono font-bold px-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">DEV</span>
+              </div>
+              <p class="text-[10px] text-slate-400 truncate font-mono">nobita.dev</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <a href="https://discord.com/users/924366651443527710" target="_blank" class="w-6 h-6 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 flex items-center justify-center transition" title="Discord: <@924366651443527710>">
+              <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+            </a>
+            <a href="https://nobitahost.in/" target="_blank" class="w-6 h-6 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 flex items-center justify-center transition" title="nobitahost.in">
+              <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
     </aside>
 
     <!-- Main Dynamic Content Container (Auto Responsive across Phone, Tablet, PC) -->
-    <main id="main-content" class="flex-1 min-h-0 h-full max-h-full overflow-y-auto overscroll-contain p-3.5 sm:p-6 lg:p-8 space-y-6 custom-scrollbar">
+    <main id="main-content" class="flex-1 min-h-0 h-full max-h-full overflow-y-auto overscroll-contain p-3.5 sm:p-6 lg:p-8 space-y-6 custom-scrollbar flex flex-col justify-between">
       <!-- Dynamic Views injected via JS -->
-      <div id="view-container"></div>
+      <div id="view-container" class="flex-1"></div>
+
+      <!-- Permanent Non-Removable Global Footer Watermark -->
+      <footer id="mpanel-global-footer-watermark" class="w-full pt-8 pb-4 text-center select-none shrink-0 border-t border-white/5 mt-8">
+        <div class="inline-flex flex-wrap items-center justify-center gap-2.5 px-4 py-2 rounded-2xl bg-slate-950/80 border border-white/10 backdrop-blur-md shadow-xl text-xs text-slate-400">
+          <span class="text-slate-300 font-semibold flex items-center gap-1.5">
+            <i data-lucide="code-2" class="w-4 h-4 text-cyan-400"></i> Engineered by
+            <a href="javascript:void(0)" onclick="app.showDeveloperCardModal()" class="text-purple-300 hover:text-purple-200 font-bold hover:underline transition flex items-center gap-1">
+              <span>Nobita</span>
+              <span class="text-[10px] font-mono px-1 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">nobita.dev</span>
+            </a>
+          </span>
+          <span class="text-slate-600 hidden sm:inline">&bull;</span>
+          <a href="https://discord.com/users/924366651443527710" target="_blank" class="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition font-mono" title="Discord ID: 924366651443527710">
+            <i data-lucide="disc" class="w-3.5 h-3.5"></i>
+            <span>Discord: &lt;@924366651443527710&gt;</span>
+          </a>
+          <span class="text-slate-600 hidden sm:inline">&bull;</span>
+          <a href="https://nobitahost.in/" target="_blank" class="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 transition font-semibold" title="Official Cloud Hosting">
+            <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+            <span>https://nobitahost.in/</span>
+          </a>
+        </div>
+      </footer>
     </main>
   </div>
 

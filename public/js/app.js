@@ -1551,6 +1551,51 @@ class App {
     this.toast(`Copied "${text}" to clipboard!`, 'success');
   }
 
+  showDeveloperCardModal() {
+    const container = document.getElementById('modal-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in" onclick="if(event.target===this) document.getElementById('modal-container').innerHTML=''">
+        <div class="w-full max-w-sm rounded-3xl overflow-hidden border border-purple-500/30 bg-[#111214] text-slate-200 shadow-2xl relative animate-scale-in font-sans">
+          
+          <!-- Close Button -->
+          <button onclick="document.getElementById('modal-container').innerHTML=''" class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-slate-300 hover:text-white flex items-center justify-center transition backdrop-blur-md">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Discord Profile Card Container -->
+          <div class="relative w-full bg-[#111214] flex justify-center items-center overflow-hidden">
+            <img src="/images/nobita-discord.png" class="w-full h-auto object-contain select-none" alt="Nobita Discord Profile">
+          </div>
+
+          <!-- Interactive Action Buttons -->
+          <div class="p-4 bg-[#111214] border-t border-white/5 space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <a href="https://discord.com/users/924366651443527710" target="_blank" class="py-2.5 px-3 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-md shadow-indigo-500/20 active:scale-95">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                <span>Open Discord</span>
+              </a>
+              <a href="https://nobitahost.in/" target="_blank" class="py-2.5 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-md shadow-cyan-500/20 active:scale-95">
+                <i data-lucide="globe" class="w-4 h-4"></i>
+                <span>nobitahost.in</span>
+              </a>
+            </div>
+
+            <button onclick="app.copyToClipboard('<@924366651443527710>')" class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-mono flex items-center justify-center gap-1.5 border border-white/10 transition active:scale-98">
+              <i data-lucide="copy" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span>Copy Mention: &lt;@924366651443527710&gt;</span>
+            </button>
+            <button onclick="app.copyToClipboard('924366651443527710')" class="w-full py-1.5 px-3 rounded-xl bg-transparent hover:bg-white/5 text-slate-400 hover:text-slate-300 text-[10px] font-mono flex items-center justify-center gap-1 transition">
+              <span>Discord ID: 924366651443527710</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+
   logout() {
     localStorage.removeItem('mpanel_token');
     this.token = null;
