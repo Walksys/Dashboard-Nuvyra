@@ -1,31 +1,85 @@
-# 🎮 Mpanel - Full Node.js Game & App Server Web Management Panel
-
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
-[![Version](https://img.shields.io/badge/release-v2.5.0-blue.svg)](https://github.com/nobita329/Mpanel/releases/tag/v2.5.0)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Theme: Full Black](https://img.shields.io/badge/Theme-Full%20Black%20OLED-black.svg)](#-theme--customization-engine)
-[![Auto-Updater](https://img.shields.io/badge/Auto--Updater-Live%20Terminal-cyan.svg)](#-system-updates--live-terminal-engine)
-
-**Mpanel** is a high-performance, full-featured game and application server web management panel built entirely in **Node.js**. Designed as a modern, lightweight, and blazingly fast alternative to Pterodactyl, Mpanel features real-time terminal streaming, deep Minecraft server management (Live Player Manager, Addon Marketplace, World Installer, Version Changer), an embedded SFTP server, automated GitHub release detection with a live update terminal, interactive auto-tutorials, and multi-theme personalization (Full Black OLED, PteroX V2, LiquidX, Arix).
+<!-- ============================================================================== -->
+<!--                     🎮 MPANEL v2.5.0 - NEXT-GEN GAME & APP PANEL               -->
+<!-- ============================================================================== -->
 
 <p align="center">
-  <img src="public/assets/console-preview.png" alt="Mpanel Server Console & Live Telemetry Dashboard" width="100%" />
+  <a href="https://nobitahost.in">
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20MPANEL%20v2.5.0&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Mpanel Header Banner" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://nobitahost.in">
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=22D3EE&center=true&vCenter=true&random=false&width=750&lines=⚡+Modern+Node.js+Alternative+to+Pterodactyl;🚀+Real-Time+xterm.js+Console+%26+Live+Meters;🔄+Automated+GitHub+Releases+Detector+%26+Live+Update+Terminal;🎮+Minecraft+Player+Manager+%26+Universal+Addon+Marketplace;🔒+Embedded+SFTP+(Port+3004)+%26+MariaDB+(Port+27017);🎨+Multi-Theme+Personalization%3A+Full+Black+OLED%2C+PteroX+V2%2C+LiquidX" alt="Typing Animation" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-18.0%2B-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" /></a>
+  <a href="https://github.com/nobita329/Mpanel/releases/tag/v2.5.0"><img src="https://img.shields.io/badge/Release-v2.5.0-8A2BE2?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
+  <a href="https://nobitahost.in"><img src="https://img.shields.io/badge/Website-nobitahost.in-007ACC?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" /></a>
+  <a href="#-system-updates--live-terminal-engine"><img src="https://img.shields.io/badge/Auto--Updater-Live%20Terminal-00C7B7?style=for-the-badge&logo=terminal&logoColor=white" alt="Auto Updater" /></a>
+  <a href="#-theme--customization-engine"><img src="https://img.shields.io/badge/Theme-Full%20Black%20OLED-111525?style=for-the-badge&logo=styled-components&logoColor=white" alt="Theme" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F7DF1E?style=for-the-badge&logo=open-source-initiative&logoColor=black" alt="License" /></a>
+</p>
+
+<p align="center">
+  <a href="#-quick-start"><b>🚀 Quick Start</b></a> •
+  <a href="#-what-is-new-in-v250"><b>✨ What's New</b></a> •
+  <a href="#-core-features--capabilities"><b>🧩 Features</b></a> •
+  <a href="#-theme--customization-engine"><b>🎨 Themes</b></a> •
+  <a href="#-architecture--port-matrix"><b>🔒 Ports</b></a> •
+  <a href="#-directory-structure"><b>📁 Structure</b></a> •
+  <a href="https://nobitahost.in"><b>🌐 Cloud Hosting</b></a>
 </p>
 
 ---
 
-## 🚀 Port Configuration
+## 📸 3D Live Showcase
 
-| Service | Port | Protocol | Description |
-| :--- | :--- | :--- | :--- |
-| **Web UI & Console WS** | `3001` | HTTP / WS | Main Web Panel Interface & Live Terminal WebSocket (`http://localhost:3001`) |
-| **Panel / Daemon API** | `3003` | HTTP / WS | REST API for external integrations (WHMCS, Discord Bots, Billing, CLI) |
-| **Embedded SFTP Server** | `3004` | SFTP (SSH) | Built-in SFTP server for FileZilla, WinSCP, Cyberduck (`sftp://localhost:3004`) |
-| **MariaDB Server Engine** | `27017` | MySQL / TCP | High-speed dedicated relational database container for Minecraft & App databases |
+<p align="center">
+  <img src="public/assets/console-preview.png" alt="Mpanel Server Console & Live Telemetry Dashboard" style="border-radius: 16px; box-shadow: 0 0 45px rgba(34, 211, 238, 0.3), 0 20px 40px rgba(0, 0, 0, 0.85); border: 2px solid rgba(34, 211, 238, 0.25);" width="100%" />
+</p>
 
 ---
 
-## ✨ What's New in v2.5.0
+## ⚡ High-Speed Architecture & Workflow
+
+```mermaid
+graph TD
+    Client["🌐 Client Browser (Admins & Users)"] -->|Port 3001: Web UI & xterm.js WebSocket| Gateway["🚀 Mpanel Engine (Port 3001)"]
+    External["⚡ External Integrations / Discord Bots"] -->|Port 3003: REST & WS API| GatewayAPI["🔌 Daemon API (Port 3003)"]
+    FTPClient["📁 FileZilla / WinSCP / Cyberduck"] -->|Port 3004: SSH SFTP| SFTP["🛡️ Embedded SFTP Server (Port 3004)"]
+
+    Gateway --> EngineCore{"⚙️ Core Controller"}
+    GatewayAPI --> EngineCore
+
+    EngineCore -->|Container Lifecycle| Docker["🐳 Docker Engine (Java 8-25, Node, Python)"]
+    EngineCore -->|Database Storage| MariaDB["🗄️ MariaDB / MySQL 11 (Port 27017)"]
+    EngineCore -->|Live Output Stream| WSConsole["📟 WebSocket Console Engine"]
+    EngineCore -->|Release Pipeline| AutoUpdater["🔄 GitHub Releases Auto-Detect & Live Terminal"]
+
+    style Gateway fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#fff
+    style GatewayAPI fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#fff
+    style SFTP fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#fff
+    style MariaDB fill:#701a75,stroke:#f472b6,stroke-width:2px,color:#fff
+    style AutoUpdater fill:#083344,stroke:#22d3ee,stroke-width:2px,color:#fff
+```
+
+---
+
+## 🔒 Architecture & Port Matrix
+
+| Service | Port | Protocol | Encryption | Description |
+| :--- | :---: | :---: | :---: | :--- |
+| **Web Panel UI** | `3001` | HTTP / WS | TLS / SSL | Main Web Dashboard & Live Console WebSocket |
+| **Panel & Daemon API** | `3003` | HTTP / WS | Bearer JWT | REST & WS API for external bots, billing & WHMCS |
+| **Embedded SFTP Server** | `3004` | SFTP | SSH2 RSA/ECDSA | Built-in high-speed file transfer (`sftp://host:3004`) |
+| **Dedicated MariaDB Engine**| `27017`| TCP | Native Auth | Relational database server for Minecraft plugins & app databases |
+
+---
+
+## ✨ What is New in v2.5.0
 
 ### 1. 🔄 System Updates & Auto-Detection Engine
 - **GitHub Releases Auto-Detection**: Real-time checking against [nobita329/Mpanel/releases](https://github.com/nobita329/Mpanel/releases) with semver comparison.
@@ -64,7 +118,7 @@
 
 ---
 
-## 🔑 Core Features & Capabilities
+## 🧩 Core Features & Capabilities
 
 ### 1. 👥 Minecraft Player Manager (Live Monitoring & Offline Roster)
 - **Live Player Roster**: Connected players with live ping, gamemode, health, food bar, XP level, and UUID.
@@ -117,20 +171,17 @@
 
 ## 📦 Supported Runtimes & Environments
 
-### 1. 🎮 Minecraft (Java & Bedrock)
-- `Java 25`, `Java 21`, `Java 17`, `Java 16`, `Java 11`, `Java 8` (`ghcr.io/pterodactyl/yolks:java_*`)
-
-### 2. ⚡ Node.js Apps & Discord Bots
-- `Nodejs 25`, `24`, `23`, `22`, `21`, `20`, `19`, `18`, `16`, `14`, `12` (`ghcr.io/ptero-eggs/yolks:nodejs_*`)
-
-### 3. 🐍 Python Apps & Bots
-- `Python 3.13`, `3.12`, `3.11`, `3.10`, `3.9`, `3.8`, `3.7`, `2.7` (`ghcr.io/ptero-eggs/yolks:python_*`)
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-8%20|%2011%20|%2016%20|%2017%20|%2021%20|%2025-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
+  <img src="https://img.shields.io/badge/Node.js-12%20|%2014%20|%2016%20|%2018%20|%2020%20|%2022%20|%2024%20|%2025-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node" />
+  <img src="https://img.shields.io/badge/Python-2.7%20|%203.7%20--%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+</p>
 
 ---
 
-## 🛠️ Installation & Quick Start
+## 🚀 Quick Start
 
-### 1. 🚀 1-Click Universal Auto Install (`menu.sh`)
+### 1. ⚡ 1-Click Universal Auto Install (`menu.sh`)
 Run the full automated installer directly from the web or locally:
 ```bash
 # Instant One-Liner from GitHub
@@ -142,35 +193,36 @@ bash <(curl -sSL https://raw.githubusercontent.com/nobita329/Mpanel/main/menu.sh
 ./menu.sh auto
 ```
 
-### 2. Interactive Management Menu (`menu.sh`)
+### 2. 🎮 Interactive Management Menu (`menu.sh`)
 ```bash
 ./menu.sh
 # or
 bash menu.sh
 ```
 
-Direct shortcuts:
-- `./menu.sh auto` / `./menu.sh setup` - 1-Click Auto Install, Setup, Database Seeding & PM2 Launch
-- `./menu.sh update` - 1-Click Auto Update (Git pull, DB migrations, dependencies & PM2 restart)
-- `./menu.sh usercreate` - Create new admin or normal user
-- `./menu.sh pm2` - PM2 Process Management menu (Start, Stop, Restart, Logs, Autostart)
-- `./menu.sh status` - Check port listening status (`3001`, `3003`, `3004`, `27017`) and database
-- `./menu.sh playit` - Install native Playit.gg zero-port tunnel CLI
-- `./menu.sh uninstall` - Safely remove or clean Mpanel
+| Command Shortcut | Purpose |
+| :--- | :--- |
+| `./menu.sh auto` | 1-Click Auto Install, Setup, Database Seeding & PM2 Launch |
+| `./menu.sh update` | 1-Click Auto Update (Git pull, DB migrations, dependencies & PM2 restart) |
+| `./menu.sh usercreate` | Create new administrator or standard customer user |
+| `./menu.sh pm2` | PM2 Process Management menu (Start, Stop, Restart, Logs, Autostart) |
+| `./menu.sh status` | Check port listening status (`3001`, `3003`, `3004`, `27017`) and database |
+| `./menu.sh playit` | Install native Playit.gg zero-port tunnel CLI |
+| `./menu.sh uninstall`| Safely remove or clean Mpanel deployment |
 
-### 3. Manual CLI Setup
+### 3. 🛠️ Manual CLI Setup
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/nobita329/Mpanel.git
 cd Mpanel
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Run automated directory, .env & database setup
+# 3. Run automated directory, .env & database setup
 npm run setup
 
-# Launch with PM2
+# 4. Launch with PM2 in Cluster Mode
 npm run pm2:start
 npm run pm2:logs
 ```
@@ -249,5 +301,12 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 
 ---
 
-## 📄 License
-This project is open-source software licensed under the [MIT License](LICENSE).
+<p align="center">
+  <a href="https://nobitahost.in">
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=21,16,11,6,2&height=120&section=footer" width="100%" alt="Footer Wave" />
+  </a>
+</p>
+
+<p align="center">
+  <b>Mpanel</b> &copy; 2026 • Designed & Engineered with ❤️ by <a href="https://nobitahost.in"><b>NobitaHost</b></a> • Licensed under the <a href="LICENSE">MIT License</a>
+</p>
