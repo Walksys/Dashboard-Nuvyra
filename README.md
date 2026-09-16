@@ -116,6 +116,15 @@ graph TD
 - **New Customer Portals**: Billing & Subscriptions portal (`#billing`) with multi-tier pricing plans, wallet balance, and invoice receipts.
 - **Theme Palette & Layouts**: Deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 
+### 4. 🛠️ McTools Blueprint Extension Suite
+- **Integrated Extension**: Directly ported from [`nobita329/Nobita-Cloud (mctools.blueprint)`](https://github.com/nobita329/Nobita-Cloud/blob/main/thame/Extension/mctools.blueprint).
+- **Live MOTD & Colored Text Builder**: Real-time Minecraft colored text builder (Sign, Book, Chat, MOTD) with live dark preview box and instant copy in Legacy (`&`), Section (`§`), Tellraw/JSON, and MiniMessage.
+- **Color Palette & Swatches**: Official 16 Minecraft colors with hex codes, RGB picker, and Bungee hex formatting (`&x&r&r&g&g&b&b`).
+- **SmallCaps & Unicode Decorative Fonts**: Real-time styler for SmallCaps, BigCaps, Bubble, Fraktur, FullWidth, Script, and Tiny fonts.
+- **1,200+ Minecraft Registry Directory**: Fast searchable registry of 1,228 Items & Blocks, 149 Entities, 113 Particles, 1,651 Game Sounds, 42 Enchantments, and 40 Effects with 1-click `/give`, `/summon`, and `/particle` copy.
+- **Inventory Slot Maps & Emojis**: Interactive slot indices for Chests, Hoppers, Furnaces, and Brewing Stands, plus 1,900+ Minecraft symbols.
+- **1-Click Download**: Download `mctools.blueprint` directly from the Addon Marketplace.
+
 ---
 
 ## 🧩 Core Features & Capabilities

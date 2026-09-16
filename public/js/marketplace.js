@@ -359,6 +359,9 @@ class MarketplaceController {
           <button onclick="marketplace.switchCategory('tools')" id="cat-btn-tools" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'tools' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="wrench" class="w-4 h-4 text-indigo-400"></i> Server Tools
           </button>
+          <button onclick="marketplace.switchCategory('mctools')" id="cat-btn-mctools" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'mctools' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
+            <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> McTools
+          </button>
         </div>
 
         <!-- Dynamic Content Area -->
@@ -528,6 +531,8 @@ class MarketplaceController {
       await this.renderPropertiesView();
     } else if (this.activeTab === 'tools' || this.activeTab === 'playit') {
       await this.renderToolsView();
+    } else if (this.activeTab === 'mctools') {
+      await this.renderMcToolsView();
     } else {
       await this.renderBrowseView();
     }
@@ -1523,6 +1528,9 @@ class MarketplaceController {
           </button>
           <button onclick="marketplace.switchCategory('tools')" id="cat-btn-tools" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'tools' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="wrench" class="w-4 h-4 text-indigo-400"></i> Server Tools
+          </button>
+          <button onclick="marketplace.switchCategory('mctools')" id="cat-btn-mctools" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'mctools' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
+            <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> McTools
           </button>
         </div>
 
@@ -4475,6 +4483,26 @@ sudo apt install -y playit</pre>
   }
 
   // ---------------------------------------------------------------------------
+  // MCTOOLS BLUEPRINT EXTENSION SUITE
+  // ---------------------------------------------------------------------------
+
+  async renderMcToolsView() {
+    const container = document.getElementById('marketplace-view-content');
+    if (!container) return;
+    if (window.mctools) {
+      window.mctools.renderView(container);
+    } else {
+      container.innerHTML = `
+        <div class="glass-panel p-8 text-center rounded-3xl border border-white/10 space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl mx-auto">🛠️</div>
+          <h3 class="text-xl font-bold text-white">McTools Extension</h3>
+          <p class="text-xs text-slate-400">Loading Minecraft tools...</p>
+        </div>
+      `;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // SERVER TOOLS & OPTIMIZATION SUITE
   // ---------------------------------------------------------------------------
 
@@ -4501,6 +4529,33 @@ sudo apt install -y playit</pre>
             <button onclick="marketplace.cleanServerLogs()" id="clean-logs-btn" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800/90 hover:bg-slate-700 text-rose-300 border border-rose-500/30 transition flex items-center gap-2 shadow">
               <i data-lucide="trash-2" class="w-4 h-4 text-rose-400"></i> Clean Logs & Crash Dumps
             </button>
+          </div>
+        </div>
+
+        <!-- Featured Blueprint Extension: McTools -->
+        <div class="glass-panel p-5 rounded-3xl border border-indigo-500/40 bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-900/80 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-black uppercase tracking-wider text-indigo-300 bg-indigo-500/20 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
+                ⭐ Featured Blueprint Extension
+              </span>
+              <span class="text-[10px] font-mono text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">v1.0.1</span>
+              <span class="text-[10px] text-slate-400 font-mono">by towsifkafi • nobita329</span>
+            </div>
+            <h4 class="text-xl font-black text-white flex items-center gap-2">
+              🛠️ McTools Server Utilities Suite
+            </h4>
+            <p class="text-xs text-slate-300 max-w-2xl">
+              Ported from <code>nobita329/Nobita-Cloud (mctools.blueprint)</code>. Includes real-time MOTD colored text builder, 1,200+ Minecraft IDs catalog, color picker, small caps fonts, and inventory slot guides.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="marketplace.switchCategory('mctools')" class="btn-cyber px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-95">
+              <i data-lucide="wrench" class="w-4 h-4"></i> Open McTools Suite
+            </button>
+            <a href="/downloads/mctools.blueprint" download="mctools.blueprint" class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 flex items-center gap-1.5 transition" title="Download mctools.blueprint">
+              <i data-lucide="download" class="w-4 h-4"></i> .blueprint
+            </a>
           </div>
         </div>
 

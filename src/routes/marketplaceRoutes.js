@@ -597,4 +597,49 @@ router.post('/tools/install-preset', authenticate, requireServerAccess('files.wr
   }
 });
 
+// ==========================================
+// McTools Blueprint Extension Endpoints
+// Source: https://github.com/nobita329/Nobita-Cloud/blob/main/thame/Extension/mctools.blueprint
+// ==========================================
+const MCTOOLS_DATA_DIR = path.join(__dirname, '../../public/data/mctools');
+const MCTOOLS_FILE_PATH = path.join(__dirname, '../../public/downloads/mctools.blueprint');
+
+router.get('/mctools/info', (req, res) => {
+  res.json({
+    success: true,
+    info: {
+      name: 'McTools',
+      identifier: 'mctools',
+      description: 'Helpful tools for Minecraft servers: MOTD builder, color picker, IDs directory, small text font styler, and emojis.',
+      version: '1.0.1',
+      target: 'beta-2024-12',
+      author: 'towsifkafi',
+      maintainer: 'nobita.dev',
+      sourceUrl: 'https://github.com/nobita329/Nobita-Cloud/blob/main/thame/Extension/mctools.blueprint',
+      rawUrl: 'https://raw.githubusercontent.com/nobita329/Nobita-Cloud/main/thame/Extension/mctools.blueprint',
+      downloadUrl: '/downloads/mctools.blueprint',
+      type: 'blueprint_extension',
+      sizeBytes: fs.existsSync(MCTOOLS_FILE_PATH) ? fs.statSync(MCTOOLS_FILE_PATH).size : 360432
+    }
+  });
+});
+
+router.get('/mctools/data/:dataType', (req, res) => {
+  const { dataType } = req.params;
+  const safeName = dataType.replace(/[^a-zA-Z0-9_-]/g, '');
+  const filePath = path.join(MCTOOLS_DATA_DIR, `${safeName}.json`);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, error: `Data file not found for ${safeName}` });
+  }
+
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const json = JSON.parse(raw);
+    res.json({ success: true, count: Array.isArray(json) ? json.length : Object.keys(json).length, data: json });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
