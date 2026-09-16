@@ -1793,5 +1793,22 @@ html.theme-arix .device-select-card.active {
   border-color: rgba(35, 174, 234, 0.45) !important;
 }
 
+/* ==============================================================================
+   🔒 PERMANENT NON-REMOVABLE DEVELOPER WATERMARK (NOBITA / NOBITAHOST.IN)
+   ============================================================================== */
+#sidebar-permanent-watermark,
+#mpanel-global-footer-watermark {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
 
+#sidebar-permanent-watermark {
+  transition: all 0.2s ease-in-out;
+}
 
+#sidebar-permanent-watermark:hover {
+  border-color: rgba(192, 132, 252, 0.45) !important;
+  transform: translateY(-1px);
+}
