@@ -12,7 +12,7 @@ const { logActivity } = require('../services/activityService');
 // Get Public Settings (Accessible by all users and guests)
 router.get('/public', async (req, res) => {
   try {
-    const rows = await query.all('SELECT key, value FROM settings');
+    const rows = await query.all('SELECT `key`, `value` FROM settings');
     const settings = {};
     for (const r of rows) {
       settings[r.key] = r.value;
@@ -103,13 +103,16 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       'auto_save_enabled',
       'active_theme',
       'panel_sounds_enabled',
-      'arix_primary_color'
+      'arix_primary_color',
+      'liquidx_primary_color',
+      'tutorials_enabled',
+      'tutorials_autostart_enabled'
     ];
 
     for (const [key, value] of Object.entries(updates)) {
       if (allowedKeys.includes(key)) {
         await query.run(
-          'INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP',
+          'INSERT INTO settings (`key`, `value`, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = CURRENT_TIMESTAMP',
           [key, String(value)]
         );
       }
@@ -143,7 +146,7 @@ router.post('/reset', authenticate, requireAdmin, async (req, res) => {
 
     for (const [key, value] of Object.entries(defaults)) {
       await query.run(
-        'INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP',
+        'INSERT INTO settings (`key`, `value`, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = CURRENT_TIMESTAMP',
         [key, String(value)]
       );
     }
@@ -182,13 +185,13 @@ router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file')
       const settingKey = keyMap[fileType];
       if (settingKey) {
         await query.run(
-          'INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP',
+          'INSERT INTO settings (`key`, `value`, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = CURRENT_TIMESTAMP',
           [settingKey, fileUrl]
         );
 
         if (fileType === 'background') {
           await query.run(
-            'INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP',
+            'INSERT INTO settings (`key`, `value`, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = CURRENT_TIMESTAMP',
             ['panel_bg_type', isVideo ? 'video' : 'image']
           );
         }

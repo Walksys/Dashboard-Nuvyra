@@ -18,7 +18,7 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
              COALESCE(SUM(s.disk_mb), 0) as total_disk_mb,
              COALESCE(SUM(CASE WHEN s.is_suspended = 1 OR s.status = 'suspended' THEN 1 ELSE 0 END), 0) as suspended_server_count,
              COALESCE(SUM(CASE WHEN s.is_suspended = 0 AND s.status != 'suspended' THEN 1 ELSE 0 END), 0) as active_server_count,
-             COALESCE(SUM(CASE WHEN s.expiration_date IS NOT NULL AND datetime(s.expiration_date) <= datetime('now', '+3 days') THEN 1 ELSE 0 END), 0) as expiring_soon_count
+             COALESCE(SUM(CASE WHEN s.expiration_date IS NOT NULL AND s.expiration_date <= DATE_ADD(NOW(), INTERVAL 3 DAY) THEN 1 ELSE 0 END), 0) as expiring_soon_count
       FROM users u
       LEFT JOIN servers s ON s.user_id = u.id
       GROUP BY u.id
@@ -27,6 +27,7 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
 
     res.json({ success: true, users });
   } catch (err) {
+    console.error('Failed to retrieve users error:', err);
     res.status(500).json({ success: false, error: 'Failed to retrieve users.' });
   }
 });

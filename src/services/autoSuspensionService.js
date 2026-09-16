@@ -24,14 +24,13 @@ class AutoSuspensionService {
 
   async checkExpiredServers() {
     try {
-      const nowIso = new Date().toISOString();
       const expiredServers = await query.all(`
         SELECT id, name, expiration_date, is_suspended, status
         FROM servers
         WHERE expiration_date IS NOT NULL
-          AND datetime(expiration_date) <= datetime(?)
+          AND expiration_date <= NOW()
           AND is_suspended = 0
-      `, [nowIso]);
+      `);
 
       if (!expiredServers || expiredServers.length === 0) {
         return;

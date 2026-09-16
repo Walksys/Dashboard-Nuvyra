@@ -60,8 +60,8 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// Create Server
-router.post('/', authenticate, async (req, res) => {
+// Create Server (Admin Only)
+router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
     const {
       name,
@@ -567,5 +567,296 @@ router.delete('/:id', authenticate, requireServerAccess('settings.delete'), asyn
   }
 });
 
+// ==========================================
+// SERVER DATABASES MANAGEMENT
+// ==========================================
+
+// List Databases for this server
+router.get('/:id/databases', authenticate, requireServerAccess('database.read'), async (req, res) => {
+  try {
+    const serverId = req.params.id;
+    const databases = await query.all(`
+      SELECT d.*, h.name as host_name, h.host, h.port as host_port
+      FROM server_databases d
+      LEFT JOIN database_hosts h ON d.database_host_id = h.id
+      WHERE d.server_id = ?
+      ORDER BY d.id DESC
+    `, [serverId]);
+
+    const hosts = await query.all('SELECT id, name, host, port FROM database_hosts ORDER BY id ASC');
+
+    res.json({ success: true, databases, hosts });
+  } catch (err) {
+    console.error('List server databases error:', err);
+    res.status(500).json({ success: false, error: 'Failed to retrieve databases: ' + err.message });
+  }
+});
+
+// Create Database for this server
+router.post('/:id/databases', authenticate, requireServerAccess('database.create'), async (req, res) => {
+  try {
+    const serverId = req.params.id;
+    const { database_name, host_id } = req.body;
+
+    let host = null;
+    if (host_id) {
+      host = await query.get('SELECT * FROM database_hosts WHERE id = ?', [host_id]);
+    } else {
+      host = await query.get('SELECT * FROM database_hosts ORDER BY id ASC LIMIT 1');
+    }
+
+    if (!host) {
+      return res.status(400).json({ success: false, error: 'No database host is configured. Please contact the administrator.' });
+    }
+
+    const cleanName = (database_name || 'db').replace(/[^a-zA-Z0-9_]/g, '').substring(0, 16) || 'db';
+    const randomSuffix = Math.random().toString(36).substring(2, 6);
+    const dbName = `s${serverId}_${cleanName}_${randomSuffix}`;
+    const dbUser = `u${serverId}_${Math.random().toString(36).substring(2, 7)}`;
+    const crypto = require('crypto');
+    const dbPassword = crypto.randomBytes(9).toString('base64').replace(/[^a-zA-Z0-9]/g, 'a').substring(0, 16);
+
+    const mysql = require('mysql2/promise');
+    let conn;
+    try {
+      conn = await mysql.createConnection({
+        host: host.host === '127.0.0.1' || host.host === 'localhost' ? '127.0.0.1' : host.host,
+        port: host.port,
+        user: host.username,
+        password: host.password,
+        multipleStatements: true
+      });
+      await conn.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
+      await conn.query(`CREATE USER IF NOT EXISTS '${dbUser}'@'%' IDENTIFIED BY '${dbPassword}';`);
+      await conn.query(`GRANT ALL PRIVILEGES ON \`${dbName}\`.* TO '${dbUser}'@'%';`);
+      await conn.query(`FLUSH PRIVILEGES;`);
+    } catch (dbErr) {
+      console.error('Database provisioning error on host:', dbErr);
+      return res.status(500).json({ success: false, error: `Failed to provision database on host (${host.name}): ${dbErr.message}` });
+    } finally {
+      if (conn) await conn.end();
+    }
+
+    const insertRes = await query.run(`
+      INSERT INTO server_databases (server_id, database_host_id, database_name, username, password, remote_connections)
+      VALUES (?, ?, ?, ?, ?, '%')
+    `, [serverId, host.id, dbName, dbUser, dbPassword]);
+
+    logActivity(req.user.id, serverId, 'DATABASE_CREATE', `Created database ${dbName}`, req);
+
+    res.json({
+      success: true,
+      database: {
+        id: insertRes.lastID,
+        server_id: serverId,
+        database_host_id: host.id,
+        database_name: dbName,
+        username: dbUser,
+        password: dbPassword,
+        remote_connections: '%',
+        host_name: host.name,
+        host: host.host,
+        host_port: host.port
+      }
+    });
+  } catch (err) {
+    console.error('Create database error:', err);
+    res.status(500).json({ success: false, error: 'Failed to create database: ' + err.message });
+  }
+});
+
+// Reset Database User Password
+router.post('/:id/databases/:dbId/reset-password', authenticate, requireServerAccess('database.update'), async (req, res) => {
+  try {
+    const { id: serverId, dbId } = req.params;
+    const dbRecord = await query.get(`
+      SELECT d.*, h.host, h.port as host_port, h.username as host_user, h.password as host_pass
+      FROM server_databases d
+      LEFT JOIN database_hosts h ON d.database_host_id = h.id
+      WHERE d.id = ? AND d.server_id = ?
+    `, [dbId, serverId]);
+
+    if (!dbRecord) return res.status(404).json({ success: false, error: 'Database record not found.' });
+
+    const crypto = require('crypto');
+    const newPassword = crypto.randomBytes(9).toString('base64').replace(/[^a-zA-Z0-9]/g, 'a').substring(0, 16);
+
+    const mysql = require('mysql2/promise');
+    let conn;
+    try {
+      conn = await mysql.createConnection({
+        host: dbRecord.host === '127.0.0.1' || dbRecord.host === 'localhost' ? '127.0.0.1' : dbRecord.host,
+        port: dbRecord.host_port,
+        user: dbRecord.host_user,
+        password: dbRecord.host_pass
+      });
+      await conn.query(`ALTER USER '${dbRecord.username}'@'%' IDENTIFIED BY '${newPassword}';`);
+      await conn.query(`FLUSH PRIVILEGES;`);
+    } catch (dbErr) {
+      console.error('Reset database password error on DB host:', dbErr);
+      return res.status(500).json({ success: false, error: `Failed to reset password: ${dbErr.message}` });
+    } finally {
+      if (conn) await conn.end();
+    }
+
+    await query.run('UPDATE server_databases SET password = ? WHERE id = ?', [newPassword, dbId]);
+    logActivity(req.user.id, serverId, 'DATABASE_PASSWORD_RESET', `Reset password for database ${dbRecord.database_name}`, req);
+
+    res.json({ success: true, newPassword, message: 'Password reset successfully.' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ success: false, error: 'Failed to reset password: ' + err.message });
+  }
+});
+
+// Delete Database
+router.delete('/:id/databases/:dbId', authenticate, requireServerAccess('database.delete'), async (req, res) => {
+  try {
+    const { id: serverId, dbId } = req.params;
+    const dbRecord = await query.get(`
+      SELECT d.*, h.host, h.port as host_port, h.username as host_user, h.password as host_pass
+      FROM server_databases d
+      LEFT JOIN database_hosts h ON d.database_host_id = h.id
+      WHERE d.id = ? AND d.server_id = ?
+    `, [dbId, serverId]);
+
+    if (!dbRecord) return res.status(404).json({ success: false, error: 'Database record not found.' });
+
+    const mysql = require('mysql2/promise');
+    let conn;
+    try {
+      conn = await mysql.createConnection({
+        host: dbRecord.host === '127.0.0.1' || dbRecord.host === 'localhost' ? '127.0.0.1' : dbRecord.host,
+        port: dbRecord.host_port,
+        user: dbRecord.host_user,
+        password: dbRecord.host_pass
+      });
+      await conn.query(`DROP DATABASE IF EXISTS \`${dbRecord.database_name}\`;`);
+      await conn.query(`DROP USER IF EXISTS '${dbRecord.username}'@'%';`);
+      await conn.query(`FLUSH PRIVILEGES;`);
+    } catch (dbErr) {
+      console.warn('Notice: Error dropping database on host:', dbErr.message);
+    } finally {
+      if (conn) await conn.end();
+    }
+
+    await query.run('DELETE FROM server_databases WHERE id = ?', [dbId]);
+    logActivity(req.user.id, serverId, 'DATABASE_DELETE', `Deleted database ${dbRecord.database_name}`, req);
+
+    res.json({ success: true, message: 'Database deleted successfully.' });
+  } catch (err) {
+    console.error('Delete database error:', err);
+    res.status(500).json({ success: false, error: 'Failed to delete database: ' + err.message });
+  }
+});
+
+// ==========================================
+// SERVER NETWORK & PORT ALLOCATIONS
+// ==========================================
+
+// Get all server port allocations + available node ports
+router.get('/:id/network', authenticate, requireServerAccess('network.read'), async (req, res) => {
+  try {
+    const server = req.server;
+    const allocations = await query.all(`
+      SELECT a.*, n.name as node_name
+      FROM allocations a
+      LEFT JOIN nodes n ON a.node_id = n.id
+      WHERE a.server_id = ?
+      ORDER BY (a.id = ?) DESC, a.port ASC
+    `, [server.id, server.allocation_id || 0]);
+
+    const available = await query.all(`
+      SELECT a.*, n.name as node_name
+      FROM allocations a
+      LEFT JOIN nodes n ON a.node_id = n.id
+      WHERE a.node_id = ? AND (a.assigned = 0 OR a.server_id IS NULL)
+      ORDER BY a.port ASC
+      LIMIT 50
+    `, [server.node_id]);
+
+    res.json({
+      success: true,
+      allocations,
+      primary_allocation_id: server.allocation_id,
+      available_allocations: available
+    });
+  } catch (err) {
+    console.error('Get server network allocations error:', err);
+    res.status(500).json({ success: false, error: 'Failed to retrieve allocations: ' + err.message });
+  }
+});
+
+// Set an allocation as primary
+router.post('/:id/network/primary', authenticate, requireServerAccess('network.update'), async (req, res) => {
+  try {
+    const server = req.server;
+    const { allocation_id } = req.body;
+    if (!allocation_id) return res.status(400).json({ success: false, error: 'Allocation ID is required.' });
+
+    const alloc = await query.get('SELECT * FROM allocations WHERE id = ? AND server_id = ?', [allocation_id, server.id]);
+    if (!alloc) return res.status(404).json({ success: false, error: 'Allocation does not belong to this server.' });
+
+    await query.run('UPDATE servers SET allocation_id = ? WHERE id = ?', [allocation_id, server.id]);
+    logActivity(req.user.id, server.id, 'NETWORK_SET_PRIMARY', `Set primary port to ${alloc.ip}:${alloc.port}`, req);
+
+    res.json({ success: true, message: `Primary port updated to ${alloc.port}.` });
+  } catch (err) {
+    console.error('Set primary port error:', err);
+    res.status(500).json({ success: false, error: 'Failed to set primary port: ' + err.message });
+  }
+});
+
+// Assign a new allocation to server
+router.post('/:id/network/assign', authenticate, requireServerAccess('network.create'), async (req, res) => {
+  try {
+    const server = req.server;
+    const { allocation_id } = req.body;
+
+    let alloc;
+    if (allocation_id) {
+      alloc = await query.get('SELECT * FROM allocations WHERE id = ? AND node_id = ? AND (assigned = 0 OR server_id IS NULL)', [allocation_id, server.node_id]);
+    } else {
+      alloc = await query.get('SELECT * FROM allocations WHERE node_id = ? AND (assigned = 0 OR server_id IS NULL) ORDER BY port ASC LIMIT 1', [server.node_id]);
+    }
+
+    if (!alloc) {
+      return res.status(400).json({ success: false, error: 'No unassigned port allocations available on this node.' });
+    }
+
+    await query.run('UPDATE allocations SET server_id = ?, assigned = 1 WHERE id = ?', [server.id, alloc.id]);
+    logActivity(req.user.id, server.id, 'NETWORK_ASSIGN_PORT', `Assigned port ${alloc.ip}:${alloc.port}`, req);
+
+    res.json({ success: true, message: `Port ${alloc.port} assigned to server.`, allocation: alloc });
+  } catch (err) {
+    console.error('Assign port error:', err);
+    res.status(500).json({ success: false, error: 'Failed to assign port: ' + err.message });
+  }
+});
+
+// Unassign an allocation from server
+router.delete('/:id/network/:allocId', authenticate, requireServerAccess('network.delete'), async (req, res) => {
+  try {
+    const server = req.server;
+    const allocId = parseInt(req.params.allocId, 10);
+
+    if (server.allocation_id === allocId) {
+      return res.status(400).json({ success: false, error: 'Cannot unassign the primary port allocation.' });
+    }
+
+    const alloc = await query.get('SELECT * FROM allocations WHERE id = ? AND server_id = ?', [allocId, server.id]);
+    if (!alloc) return res.status(404).json({ success: false, error: 'Allocation not found on this server.' });
+
+    await query.run('UPDATE allocations SET server_id = NULL, assigned = 0 WHERE id = ?', [allocId]);
+    logActivity(req.user.id, server.id, 'NETWORK_UNASSIGN_PORT', `Unassigned port ${alloc.ip}:${alloc.port}`, req);
+
+    res.json({ success: true, message: `Port ${alloc.port} unassigned.` });
+  } catch (err) {
+    console.error('Unassign port error:', err);
+    res.status(500).json({ success: false, error: 'Failed to unassign port: ' + err.message });
+  }
+});
+
 module.exports = router;
+
 

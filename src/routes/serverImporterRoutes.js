@@ -8,17 +8,17 @@ const { logActivity } = require('../services/activityService');
 // Initialize profiles table if not exists
 query.exec(`
   CREATE TABLE IF NOT EXISTS server_importer_profiles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    host TEXT NOT NULL,
-    port INTEGER DEFAULT 22,
-    mode TEXT DEFAULT 'sftp',
-    username TEXT,
-    remote_path TEXT DEFAULT '/',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(191) NOT NULL,
+    host VARCHAR(191) NOT NULL,
+    port INT DEFAULT 22,
+    mode VARCHAR(50) DEFAULT 'sftp',
+    username VARCHAR(191),
+    remote_path VARCHAR(255) DEFAULT '/',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-  );
+    CONSTRAINT fk_importer_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `).catch(e => console.error('Failed to init server_importer_profiles table:', e.message));
 
 // Test SFTP connection

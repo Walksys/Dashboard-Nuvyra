@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title id="tab-title">Mpanel</title>
   <link id="tab-favicon" rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 
@@ -42,6 +42,11 @@
 
   <!-- Ace Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
+
+  <!-- Fonts for LiquidX Theme (Cinzel & Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/css/style.css?v=3.5.5">
@@ -95,6 +100,66 @@
         <i data-lucide="settings" class="w-4 h-4"></i>
       </button>
 
+      <!-- Panel Auto Size / Device Layout Switcher -->
+      <div id="header-device-mode-container" class="relative">
+        <button id="header-device-btn" onclick="app.toggleDeviceModeDropdown(event)" title="Screen Layout: Auto Size (Phone / Tablet / PC)" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition">
+          <i id="header-device-icon" data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
+        </button>
+
+        <!-- Device Mode Dropdown Menu -->
+        <div id="header-device-dropdown" class="hidden absolute right-0 mt-2 w-60 bg-[#17171b] rounded-2xl py-2 shadow-2xl z-50 border border-white/10 backdrop-blur-xl">
+          <div class="px-3.5 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-white">Panel Auto Size</p>
+              <p id="device-screen-dimensions" class="text-[10px] text-cyan-400 font-mono">Auto Scaling</p>
+            </div>
+            <span id="device-current-badge" class="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono">AUTO</span>
+          </div>
+          <div class="p-1 space-y-0.5">
+            <button onclick="app.setDeviceMode('auto')" class="device-opt-btn w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition" data-mode="auto">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i></span>
+                <span class="font-medium text-left">
+                  <span class="block text-white font-semibold">Auto Adaptive</span>
+                  <span class="block text-[10px] text-slate-400">Auto switch by screen</span>
+                </span>
+              </span>
+              <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400 check-icon"></i>
+            </button>
+            <button onclick="app.setDeviceMode('phone')" class="device-opt-btn w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition" data-mode="phone">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i></span>
+                <span class="font-medium text-left">
+                  <span class="block text-white font-semibold">Phone Mode</span>
+                  <span class="block text-[10px] text-slate-400">&lt; 640px compact</span>
+                </span>
+              </span>
+              <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400 check-icon hidden"></i>
+            </button>
+            <button onclick="app.setDeviceMode('tablet')" class="device-opt-btn w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition" data-mode="tablet">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400"><i data-lucide="tablet" class="w-3.5 h-3.5"></i></span>
+                <span class="font-medium text-left">
+                  <span class="block text-white font-semibold">Tablet Mode</span>
+                  <span class="block text-[10px] text-slate-400">640px - 1024px</span>
+                </span>
+              </span>
+              <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400 check-icon hidden"></i>
+            </button>
+            <button onclick="app.setDeviceMode('pc')" class="device-opt-btn w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition" data-mode="pc">
+              <span class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400"><i data-lucide="monitor" class="w-3.5 h-3.5"></i></span>
+                <span class="font-medium text-left">
+                  <span class="block text-white font-semibold">PC / Laptop</span>
+                  <span class="block text-[10px] text-slate-400">&gt; 1024px desktop</span>
+                </span>
+              </span>
+              <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400 check-icon hidden"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Theme Mode Switcher Icon -->
       <button onclick="app.toggleTheme()" id="header-theme-toggle-btn" title="Toggle Theme" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition">
         <i data-lucide="moon" class="w-4 h-4"></i>
@@ -147,9 +212,12 @@
   </header>
 
   <!-- Main Layout Body (Strict Viewport Constraint) -->
-  <div id="app-layout-body" class="flex-1 flex min-h-0 h-[calc(100vh-58px)] overflow-hidden">
+  <div id="app-layout-body" class="flex-1 flex min-h-0 h-[calc(100vh-58px)] overflow-hidden relative">
+    <!-- Backdrop overlay for mobile drawer on phones & small tablets -->
+    <div id="sidebar-mobile-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 hidden md:hidden" onclick="app.closeMobileSidebar()"></div>
+
     <!-- NookTheme Sidebar Navigation (Fixed height, independent scroll) -->
-    <aside id="main-sidebar" class="w-60 nook-sidebar flex flex-col justify-between p-3 hidden md:flex shrink-0 h-full max-h-full overflow-hidden">
+    <aside id="main-sidebar" class="w-64 md:w-60 nook-sidebar flex flex-col justify-between p-3 hidden md:flex shrink-0 h-full max-h-full overflow-hidden">
       <!-- Dedicated Independent Scrollable Sidebar Container -->
       <div id="sidebar-scroll-container" class="space-y-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 custom-scrollbar">
         <!-- 1. Server Context Navigation (Shown when inside a server) -->
@@ -183,6 +251,18 @@
                 <i data-lucide="shopping-bag" class="w-5 h-5"></i>
               </div>
               <span>Marketplace</span>
+            </a>
+            <a href="#tutorials" onclick="app.navigate('tutorials')" id="nav-user-tutorials" class="nook-nav-item">
+              <div class="nook-icon-box">
+                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+              </div>
+              <span>Tutorials</span>
+            </a>
+            <a href="#billing" onclick="app.navigate('billing')" id="nav-user-billing" class="nook-nav-item">
+              <div class="nook-icon-box">
+                <i data-lucide="credit-card" class="w-5 h-5"></i>
+              </div>
+              <span>Billing & Wallet</span>
             </a>
             <a href="#profile" onclick="app.navigate('user-profile')" id="nav-user-profile" class="nook-nav-item">
               <div class="nook-icon-box">
@@ -246,6 +326,15 @@
                 </div>
                 <span>Overview</span>
               </a>
+              <a href="#admin-updates" onclick="app.navigate('admin-updates')" id="nav-admin-updates" class="nook-nav-item">
+                <div class="nook-icon-box">
+                  <i data-lucide="arrow-up-circle" class="w-5 h-5"></i>
+                </div>
+                <span class="flex items-center justify-between flex-1">
+                  <span>Updates</span>
+                  <span id="nav-update-badge" class="hidden text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">NEW</span>
+                </span>
+              </a>
               <a href="#admin-settings" onclick="app.navigate('admin-settings')" id="nav-admin-settings" class="nook-nav-item">
                 <div class="nook-icon-box">
                   <i data-lucide="sliders" class="w-5 h-5"></i>
@@ -257,6 +346,12 @@
                   <i data-lucide="key" class="w-5 h-5"></i>
                 </div>
                 <span>Application API</span>
+              </a>
+              <a href="#admin-sociallogin" onclick="app.navigate('admin-sociallogin')" id="nav-admin-sociallogin" class="nook-nav-item">
+                <div class="nook-icon-box">
+                  <i data-lucide="share-2" class="w-5 h-5"></i>
+                </div>
+                <span>Social Login</span>
               </a>
             </nav>
           </div>
@@ -278,6 +373,24 @@
                   <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
                 <span>Users</span>
+              </a>
+              <a href="#admin-databases" onclick="app.navigate('admin-databases')" id="nav-admin-databases" class="nook-nav-item">
+                <div class="nook-icon-box">
+                  <i data-lucide="database" class="w-5 h-5"></i>
+                </div>
+                <span>Databases</span>
+              </a>
+              <a href="#admin-backups" onclick="app.navigate('admin-backups')" id="nav-admin-backups" class="nook-nav-item">
+                <div class="nook-icon-box">
+                  <i data-lucide="archive" class="w-5 h-5"></i>
+                </div>
+                <span>Backups</span>
+              </a>
+              <a href="#admin-network" onclick="app.navigate('admin-network')" id="nav-admin-network" class="nook-nav-item">
+                <div class="nook-icon-box">
+                  <i data-lucide="radio" class="w-5 h-5"></i>
+                </div>
+                <span>Network</span>
               </a>
               <a href="#admin-nodes" onclick="app.navigate('admin-nodes')" id="nav-admin-nodes" class="nook-nav-item">
                 <div class="nook-icon-box">
@@ -313,8 +426,8 @@
       </div>
     </aside>
 
-    <!-- Main Dynamic Content Container (Independent Scroll) -->
-    <main id="main-content" class="flex-1 min-h-0 h-full max-h-full overflow-y-auto overscroll-contain p-6 md:p-8 space-y-6 custom-scrollbar">
+    <!-- Main Dynamic Content Container (Auto Responsive across Phone, Tablet, PC) -->
+    <main id="main-content" class="flex-1 min-h-0 h-full max-h-full overflow-y-auto overscroll-contain p-3.5 sm:p-6 lg:p-8 space-y-6 custom-scrollbar">
       <!-- Dynamic Views injected via JS -->
       <div id="view-container"></div>
     </main>
@@ -330,11 +443,15 @@
   <script src="/js/console.js?v=3.5.1"></script>
   <script src="/js/filemanager.js?v=3.5.1"></script>
   <script src="/js/marketplace.js?v=2.3.4"></script>
+  <script src="/js/autoTutorial.js?v=2.1.0"></script>
+  <script src="/js/knowledge.js?v=2.0.2"></script>
+  <script src="/js/billing.js?v=2.0.2"></script>
   <script src="/js/versionChanger.js?v=2.3.3"></script>
   <script src="/js/playerManager.js?v=2.3.4"></script>
   <script src="/js/worldManager.js?v=2.3.3"></script>
   <script src="/js/serverImporter.js?v=2.3.3"></script>
   <script src="/js/serverProperties.js?v=2.3.3"></script>
+  <script src="/js/updates.js?v=2.4.0"></script>
   <script src="/js/admin.js?v=3.5.4"></script>
 
   <script>

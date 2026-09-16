@@ -21,6 +21,7 @@ class SettingsManager {
       activeTheme: localStorage.getItem('mpanel_active_theme') || 'arix',
       panelSoundsEnabled: localStorage.getItem('panelSounds') !== 'false',
       arixPrimaryColor: '#4A35CF',
+      liquidxPrimaryColor: '#e0841b',
       autoSave: true
     };
   }
@@ -89,14 +90,14 @@ class SettingsManager {
                   <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4 text-purple-400"></i> Panel Theme Selection
                   </h3>
-                  <p class="text-[11px] text-slate-400">Choose between the high-tech NookTheme and the premier Arix Theme v2.1.3</p>
+                  <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme v2.1.3, and LiquidX Theme v1.0</p>
                 </div>
-                <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}">
-                  ${this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : 'NookTheme Active'}
+                <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'liquidx' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : (this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40')}">
+                  ${this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : 'NookTheme Active')}
                 </span>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Option A: NookTheme -->
                 <div id="theme-card-nook" onclick="settingsManager.selectTheme('nook')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'nook' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
                   <div class="flex items-start justify-between">
@@ -146,6 +147,58 @@ class SettingsManager {
                     </button>
                   </div>
                 </div>
+
+                <!-- Option C: LiquidX Theme v1.0 -->
+                <div id="theme-card-liquidx" onclick="settingsManager.selectTheme('liquidx')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'liquidx' ? 'active bg-amber-950/20 border-amber-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
+                  <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 p-2 flex items-center justify-center shadow-inner">
+                      <img src="/assets/liquidx-preview.svg" alt="LiquidX Theme" class="w-full h-full object-contain">
+                    </div>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">Liquid Glass</span>
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-white flex items-center gap-1.5">
+                      LiquidX <span class="text-xs text-amber-400 font-normal">v1.0</span>
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">MCS Design 2026 with molten amber gold accents, deep obsidian sapphire mesh, and Cinzel serif luxury typography.</p>
+                  </div>
+                  <div class="pt-2 flex items-center justify-between border-t border-white/5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-3 h-3 rounded-full bg-[#e0841b]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#ffb55a]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#0b0d10]"></span>
+                    </div>
+                    <button type="button" id="btn-theme-liquidx" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'liquidx' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
+                      ${this.currentTheme.activeTheme === 'liquidx' ? '✓ Active Theme' : 'Activate LiquidX'}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Option D: PteroX Theme V2.0.2 -->
+                <div id="theme-card-pterox" onclick="settingsManager.selectTheme('pterox')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'pterox' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
+                  <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 p-2 flex items-center justify-center shadow-inner">
+                      <img src="/assets/pterox-preview.svg" alt="PteroX Theme" class="w-full h-full object-contain">
+                    </div>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">PteroX v2.0.2</span>
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-white flex items-center gap-1.5">
+                      PteroX Theme <span class="text-xs text-cyan-400 font-normal">v2.0.2</span>
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">High-velocity cyber deck with deep space #111525 shell, server banner cards, 4 independent logos, and rocket orange accents.</p>
+                  </div>
+                  <div class="pt-2 flex items-center justify-between border-t border-white/5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-3 h-3 rounded-full bg-[#23aeea]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#ff5108]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#111525]"></span>
+                    </div>
+                    <button type="button" id="btn-theme-pterox" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'pterox' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
+                      ${this.currentTheme.activeTheme === 'pterox' ? '✓ Active Theme' : 'Activate PteroX'}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <!-- Arix Theme Enhancements (Audio FX & Colors) -->
@@ -177,6 +230,193 @@ class SettingsManager {
                   <button type="button" onclick="app.playSound('copy')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 transition-colors">
                     <i data-lucide="copy" class="w-3 h-3"></i> Copy Sound
                   </button>
+                </div>
+              </div>
+
+              <!-- LiquidX Theme Enhancements (Molten Gold & Liquid Glass FX) -->
+              <div id="liquidx-options-panel" class="pt-2 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'liquidx' ? '' : 'opacity-60'}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-200 flex items-center gap-2">
+                      <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> LiquidX Accent &amp; Mesh Glow
+                    </h4>
+                    <p class="text-[11px] text-slate-400">Signature molten amber gold with deep sapphire radial illumination</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">MCS Design 2026</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PteroX Theme Enhancements (Branding, 4 Logos, Server Banner) -->
+              <div id="pterox-options-panel" class="pt-4 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'pterox' ? '' : 'opacity-60'}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-200 flex items-center gap-2">
+                      <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i> PteroX V2 Branding &amp; Logo Suite (pterox.config.ts)
+                    </h4>
+                    <p class="text-[11px] text-slate-400">Configure your Brand Name, Support Email, and all 4 independently customizable logo locations</p>
+                  </div>
+                  <button type="button" onclick="settingsManager.savePteroxBranding()" class="btn-cyber px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                    <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                    <span>Save PteroX Branding</span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Brand Name</label>
+                    <input type="text" id="pterox-cfg-name" value="${localStorage.getItem('pterox_brand_name') || 'PteroX'}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="PteroX">
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Support Email</label>
+                    <input type="email" id="pterox-cfg-email" value="${localStorage.getItem('pterox_support_email') || 'pterox@webpool.tech'}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="support@domain.com">
+                  </div>
+                </div>
+
+                <!-- 4 Logos Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-1">
+                  <!-- Logo 1: Sidebar -->
+                  <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                    <span class="text-[10px] font-bold uppercase text-purple-300">1. Sidebar Logo</span>
+                    <input type="text" id="pterox-cfg-sidebar" value="${localStorage.getItem('pterox_sidebar_logo') || '/images/pterox-sidebar-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-sidebar-logo.webp">
+                    <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
+                      <img src="${localStorage.getItem('pterox_sidebar_logo') || '/images/pterox-sidebar-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-sidebar">
+                    </div>
+                  </div>
+
+                  <!-- Logo 2: Header -->
+                  <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                    <span class="text-[10px] font-bold uppercase text-cyan-300">2. Header Logo</span>
+                    <input type="text" id="pterox-cfg-header" value="${localStorage.getItem('pterox_header_logo') || '/images/pterox-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-header-logo.webp">
+                    <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
+                      <img src="${localStorage.getItem('pterox_header_logo') || '/images/pterox-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-header">
+                    </div>
+                  </div>
+
+                  <!-- Logo 3: Login Main -->
+                  <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                    <span class="text-[10px] font-bold uppercase text-emerald-300">3. Login Page Logo</span>
+                    <input type="text" id="pterox-cfg-login" value="${localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-login-logo.webp">
+                    <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
+                      <img src="${localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-login">
+                    </div>
+                  </div>
+
+                  <!-- Logo 4: Login Header -->
+                  <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                    <span class="text-[10px] font-bold uppercase text-amber-300">4. Login Header Logo</span>
+                    <input type="text" id="pterox-cfg-login-header" value="${localStorage.getItem('pterox_login_header_logo') || '/images/pterox-login-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-login-header-logo.webp">
+                    <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
+                      <img src="${localStorage.getItem('pterox_login_header_logo') || '/images/pterox-login-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-login-header">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Card 0.5: Panel Display & Auto-Size Profile (Phone, Tablet, PC) -->
+            <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div>
+                  <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                    <i data-lucide="maximize" class="w-4 h-4 text-cyan-400"></i> Panel Display & Auto-Size Profile
+                  </h3>
+                  <p class="text-[11px] text-slate-400">Adaptive responsive scaling across Mobile Phones, Tablets, and PC/Laptops</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span id="settings-device-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                    Auto Mode Active
+                  </span>
+                </div>
+              </div>
+
+              <!-- 4 Device Profile Selection Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <!-- Option 1: Auto Adaptive -->
+                <div id="device-card-auto" onclick="settingsManager.selectDeviceMode('auto')" class="device-select-card p-4 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-3">
+                  <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-inner">
+                      <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Recommended</span>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-white">Auto Adaptive</h4>
+                    <p class="text-[11px] text-slate-400 mt-1 leading-snug">Dynamically scales layout with screen resize & orientation</p>
+                  </div>
+                  <button type="button" id="btn-device-auto" class="text-xs font-semibold px-2.5 py-1 rounded-lg w-full text-center">
+                    Select
+                  </button>
+                </div>
+
+                <!-- Option 2: Phone Mode -->
+                <div id="device-card-phone" onclick="settingsManager.selectDeviceMode('phone')" class="device-select-card p-4 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-3">
+                  <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
+                      <i data-lucide="smartphone" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">&lt;640px</span>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-white">Phone Mode</h4>
+                    <p class="text-[11px] text-slate-400 mt-1 leading-snug">Compact single-column view with drawer navigation</p>
+                  </div>
+                  <button type="button" id="btn-device-phone" class="text-xs font-semibold px-2.5 py-1 rounded-lg w-full text-center">
+                    Select
+                  </button>
+                </div>
+
+                <!-- Option 3: Tablet Mode -->
+                <div id="device-card-tablet" onclick="settingsManager.selectDeviceMode('tablet')" class="device-select-card p-4 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-3">
+                  <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner">
+                      <i data-lucide="tablet" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">640-1024px</span>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-white">Tablet Mode</h4>
+                    <p class="text-[11px] text-slate-400 mt-1 leading-snug">Dual-column responsive layout for iPad & Android tablets</p>
+                  </div>
+                  <button type="button" id="btn-device-tablet" class="text-xs font-semibold px-2.5 py-1 rounded-lg w-full text-center">
+                    Select
+                  </button>
+                </div>
+
+                <!-- Option 4: PC / Laptop Mode -->
+                <div id="device-card-pc" onclick="settingsManager.selectDeviceMode('pc')" class="device-select-card p-4 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-3">
+                  <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-inner">
+                      <i data-lucide="monitor" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">&gt;1024px</span>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-white">PC / Laptop</h4>
+                    <p class="text-[11px] text-slate-400 mt-1 leading-snug">Full multi-column desktop view with permanent sidebar</p>
+                  </div>
+                  <button type="button" id="btn-device-pc" class="text-xs font-semibold px-2.5 py-1 rounded-lg w-full text-center">
+                    Select
+                  </button>
+                </div>
+              </div>
+
+              <!-- Real-time Viewport & Screen Telemetry -->
+              <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="activity" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+                  <span class="text-slate-300 font-medium">Screen Resolution:</span>
+                  <span id="settings-screen-res" class="text-cyan-400 font-mono font-bold">1920 × 1080</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-slate-400">Detected Profile:</span>
+                  <span id="settings-detected-profile" class="text-emerald-400 font-semibold uppercase font-mono">PC</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-slate-400">Aspect Ratio:</span>
+                  <span id="settings-aspect-ratio" class="text-purple-400 font-mono">16:9</span>
                 </div>
               </div>
             </div>
@@ -410,10 +650,10 @@ class SettingsManager {
               </div>
             </div>
 
-            <!-- Card 4: System Access Options -->
+            <!-- Card 4: System Access & Feature Options -->
             <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
               <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 border-b border-white/10 pb-3">
-                <i data-lucide="shield" class="w-4 h-4 text-rose-400"></i> Access & Registration
+                <i data-lucide="shield" class="w-4 h-4 text-rose-400"></i> Access & Feature Toggles
               </h3>
               <div class="flex items-center justify-between">
                 <div>
@@ -424,6 +664,41 @@ class SettingsManager {
                   <input type="checkbox" id="set-registration" class="sr-only peer" checked>
                   <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
                 </label>
+              </div>
+
+              <!-- Auto Tutorials Page Toggle -->
+              <div class="flex items-center justify-between pt-3 border-t border-white/5">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-xs font-bold text-white">Auto Tutorials Page</h4>
+                    <span id="set-tutorials-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active (ON)</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Enable or disable the interactive Auto Tutorials page in the client portal</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="set-tutorials-enabled" onchange="settingsManager.onTutorialsToggle(this.checked)" class="sr-only peer" checked>
+                  <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+              </div>
+
+              <!-- Auto-Start Onboarding Guided Tour Toggle -->
+              <div class="flex items-center justify-between pt-3 border-t border-white/5">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-xs font-bold text-white">Auto-Start Onboarding Tour</h4>
+                    <span id="set-autotour-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-white/10">Disabled</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Automatically trigger the interactive spotlight walkthrough for newly registered users on first login</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="autoTutorial.startTour('panel-tour', true)" class="btn-cyber px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow" title="Preview Auto Tour">
+                    <i data-lucide="play" class="w-3 h-3"></i> Test Tour
+                  </button>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="set-tutorials-autostart-enabled" onchange="settingsManager.onAutoTourToggle(this.checked)" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -520,6 +795,7 @@ class SettingsManager {
     await this.loadSettingsData();
     await this.loadWallpaperCategories();
     await this.loadWallpapers('all', 1);
+    this.updateDeviceModeUI();
 
     if (window.lucide) lucide.createIcons();
   }
@@ -603,6 +879,9 @@ class SettingsManager {
       if (s.arix_primary_color) {
         this.currentTheme.arixPrimaryColor = s.arix_primary_color;
       }
+      if (s.liquidx_primary_color) {
+        this.currentTheme.liquidxPrimaryColor = s.liquidx_primary_color;
+      }
       this.updateThemeSelectionUI();
 
       // Registration
@@ -610,9 +889,125 @@ class SettingsManager {
         document.getElementById('set-registration').checked = s.registration_enabled === '1';
       }
 
+      // Auto Tutorials Page
+      if (s.tutorials_enabled !== undefined) {
+        const tutEl = document.getElementById('set-tutorials-enabled');
+        const isTut = s.tutorials_enabled === '1' || s.tutorials_enabled === 1 || s.tutorials_enabled === true;
+        if (tutEl) {
+          tutEl.checked = isTut;
+          this.onTutorialsToggle(isTut);
+        }
+      }
+
+      // Auto-Start Tour on First Login
+      if (s.tutorials_autostart_enabled !== undefined) {
+        const autoEl = document.getElementById('set-tutorials-autostart-enabled');
+        const isAuto = s.tutorials_autostart_enabled === '1' || s.tutorials_autostart_enabled === 1 || s.tutorials_autostart_enabled === true;
+        if (autoEl) {
+          autoEl.checked = isAuto;
+          this.onAutoTourToggle(isAuto);
+        }
+      }
+
       this.updatePreviewCards();
     } catch (err) {
       console.error('Failed to load admin settings:', err);
+    }
+  }
+
+  onTutorialsToggle(enabled) {
+    const badge = document.getElementById('set-tutorials-status-badge');
+    if (badge) {
+      if (enabled) {
+        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        badge.innerText = 'Active (ON)';
+      } else {
+        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        badge.innerText = 'Disabled (OFF)';
+      }
+    }
+  }
+
+  onAutoTourToggle(enabled) {
+    const badge = document.getElementById('set-autotour-status-badge');
+    if (badge) {
+      if (enabled) {
+        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30';
+        badge.innerText = 'Auto-Start ON';
+      } else {
+        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-white/10';
+        badge.innerText = 'Disabled';
+      }
+    }
+  }
+
+  selectDeviceMode(mode) {
+    if (window.app && typeof app.setDeviceMode === 'function') {
+      app.setDeviceMode(mode);
+    }
+    this.updateDeviceModeUI();
+  }
+
+  updateDeviceModeUI() {
+    const mode = (window.app && app.deviceMode) || localStorage.getItem('mpanel_device_mode') || 'auto';
+    const detected = (window.app && typeof app.getDetectedProfile === 'function') ? app.getDetectedProfile() : 'pc';
+
+    const badge = document.getElementById('settings-device-badge');
+    if (badge) {
+      const modeLabels = {
+        auto: `Auto (${detected.toUpperCase()})`,
+        phone: 'Phone Mode',
+        tablet: 'Tablet Mode',
+        pc: 'PC / Laptop'
+      };
+      badge.innerText = `${modeLabels[mode] || mode} Active`;
+    }
+
+    const modes = ['auto', 'phone', 'tablet', 'pc'];
+    modes.forEach(m => {
+      const card = document.getElementById(`device-card-${m}`);
+      const btn = document.getElementById(`btn-device-${m}`);
+      const isActive = m === mode;
+
+      if (card) {
+        if (isActive) {
+          card.classList.add('active', 'border-cyan-500/50', 'bg-cyan-950/20');
+          card.classList.remove('bg-slate-900/40', 'border-white/5');
+        } else {
+          card.classList.remove('active', 'border-cyan-500/50', 'bg-cyan-950/20');
+          card.classList.add('bg-slate-900/40', 'border-white/5');
+        }
+      }
+
+      if (btn) {
+        if (isActive) {
+          btn.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg w-full text-center btn-cyber';
+          btn.textContent = '✓ Active';
+        } else {
+          btn.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg w-full text-center bg-white/5 text-slate-300 hover:bg-white/10';
+          btn.textContent = 'Select';
+        }
+      }
+    });
+
+    const resEl = document.getElementById('settings-screen-res');
+    if (resEl) {
+      resEl.textContent = `${window.innerWidth} × ${window.innerHeight}`;
+    }
+
+    const detEl = document.getElementById('settings-detected-profile');
+    if (detEl) {
+      const pLabel = detected === 'phone' ? 'Phone (<640px)' : (detected === 'tablet' ? 'Tablet (640-1024px)' : 'PC (>1024px)');
+      detEl.textContent = pLabel;
+    }
+
+    const aspectEl = document.getElementById('settings-aspect-ratio');
+    if (aspectEl) {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const ratio = (w / h).toFixed(2);
+      const orient = w >= h ? 'Landscape' : 'Portrait';
+      aspectEl.textContent = `${ratio} (${orient})`;
     }
   }
 
@@ -623,15 +1018,48 @@ class SettingsManager {
     app.applyBrandingAndTheme({
       active_theme: themeName,
       panel_sounds_enabled: this.currentTheme.panelSoundsEnabled ? '1' : '0',
-      arix_primary_color: this.currentTheme.arixPrimaryColor
+      arix_primary_color: this.currentTheme.arixPrimaryColor,
+      liquidx_primary_color: this.currentTheme.liquidxPrimaryColor
     });
-    if (themeName === 'arix') {
+    if (themeName === 'pterox') {
+      app.playSound('online');
+      app.toast('PteroX Theme V2.0.2 activated!', 'success');
+    } else if (themeName === 'liquidx') {
+      app.playSound('online');
+      app.toast('LiquidX Theme v1.0 activated!', 'success');
+    } else if (themeName === 'arix') {
       app.playSound('online');
       app.toast('Arix Theme v2.1.3 activated!', 'success');
     } else {
       app.toast('NookTheme activated!', 'success');
     }
     this.saveSettings(true);
+  }
+
+  savePteroxBranding() {
+    const nameEl = document.getElementById('pterox-cfg-name');
+    const emailEl = document.getElementById('pterox-cfg-email');
+    const sidebarEl = document.getElementById('pterox-cfg-sidebar');
+    const headerEl = document.getElementById('pterox-cfg-header');
+    const loginEl = document.getElementById('pterox-cfg-login');
+    const loginHeaderEl = document.getElementById('pterox-cfg-login-header');
+
+    const name = nameEl ? nameEl.value.trim() : 'PteroX';
+    const email = emailEl ? emailEl.value.trim() : 'pterox@webpool.tech';
+    const sidebarLogo = sidebarEl ? sidebarEl.value.trim() : '/images/pterox-sidebar-logo.webp';
+    const headerLogo = headerEl ? headerEl.value.trim() : '/images/pterox-header-logo.webp';
+    const loginLogo = loginEl ? loginEl.value.trim() : '/images/pterox-login-logo.webp';
+    const loginHeaderLogo = loginHeaderEl ? loginHeaderEl.value.trim() : '/images/pterox-login-header-logo.webp';
+
+    localStorage.setItem('pterox_brand_name', name);
+    localStorage.setItem('pterox_support_email', email);
+    localStorage.setItem('pterox_sidebar_logo', sidebarLogo);
+    localStorage.setItem('pterox_header_logo', headerLogo);
+    localStorage.setItem('pterox_login_logo', loginLogo);
+    localStorage.setItem('pterox_login_header_logo', loginHeaderLogo);
+
+    app.toast('PteroX branding configuration saved!', 'success');
+    app.applyBrandingAndTheme({ active_theme: this.currentTheme.activeTheme });
   }
 
   togglePanelSounds(enabled) {
@@ -647,47 +1075,89 @@ class SettingsManager {
   }
 
   updateThemeSelectionUI() {
-    const isArix = this.currentTheme.activeTheme === 'arix';
+    const theme = this.currentTheme.activeTheme || 'nook';
     const cardArix = document.getElementById('theme-card-arix');
     const cardNook = document.getElementById('theme-card-nook');
+    const cardLiquidx = document.getElementById('theme-card-liquidx');
+    const cardPterox = document.getElementById('theme-card-pterox');
     const btnArix = document.getElementById('btn-theme-arix');
     const btnNook = document.getElementById('btn-theme-nook');
+    const btnLiquidx = document.getElementById('btn-theme-liquidx');
+    const btnPterox = document.getElementById('btn-theme-pterox');
     const badge = document.getElementById('active-theme-badge');
     const arixPanel = document.getElementById('arix-options-panel');
+    const liquidxPanel = document.getElementById('liquidx-options-panel');
+    const pteroxPanel = document.getElementById('pterox-options-panel');
 
     if (badge) {
-      badge.innerText = isArix ? 'Arix Theme v2.1.3 Active' : 'NookTheme Active';
-      badge.className = `text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${isArix ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}`;
+      const labels = {
+        nook: 'NookTheme Active',
+        arix: 'Arix Theme v2.1.3 Active',
+        liquidx: 'LiquidX Theme v1.0 Active',
+        pterox: 'PteroX Theme v2.0.2 Active'
+      };
+      const badgeClasses = {
+        nook: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+        arix: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+        liquidx: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+        pterox: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+      };
+      badge.innerText = labels[theme] || `${theme} Active`;
+      badge.className = `text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${badgeClasses[theme] || badgeClasses.nook}`;
     }
 
-    if (cardArix && cardNook) {
-      if (isArix) {
-        cardArix.className = 'theme-select-card p-5 rounded-2xl border active bg-purple-950/20 border-purple-500/50 flex flex-col justify-between space-y-4';
-        cardNook.className = 'theme-select-card p-5 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-4';
-        if (btnArix) {
-          btnArix.innerText = '✓ Active Theme';
-          btnArix.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
-        }
-        if (btnNook) {
-          btnNook.innerText = 'Activate Nook';
-          btnNook.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10';
-        }
-        if (arixPanel) arixPanel.classList.remove('opacity-60');
-      } else {
-        cardArix.className = 'theme-select-card p-5 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-4';
-        cardNook.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
-        if (btnArix) {
-          btnArix.innerText = 'Activate Arix';
-          btnArix.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10';
-        }
-        if (btnNook) {
-          btnNook.innerText = '✓ Active Theme';
-          btnNook.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
-        }
-        if (arixPanel) arixPanel.classList.add('opacity-60');
+    const resetCard = (card, btn, name) => {
+      if (card) card.className = 'theme-select-card p-5 rounded-2xl border bg-slate-900/40 border-white/5 hover:border-white/20 flex flex-col justify-between space-y-4';
+      if (btn) {
+        btn.innerText = `Activate ${name}`;
+        btn.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/5 text-slate-300 hover:bg-white/10';
       }
+    };
+
+    resetCard(cardNook, btnNook, 'Nook');
+    resetCard(cardArix, btnArix, 'Arix');
+    resetCard(cardLiquidx, btnLiquidx, 'LiquidX');
+    resetCard(cardPterox, btnPterox, 'PteroX');
+
+    if (theme === 'pterox') {
+      if (cardPterox) cardPterox.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
+      if (btnPterox) {
+        btnPterox.innerText = '✓ Active Theme';
+        btnPterox.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+      }
+      if (arixPanel) arixPanel.classList.add('opacity-60');
+      if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
+      if (pteroxPanel) pteroxPanel.classList.remove('opacity-60');
+    } else if (theme === 'liquidx') {
+      if (cardLiquidx) cardLiquidx.className = 'theme-select-card p-5 rounded-2xl border active bg-amber-950/20 border-amber-500/50 flex flex-col justify-between space-y-4';
+      if (btnLiquidx) {
+        btnLiquidx.innerText = '✓ Active Theme';
+        btnLiquidx.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+      }
+      if (arixPanel) arixPanel.classList.add('opacity-60');
+      if (liquidxPanel) liquidxPanel.classList.remove('opacity-60');
+      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+    } else if (theme === 'arix') {
+      if (cardArix) cardArix.className = 'theme-select-card p-5 rounded-2xl border active bg-purple-950/20 border-purple-500/50 flex flex-col justify-between space-y-4';
+      if (btnArix) {
+        btnArix.innerText = '✓ Active Theme';
+        btnArix.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+      }
+      if (arixPanel) arixPanel.classList.remove('opacity-60');
+      if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
+      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+    } else {
+      if (cardNook) cardNook.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
+      if (btnNook) {
+        btnNook.innerText = '✓ Active Theme';
+        btnNook.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+      }
+      if (arixPanel) arixPanel.classList.add('opacity-60');
+      if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
+      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
     }
   }
+
 
   async loadWallpaperCategories() {
     try {
@@ -1342,7 +1812,10 @@ class SettingsManager {
       active_theme: this.currentTheme.activeTheme || 'arix',
       panel_sounds_enabled: this.currentTheme.panelSoundsEnabled ? '1' : '0',
       arix_primary_color: this.currentTheme.arixPrimaryColor || '#4A35CF',
-      registration_enabled: document.getElementById('set-registration')?.checked ? '1' : '0'
+      liquidx_primary_color: this.currentTheme.liquidxPrimaryColor || '#e0841b',
+      registration_enabled: document.getElementById('set-registration')?.checked ? '1' : '0',
+      tutorials_enabled: document.getElementById('set-tutorials-enabled')?.checked ? '1' : '0',
+      tutorials_autostart_enabled: document.getElementById('set-tutorials-autostart-enabled')?.checked ? '1' : '0'
     };
 
     try {

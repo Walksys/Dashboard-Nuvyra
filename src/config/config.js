@@ -20,8 +20,12 @@ module.exports = {
   BACKUPS_DIR: path.resolve(__dirname, '../../mpanel/backups'),
   UPLOADS_DIR: path.resolve(__dirname, '../../public/uploads'),
 
-  // SQLite DB Path
-  DB_PATH: process.env.DB_PATH || path.resolve(__dirname, '../../data/mpanel.sqlite'),
+  // Database Configuration (MariaDB / MySQL)
+  DB_HOST: process.env.DB_HOST || '127.0.0.1',
+  DB_PORT: parseInt(process.env.DB_PORT || '27017', 10),
+  DB_USER: process.env.DB_USER || 'panel',
+  DB_PASSWORD: process.env.DB_PASSWORD || 'PanelPass123!',
+  DB_NAME: process.env.DB_NAME || 'panel',
 
   // Panel Defaults
   DEFAULT_PANEL_NAME: 'Mpanel',

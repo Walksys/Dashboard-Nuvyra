@@ -1,97 +1,293 @@
 // Admin Portal Management Suite
 class AdminManager {
   // 1. Admin Overview
+  stopOverviewPolling() {
+    if (this.overviewInterval) {
+      clearInterval(this.overviewInterval);
+      this.overviewInterval = null;
+    }
+  }
+
   async renderAdminOverview() {
+    this.stopOverviewPolling();
     const container = document.getElementById('view-container');
     container.innerHTML = `
-      <div class="space-y-6">
-        <div>
-          <span class="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Admin Portal</span>
-          <h2 class="text-2xl font-black text-white mt-2 flex items-center gap-2">
-            <i data-lucide="gauge" class="w-6 h-6 text-purple-400"></i> Global System Overview
-          </h2>
-          <p class="text-xs text-slate-400">Cluster resource status, daemon health, and administrative metrics</p>
+      <div class="space-y-6 pb-12">
+        <!-- Top Titlebar with Live Telemetry Badge -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Admin Portal</span>
+            <h2 class="text-2xl font-black text-white mt-2 flex items-center gap-2">
+              <i data-lucide="gauge" class="w-6 h-6 text-purple-400"></i> Global System Overview
+            </h2>
+            <p class="text-xs text-slate-400">Cluster resources, MariaDB latency, container engines, and live hardware telemetry</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Version Badge & Update Indicator -->
+            <a href="#admin-updates" onclick="app.navigate('admin-updates')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20 shadow-sm hover:bg-purple-500/20 transition cursor-pointer" title="View Version & System Updates">
+              <i data-lucide="tag" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span id="adm-overview-version">v2.4.0</span>
+            </a>
+            <a href="#admin-updates" onclick="app.navigate('admin-updates')" id="adm-overview-update-pill" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm hover:bg-emerald-500/20 transition cursor-pointer" title="Click to view update details">
+              <span class="w-2 h-2 rounded-full bg-emerald-400" id="adm-overview-update-dot"></span>
+              <span id="adm-overview-update-text">Up-to-Date</span>
+            </a>
+
+            <span id="adm-live-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>LIVE TELEMETRY (2s)</span>
+            </span>
+            <button onclick="admin.fetchOverviewTelemetry()" title="Refresh Telemetry Now" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300 transition">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+          </div>
         </div>
 
-        <!-- Global Metric Cards -->
+        <!-- Mpanel System Version & Auto-Detect Update Banner -->
+        <div class="glass-card p-4 rounded-2xl border border-white/10 relative overflow-hidden bg-gradient-to-r from-purple-950/30 via-slate-900/60 to-cyan-950/30 shadow-lg">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20 shrink-0">
+                <i data-lucide="sparkles" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm font-black text-white flex items-center gap-1.5">
+                    Mpanel Server Engine <span class="font-mono text-purple-300" id="adm-banner-version">v2.4.0</span>
+                  </span>
+                  <span id="adm-banner-status-tag" class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400" id="adm-banner-status-dot"></span>
+                    <span id="adm-banner-status-tag-text">Up-to-Date</span>
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400" id="adm-banner-status-desc">
+                  Auto-checking updates from <span class="text-cyan-400 font-mono">github.com/nobita329/Mpanel/releases</span> &bull; Commit <span class="font-mono text-slate-300" id="adm-banner-commit">main</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap self-end md:self-center">
+              <button onclick="admin.checkOverviewUpdates()" id="btn-overview-check-updates" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 flex items-center gap-1.5 transition active:scale-95">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-cyan-400" id="icon-overview-check-spin"></i>
+                <span>Check Update</span>
+              </button>
+              <a href="#admin-updates" onclick="app.navigate('admin-updates')" class="btn-cyber px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-cyan-500/20">
+                <i data-lucide="terminal" class="w-4 h-4"></i>
+                <span>Open Update Terminal</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 1: Global Cluster Counts (5 Cards) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-purple-400">
+              <span class="text-[11px] uppercase font-semibold text-slate-400">Servers</span>
+              <i data-lucide="server" class="w-4 h-4"></i>
+            </div>
+            <h3 id="adm-stat-servers" class="text-2xl font-black text-white">0</h3>
+            <p id="adm-stat-servers-sub" class="text-[10px] font-mono text-slate-400">0 Running &bull; 0 Offline</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-cyan-400">
+              <span class="text-[11px] uppercase font-semibold text-slate-400">Users</span>
+              <i data-lucide="users" class="w-4 h-4"></i>
+            </div>
+            <h3 id="adm-stat-users" class="text-2xl font-black text-cyan-400">0</h3>
+            <p id="adm-stat-users-sub" class="text-[10px] font-mono text-slate-400">0 Admins</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-emerald-400">
+              <span class="text-[11px] uppercase font-semibold text-slate-400">Databases</span>
+              <i data-lucide="database" class="w-4 h-4"></i>
+            </div>
+            <h3 id="adm-stat-databases" class="text-2xl font-black text-emerald-400">0</h3>
+            <p id="adm-stat-databases-sub" class="text-[10px] font-mono text-slate-400">MariaDB / MySQL</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-amber-400">
+              <span class="text-[11px] uppercase font-semibold text-slate-400">Allocations</span>
+              <i data-lucide="radio" class="w-4 h-4"></i>
+            </div>
+            <h3 id="adm-stat-allocs" class="text-2xl font-black text-amber-400">0</h3>
+            <p id="adm-stat-allocs-sub" class="text-[10px] font-mono text-slate-400">0 Assigned</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2 col-span-2 sm:col-span-1">
+            <div class="flex items-center justify-between text-indigo-400">
+              <span class="text-[11px] uppercase font-semibold text-slate-400">Backups</span>
+              <i data-lucide="archive" class="w-4 h-4"></i>
+            </div>
+            <h3 id="adm-stat-backups" class="text-2xl font-black text-indigo-400">0</h3>
+            <p id="adm-stat-backups-sub" class="text-[10px] font-mono text-slate-400">0 MB Total</p>
+          </div>
+        </div>
+
+        <!-- Row 2: Real-time Host Resource Gauges (4 Live Monitors) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
-              <i data-lucide="server" class="w-6 h-6"></i>
+          <!-- CPU Monitor -->
+          <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i> Host CPU Load
+              </span>
+              <span id="adm-cpu-percent" class="text-sm font-black font-mono text-purple-400">0%</span>
             </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase font-semibold">Total Servers</p>
-              <h3 id="adm-stat-servers" class="text-2xl font-bold text-white">...</h3>
+            <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden">
+              <div id="adm-cpu-bar" class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-          </div>
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
-              <i data-lucide="users" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase font-semibold">Registered Users</p>
-              <h3 id="adm-stat-users" class="text-2xl font-bold text-cyan-400">...</h3>
+            <div class="flex justify-between text-[11px] font-mono text-slate-400 pt-1">
+              <span id="adm-cpu-cores">0 Cores</span>
+              <span id="adm-cpu-load">Load: 0.00</span>
             </div>
           </div>
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-              <i data-lucide="network" class="w-6 h-6"></i>
+
+          <!-- Memory Monitor -->
+          <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i> Memory (RAM)
+              </span>
+              <span id="adm-mem-percent" class="text-sm font-black font-mono text-cyan-400">0%</span>
             </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase font-semibold">Active Nodes</p>
-              <h3 id="adm-stat-nodes" class="text-2xl font-bold text-emerald-400">...</h3>
+            <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden">
+              <div id="adm-mem-bar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-[11px] font-mono text-slate-400 pt-1">
+              <span id="adm-mem-used">0 GB Used</span>
+              <span id="adm-mem-total">/ 0 GB Total</span>
             </div>
           </div>
-          <div class="glass-card p-5 rounded-2xl border border-white/10 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
-              <i data-lucide="radio" class="w-6 h-6"></i>
+
+          <!-- Disk Monitor -->
+          <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="hard-drive" class="w-4 h-4 text-emerald-400"></i> Storage (SSD)
+              </span>
+              <span id="adm-disk-percent" class="text-sm font-black font-mono text-emerald-400">0%</span>
             </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase font-semibold">Port Allocations</p>
-              <h3 id="adm-stat-allocs" class="text-2xl font-bold text-amber-400">...</h3>
+            <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden">
+              <div id="adm-disk-bar" class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-[11px] font-mono text-slate-400 pt-1">
+              <span id="adm-disk-used">0 GB Used</span>
+              <span id="adm-disk-total">/ 0 GB Total</span>
+            </div>
+          </div>
+
+          <!-- Network Monitor -->
+          <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="wifi" class="w-4 h-4 text-amber-400"></i> Network Traffic
+              </span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+            <div class="space-y-1 pt-1 font-mono text-[11px]">
+              <div class="flex justify-between items-center text-slate-300">
+                <span class="flex items-center gap-1 text-slate-400"><i data-lucide="arrow-down" class="w-3 h-3 text-cyan-400"></i> Inbound:</span>
+                <span id="adm-net-rx" class="font-bold text-cyan-400">0 KB/s</span>
+              </div>
+              <div class="flex justify-between items-center text-slate-300">
+                <span class="flex items-center gap-1 text-slate-400"><i data-lucide="arrow-up" class="w-3 h-3 text-amber-400"></i> Outbound:</span>
+                <span id="adm-net-tx" class="font-bold text-amber-400">0 KB/s</span>
+              </div>
+            </div>
+            <div class="text-[10px] text-slate-500 font-mono flex justify-between border-t border-white/5 pt-1">
+              <span id="adm-net-total-rx">RX: 0 MB</span>
+              <span id="adm-net-total-tx">TX: 0 MB</span>
             </div>
           </div>
         </div>
 
-        <!-- System Daemon Status & Quick Actions -->
+        <!-- Row 3: Engines Health (MariaDB, Docker, Services) & Quick Shortcuts -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="glass-panel p-6 rounded-3xl border border-white/10 lg:col-span-2 space-y-4">
             <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 border-b border-white/10 pb-3">
-              <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i> Host & Daemon Health
+              <i data-lucide="layers" class="w-4 h-4 text-cyan-400"></i> Engines, Databases & Daemons
             </h3>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
-              <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase">Daemon Port</span>
-                <p class="text-sm font-bold text-white">3003</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
+              <!-- MariaDB 11 Health -->
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-white/5 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] text-slate-400 uppercase">MariaDB 11</span>
+                  <span id="adm-mariadb-badge" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                </div>
+                <p id="adm-mariadb-version" class="text-xs font-bold text-emerald-400 truncate">Connecting...</p>
+                <p id="adm-mariadb-latency" class="text-[10px] text-slate-400">Latency: -- ms</p>
               </div>
-              <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase">SFTP Port</span>
-                <p class="text-sm font-bold text-emerald-400">3004</p>
+
+              <!-- Docker Engine -->
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-white/5 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] text-slate-400 uppercase">Docker Engine</span>
+                  <span id="adm-docker-badge" class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                </div>
+                <p id="adm-docker-status" class="text-xs font-bold text-cyan-400">Active</p>
+                <p id="adm-docker-counts" class="text-[10px] text-slate-400">0 Running Containers</p>
               </div>
-              <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase">Docker Status</span>
-                <p id="adm-docker-status" class="text-sm font-bold text-cyan-400">Checking...</p>
+
+              <!-- Panel Daemon API -->
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-white/5 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] text-slate-400 uppercase">Daemon API</span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                </div>
+                <p class="text-xs font-bold text-white">Port 3003</p>
+                <p class="text-[10px] text-slate-400">HTTP REST & WS</p>
               </div>
-              <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5 space-y-1">
-                <span class="text-[10px] text-slate-400 uppercase">Runner Mode</span>
-                <p class="text-sm font-bold text-purple-400">Dual Active</p>
+
+              <!-- SFTP Server -->
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-white/5 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] text-slate-400 uppercase">Embedded SFTP</span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                </div>
+                <p class="text-xs font-bold text-white">Port 3004</p>
+                <p class="text-[10px] text-slate-400">SSH File Transfer</p>
+              </div>
+
+              <!-- Host Platform & OS -->
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-white/5 space-y-1">
+                <span class="text-[10px] text-slate-400 uppercase">Host OS</span>
+                <p id="adm-os-info" class="text-xs font-bold text-slate-200 truncate">Linux</p>
+                <p id="adm-os-uptime" class="text-[10px] text-slate-400">Uptime: --</p>
+              </div>
+
+              <!-- Node Runtime -->
+              <div class="bg-slate-900/70 p-3 rounded-xl border border-white/5 space-y-1">
+                <span class="text-[10px] text-slate-400 uppercase">Node.js Engine</span>
+                <p id="adm-node-ver" class="text-xs font-bold text-purple-400">v20+</p>
+                <p id="adm-process-uptime" class="text-[10px] text-slate-400">Process: --</p>
               </div>
             </div>
           </div>
 
-          <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-3 flex flex-col justify-between">
+          <!-- Fast Quick Actions -->
+          <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 flex flex-col justify-between">
             <div>
-              <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 mb-2">
+              <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 border-b border-white/10 pb-3">
                 <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Quick Actions
               </h3>
-              <p class="text-xs text-slate-400">Fast administrative management shortcuts</p>
+              <p class="text-xs text-slate-400 mt-2">Manage clusters and resources directly</p>
             </div>
             <div class="space-y-2">
-              <button onclick="admin.showCreateServerModal()" class="btn-cyber w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i> Deploy New Server
+              <button onclick="admin.showCreateServerModal()" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Deploy Server
               </button>
-              <button onclick="admin.showCreateUserModal()" class="btn-cyber-purple w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+              <button onclick="admin.showCreateUserModal()" class="btn-cyber-purple w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
                 <i data-lucide="user-plus" class="w-4 h-4"></i> Add User
+              </button>
+              <button onclick="app.navigate('admin-databases')" class="w-full py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 flex items-center justify-center gap-2 transition">
+                <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i> Manage Databases
+              </button>
+              <button onclick="app.navigate('admin-network')" class="w-full py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 flex items-center justify-center gap-2 transition">
+                <i data-lucide="radio" class="w-4 h-4 text-amber-400"></i> Manage Network & Ports
               </button>
             </div>
           </div>
@@ -99,29 +295,167 @@ class AdminManager {
       </div>
     `;
 
-    try {
-      const [serversRes, usersRes, nodesRes] = await Promise.all([
-        app.api('/api/servers'),
-        app.api('/api/admin/users'),
-        app.api('/api/admin/nodes')
-      ]);
-
-      const elServers = document.getElementById('adm-stat-servers');
-      if (elServers) elServers.innerText = serversRes.servers?.length || 0;
-      const elUsers = document.getElementById('adm-stat-users');
-      if (elUsers) elUsers.innerText = usersRes.users?.length || 0;
-      const elNodes = document.getElementById('adm-stat-nodes');
-      if (elNodes) elNodes.innerText = nodesRes.nodes?.length || 0;
-
-      const totalAllocs = nodesRes.nodes?.reduce((acc, n) => acc + (n.total_allocations || 0), 0) || 0;
-      const elAllocs = document.getElementById('adm-stat-allocs');
-      if (elAllocs) elAllocs.innerText = totalAllocs;
-      const elDocker = document.getElementById('adm-docker-status');
-      if (elDocker) elDocker.innerText = 'CONNECTED';
-    } catch (e) {
-      console.error(e);
-    }
     if (window.lucide) lucide.createIcons();
+
+    await this.fetchOverviewTelemetry();
+    this.overviewInterval = setInterval(() => {
+      this.fetchOverviewTelemetry(true);
+    }, 2000);
+  }
+
+  async fetchOverviewTelemetry(isSilent = false) {
+    try {
+      const data = await app.api('/api/admin/overview');
+      if (!data || !data.success) return;
+
+      const m = data.metrics || {};
+      const sys = data.system || {};
+      const db = data.mariadb || {};
+      const docker = data.docker || {};
+
+      // Helper formatters
+      const formatBytes = (b) => {
+        if (!b || b === 0) return '0 B';
+        const k = 1024;
+        const dm = 1;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(b) / Math.log(k));
+        return parseFloat((b / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+      };
+
+      const formatSpeed = (b) => {
+        if (b >= 1024 * 1024) return (b / (1024 * 1024)).toFixed(2) + ' MB/s';
+        if (b >= 1024) return (b / 1024).toFixed(1) + ' KB/s';
+        return Math.round(b) + ' B/s';
+      };
+
+      const formatSecs = (s) => {
+        const d = Math.floor(s / 86400);
+        const h = Math.floor((s % 86400) / 3600);
+        const min = Math.floor((s % 3600) / 60);
+        if (d > 0) return `${d}d ${h}h`;
+        if (h > 0) return `${h}h ${min}m`;
+        return `${min}m ${Math.floor(s % 60)}s`;
+      };
+
+      // 1. Metric Counts
+      const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+      setEl('adm-stat-servers', m.servers?.total || 0);
+      setEl('adm-stat-servers-sub', `${m.servers?.running || 0} Running • ${m.servers?.offline || 0} Offline`);
+      setEl('adm-stat-users', m.users?.total || 0);
+      setEl('adm-stat-users-sub', `${m.users?.admins || 0} Admins`);
+      setEl('adm-stat-databases', m.databases?.total || 0);
+      setEl('adm-stat-databases-sub', `${db.threads_connected || 1} Connected Clients`);
+      setEl('adm-stat-allocs', m.allocations?.total || 0);
+      setEl('adm-stat-allocs-sub', `${m.allocations?.assigned || 0} Assigned (${m.allocations?.free || 0} Free)`);
+      setEl('adm-stat-backups', m.backups?.total || 0);
+      setEl('adm-stat-backups-sub', `${formatBytes(m.backups?.total_bytes || 0)} Total`);
+
+      // 2. Hardware Live Gauges
+      setEl('adm-cpu-percent', `${sys.cpu?.percent || 0}%`);
+      const cpuBar = document.getElementById('adm-cpu-bar');
+      if (cpuBar) cpuBar.style.width = `${sys.cpu?.percent || 0}%`;
+      setEl('adm-cpu-cores', `${sys.cpu?.cores || 1} Cores`);
+      setEl('adm-cpu-load', `Load: ${(sys.cpu?.load_avg?.[0] || 0).toFixed(2)}`);
+
+      setEl('adm-mem-percent', `${sys.memory?.percent || 0}%`);
+      const memBar = document.getElementById('adm-mem-bar');
+      if (memBar) memBar.style.width = `${sys.memory?.percent || 0}%`;
+      setEl('adm-mem-used', `${formatBytes(sys.memory?.used_bytes)} Used`);
+      setEl('adm-mem-total', `/ ${formatBytes(sys.memory?.total_bytes)}`);
+
+      setEl('adm-disk-percent', `${sys.disk?.percent || 0}%`);
+      const diskBar = document.getElementById('adm-disk-bar');
+      if (diskBar) diskBar.style.width = `${sys.disk?.percent || 0}%`;
+      setEl('adm-disk-used', `${formatBytes(sys.disk?.used_bytes)} Used`);
+      setEl('adm-disk-total', `/ ${formatBytes(sys.disk?.total_bytes)}`);
+
+      // 3. Network Speeds
+      setEl('adm-net-rx', formatSpeed(sys.network?.rx_bytes_sec || 0));
+      setEl('adm-net-tx', formatSpeed(sys.network?.tx_bytes_sec || 0));
+      setEl('adm-net-total-rx', `RX: ${formatBytes(sys.network?.total_rx || 0)}`);
+      setEl('adm-net-total-tx', `TX: ${formatBytes(sys.network?.total_tx || 0)}`);
+
+      // 4. Engine Health
+      setEl('adm-mariadb-version', db.version ? `MariaDB ${db.version.split('-')[0]}` : 'Connected');
+      setEl('adm-mariadb-latency', `Latency: ${db.latency_ms || 0} ms • Port ${db.port || 27017}`);
+
+      const dockStatusEl = document.getElementById('adm-docker-status');
+      if (dockStatusEl) {
+        dockStatusEl.innerText = docker.available ? 'Active (Dockerode)' : 'Unavailable';
+      }
+      setEl('adm-docker-counts', `${docker.containers_running || 0} Running / ${docker.containers_total || 0} Total`);
+
+      setEl('adm-os-info', `${sys.platform || 'Linux'} (${sys.arch || 'x64'})`);
+      setEl('adm-os-uptime', `Uptime: ${formatSecs(sys.uptime_seconds || 0)}`);
+      setEl('adm-node-ver', `${sys.node_version || 'Node.js'}`);
+      setEl('adm-process-uptime', `Process: ${formatSecs(sys.process_uptime_seconds || 0)}`);
+
+      // 5. Version & System Updates Status
+      const panelVer = sys.panel_version ? `v${sys.panel_version}` : 'v2.4.0';
+      setEl('adm-overview-version', panelVer);
+      setEl('adm-banner-version', panelVer);
+      setEl('adm-banner-commit', sys.panel_commit || 'main');
+
+      const upd = sys.update_info;
+      const updatePill = document.getElementById('adm-overview-update-pill');
+      const updateText = document.getElementById('adm-overview-update-text');
+      const updateDot = document.getElementById('adm-overview-update-dot');
+      const bannerTag = document.getElementById('adm-banner-status-tag');
+      const bannerTagText = document.getElementById('adm-banner-status-tag-text');
+      const bannerDesc = document.getElementById('adm-banner-status-desc');
+      const navBadge = document.getElementById('nav-update-badge');
+
+      if (upd && upd.has_update) {
+        if (updatePill) updatePill.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-sm hover:bg-amber-500/25 transition cursor-pointer animate-pulse';
+        if (updateDot) updateDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        if (updateText) updateText.innerText = `Update: ${upd.latest_version}`;
+
+        if (bannerTag) bannerTag.className = 'text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1 animate-pulse';
+        if (bannerTagText) bannerTagText.innerText = `Update Available: ${upd.latest_version}`;
+        if (bannerDesc) bannerDesc.innerHTML = `New version <b class="text-amber-300 font-mono">${upd.latest_version}</b> detected on GitHub! Click Open Update Terminal to install.`;
+        if (navBadge) {
+          navBadge.classList.remove('hidden');
+          navBadge.innerText = 'UPDATE';
+        }
+      } else {
+        if (updatePill) updatePill.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm hover:bg-emerald-500/20 transition cursor-pointer';
+        if (updateDot) updateDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        if (updateText) updateText.innerText = `Up-to-Date (${upd?.latest_version || panelVer})`;
+
+        if (bannerTag) bannerTag.className = 'text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1';
+        if (bannerTagText) bannerTagText.innerText = 'Up-to-Date';
+        if (bannerDesc) bannerDesc.innerHTML = `Running official release <b class="text-cyan-400 font-mono">${upd?.latest_version || panelVer}</b> &bull; Commit <span class="font-mono text-slate-300">${sys.panel_commit || 'main'}</span>`;
+      }
+    } catch (err) {
+      if (!isSilent) console.error('Overview telemetry fetch error:', err);
+    }
+  }
+
+  async checkOverviewUpdates() {
+    const icon = document.getElementById('icon-overview-check-spin');
+    if (icon) icon.classList.add('animate-spin');
+    try {
+      const res = await app.api('/api/admin/updates/status?force=true');
+      if (res) {
+        if (res.has_update) {
+          app.toast(`New version ${res.latest_version} available!`, 'info');
+        } else {
+          app.toast(`Mpanel is up to date (${res.latest_version || 'v2.4.0'}).`, 'success');
+        }
+        await this.fetchOverviewTelemetry(true);
+      }
+    } catch (e) {
+      app.toast('Failed to check updates: ' + e.message, 'error');
+    } finally {
+      if (icon) icon.classList.remove('animate-spin');
+    }
+  }
+
+  renderUpdatesView() {
+    if (window.updatesManager) {
+      window.updatesManager.render();
+    }
   }
 
   // 2. Server Management View
@@ -1195,8 +1529,13 @@ class AdminManager {
     }
   }
 
-  // Show Server Creation Wizard (with MCJars integration & Docker templates)
+  // Show Server Creation Wizard (with MCJars integration & Docker templates - Admin Only)
   async showCreateServerModal() {
+    if (!app.user || app.user.role !== 'admin') {
+      app.toast('Only administrators can deploy new servers. Contact your administrator.', 'error');
+      return;
+    }
+
     const modalContainer = document.getElementById('modal-container');
 
     // Fetch registered users for User Access / Server Access assignment
@@ -1926,6 +2265,10 @@ class AdminManager {
 
   async handleCreateServer(e) {
     e.preventDefault();
+    if (!app.user || app.user.role !== 'admin') {
+      app.toast('Only administrators can deploy new servers.', 'error');
+      return;
+    }
     const typeInput = document.querySelector('input[name="create_srv_type"]:checked');
     const server_type = typeInput ? typeInput.value : 'minecraft';
     const name = document.getElementById('srv-create-name').value.trim();
@@ -2646,23 +2989,38 @@ class AdminManager {
 
   // 4. Nodes & Port Allocations View
   async renderNodesView() {
+    if (this._nodesLiveTimer) {
+      clearInterval(this._nodesLiveTimer);
+      this._nodesLiveTimer = null;
+    }
+
     const container = document.getElementById('view-container');
     container.innerHTML = `
       <div class="space-y-6">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-            <span class="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Infrastructure</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Infrastructure</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> AUTO LIVE REFRESH
+              </span>
+            </div>
             <h2 class="text-xl font-bold text-white mt-1 flex items-center gap-2">
               <i data-lucide="network" class="w-5 h-5 text-purple-400"></i> Nodes & Port Allocations
             </h2>
-            <p class="text-xs text-slate-400">Manage hosting nodes, daemon endpoints, and assignable port ranges</p>
+            <p class="text-xs text-slate-400">Real-time node performance metrics (RAM, CPU, SSD, Network) & port managers</p>
           </div>
-          <button onclick="admin.showCreateNodeModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Node
-          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="admin.renderNodesView()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 transition-all">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+            </button>
+            <button onclick="admin.showCreateNodeModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Node
+            </button>
+          </div>
         </div>
 
-        <div id="nodes-card-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div id="nodes-card-list" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <div class="col-span-full text-center py-8 text-slate-400">Loading nodes...</div>
         </div>
       </div>
@@ -2673,102 +3031,210 @@ class AdminManager {
       const nodes = data.nodes || [];
       const list = document.getElementById('nodes-card-list');
 
+      if (!list) return;
+
       if (nodes.length === 0) {
         list.innerHTML = `<div class="glass-card p-8 rounded-2xl text-center col-span-full border border-dashed border-white/20 text-slate-400 text-xs">No nodes created yet.</div>`;
       } else {
-        list.innerHTML = nodes.map(n => {
-          const usage = n.usage || { cpu_percent: 0, ram_percent: 0, ram_used_mb: 0, ram_total_mb: 0, load_avg: '0.00', uptime_hours: 0, cores: 1 };
-          const cpuColor = usage.cpu_percent > 85 ? 'bg-rose-500' : (usage.cpu_percent > 65 ? 'bg-amber-500' : 'bg-purple-500');
-          const ramColor = usage.ram_percent > 85 ? 'bg-rose-500' : (usage.ram_percent > 65 ? 'bg-amber-500' : 'bg-cyan-500');
-
-          return `
-          <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 hover:border-purple-500/30 transition-all">
-            <div class="flex justify-between items-start">
-              <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400">${n.location_name || 'Local'}</span>
-                <h4 class="text-base font-bold text-white">${n.name}</h4>
-                <p class="text-xs font-mono text-slate-400">${n.fqdn}</p>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ONLINE
-                </span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/5 border border-white/10 text-slate-300">
-                  ${usage.cores} CORES
-                </span>
-              </div>
-            </div>
-
-            <!-- Node Usage Status v1.0.2 Live Gauges -->
-            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
-              <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
-                <span class="flex items-center gap-1.5"><i data-lucide="cpu" class="w-3.5 h-3.5 text-purple-400"></i> CPU Usage</span>
-                <span class="font-mono text-purple-300 font-bold">${usage.cpu_percent}%</span>
-              </div>
-              <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
-                <div class="${cpuColor} h-full rounded-full transition-all duration-500" style="width: ${Math.min(100, Math.max(2, usage.cpu_percent))}%"></div>
-              </div>
-
-              <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
-                <span class="flex items-center gap-1.5"><i data-lucide="database" class="w-3.5 h-3.5 text-cyan-400"></i> RAM (${(usage.ram_used_mb / 1024).toFixed(1)} / ${(usage.ram_total_mb / 1024).toFixed(1)} GB)</span>
-                <span class="font-mono text-cyan-300 font-bold">${usage.ram_percent}%</span>
-              </div>
-              <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
-                <div class="${ramColor} h-full rounded-full transition-all duration-500" style="width: ${Math.min(100, Math.max(2, usage.ram_percent))}%"></div>
-              </div>
-
-              <div class="flex justify-between items-center text-[10px] text-slate-400 pt-1 border-t border-white/5 font-mono">
-                <span>Load Avg: <strong class="text-slate-200">${usage.load_avg}</strong></span>
-                <span>Uptime: <strong class="text-slate-200">${usage.uptime_hours}h</strong></span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2 text-center text-xs py-2 bg-slate-900/40 rounded-xl border border-white/5 font-mono">
-              <div>
-                <p class="text-[10px] text-slate-400">Servers</p>
-                <p class="font-bold text-white">${n.server_count || 0}</p>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-400">Total Ports</p>
-                <p class="font-bold text-cyan-400">${n.total_allocations || 0}</p>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-400">Used Ports</p>
-                <p class="font-bold text-amber-400">${n.assigned_allocations || 0}</p>
-              </div>
-            </div>
-
-            <div class="flex gap-2 pt-2 border-t border-white/10">
-              <button onclick="admin.showAllocationsModal(${n.id})" class="btn-cyber flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5">
-                <i data-lucide="radio" class="w-3.5 h-3.5"></i> Allocations
-              </button>
-              <button onclick="admin.showNodeUsageModal(${n.id}, '${n.name}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 flex items-center justify-center gap-1.5 transition-all">
-                <i data-lucide="activity" class="w-3.5 h-3.5"></i> Live Stats
-              </button>
-            </div>
-          </div>
-        `;
-        }).join('');
+        list.innerHTML = nodes.map(n => this._renderNodeCardHtml(n)).join('');
       }
+
+      // Start automatic live status updater every 2 seconds
+      this._nodesLiveTimer = setInterval(async () => {
+        const cardList = document.getElementById('nodes-card-list');
+        const modal = document.getElementById('modal-container');
+        if (!cardList) {
+          if (this._nodesLiveTimer) {
+            clearInterval(this._nodesLiveTimer);
+            this._nodesLiveTimer = null;
+          }
+          return;
+        }
+        if (modal && modal.children.length > 0) return;
+        try {
+          const freshData = await app.api('/api/admin/nodes');
+          if (freshData && freshData.nodes) {
+            freshData.nodes.forEach(node => {
+              this._updateNodeCardStats(node);
+            });
+          }
+        } catch (e) {}
+      }, 2000);
+
     } catch (e) {
       console.error(e);
     }
     if (window.lucide) lucide.createIcons();
   }
 
+  _renderNodeCardHtml(n) {
+    const usage = n.usage || {
+      cpu_percent: 0,
+      ram_percent: 0,
+      ram_used_mb: 0,
+      ram_total_mb: 0,
+      ssd_used_gb: 0,
+      ssd_total_gb: 0,
+      ssd_free_gb: 0,
+      ssd_percent: 0,
+      net_in_speed: '0.00 B/s',
+      net_out_speed: '0.00 B/s',
+      net_in_total: '0 MB',
+      net_out_total: '0 MB',
+      load_avg: '0.00',
+      uptime_hours: 0,
+      cores: 1
+    };
+
+    const cpuColor = usage.cpu_percent > 85 ? 'bg-rose-500' : (usage.cpu_percent > 65 ? 'bg-amber-500' : 'bg-purple-500');
+    const ramColor = usage.ram_percent > 85 ? 'bg-rose-500' : (usage.ram_percent > 65 ? 'bg-amber-500' : 'bg-cyan-500');
+    const ssdColor = usage.ssd_percent > 85 ? 'bg-rose-500' : (usage.ssd_percent > 65 ? 'bg-amber-500' : 'bg-emerald-500');
+
+    return `
+    <div id="node-card-${n.id}" class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 hover:border-purple-500/30 transition-all shadow-xl">
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">${n.location_name || 'Local'}</span>
+          <h4 class="text-base font-bold text-white mt-1">${n.name}</h4>
+          <p class="text-xs font-mono text-slate-400">${n.fqdn}</p>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ONLINE
+          </span>
+          <span class="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/5 border border-white/10 text-slate-300">
+            ${usage.cores} CORES
+          </span>
+        </div>
+      </div>
+
+      <!-- Node Live Usage Status 5-Metric Box (CPU, RAM, SSD, Network Inbound, Network Outbound) -->
+      <div class="p-4 rounded-2xl bg-slate-900/70 border border-white/5 space-y-3.5">
+        <!-- CPU Metric -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+            <span class="flex items-center gap-1.5"><i data-lucide="cpu" class="w-3.5 h-3.5 text-purple-400"></i> CPU Usage</span>
+            <span id="node-cpu-val-${n.id}" class="font-mono text-purple-300 font-bold">${usage.cpu_percent}%</span>
+          </div>
+          <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+            <div id="node-cpu-bar-${n.id}" class="${cpuColor} h-full rounded-full transition-all duration-500" style="width: ${Math.min(100, Math.max(2, usage.cpu_percent))}%"></div>
+          </div>
+        </div>
+
+        <!-- RAM Metric -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+            <span class="flex items-center gap-1.5"><i data-lucide="database" class="w-3.5 h-3.5 text-cyan-400"></i> RAM Memory</span>
+            <span id="node-ram-val-${n.id}" class="font-mono text-cyan-300 font-bold">${(usage.ram_used_mb / 1024).toFixed(1)} / ${(usage.ram_total_mb / 1024).toFixed(1)} GB (${usage.ram_percent}%)</span>
+          </div>
+          <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+            <div id="node-ram-bar-${n.id}" class="${ramColor} h-full rounded-full transition-all duration-500" style="width: ${Math.min(100, Math.max(2, usage.ram_percent))}%"></div>
+          </div>
+        </div>
+
+        <!-- SSD / Disk Metric -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+            <span class="flex items-center gap-1.5"><i data-lucide="hard-drive" class="w-3.5 h-3.5 text-emerald-400"></i> SSD Storage</span>
+            <span id="node-ssd-val-${n.id}" class="font-mono text-emerald-300 font-bold">${usage.ssd_used_gb} / ${usage.ssd_total_gb} GB (${usage.ssd_percent}%)</span>
+          </div>
+          <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+            <div id="node-ssd-bar-${n.id}" class="${ssdColor} h-full rounded-full transition-all duration-500" style="width: ${Math.min(100, Math.max(2, usage.ssd_percent))}%"></div>
+          </div>
+        </div>
+
+        <!-- Network Inbound & Outbound Live Status -->
+        <div class="pt-2 border-t border-white/5 grid grid-cols-2 gap-2 text-[10px] font-mono">
+          <div class="p-2 rounded-xl bg-slate-950/50 border border-white/5 flex items-center justify-between">
+            <span class="text-slate-400 flex items-center gap-1"><i data-lucide="arrow-down-left" class="w-3 h-3 text-emerald-400"></i> Inbound</span>
+            <span id="node-netin-val-${n.id}" class="text-emerald-300 font-bold">${usage.net_in_speed}</span>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-950/50 border border-white/5 flex items-center justify-between">
+            <span class="text-slate-400 flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-3 h-3 text-sky-400"></i> Outbound</span>
+            <span id="node-netout-val-${n.id}" class="text-sky-300 font-bold">${usage.net_out_speed}</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-[10px] text-slate-400 pt-1 border-t border-white/5 font-mono">
+          <span>Load Avg: <strong id="node-load-${n.id}" class="text-slate-200">${usage.load_avg}</strong></span>
+          <span>Host Uptime: <strong id="node-uptime-${n.id}" class="text-slate-200">${usage.uptime_hours}h</strong></span>
+        </div>
+      </div>
+
+      <!-- Allocations & Server Count Summary -->
+      <div class="grid grid-cols-3 gap-2 text-center text-xs py-2.5 bg-slate-900/40 rounded-xl border border-white/5 font-mono">
+        <div>
+          <p class="text-[10px] text-slate-400">Active Servers</p>
+          <p class="font-bold text-white text-sm">${n.server_count || 0}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400">Total Allocations</p>
+          <p id="node-total-allocs-${n.id}" class="font-bold text-cyan-400 text-sm">${n.total_allocations || 0}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400">Assigned Ports</p>
+          <p id="node-assigned-allocs-${n.id}" class="font-bold text-amber-400 text-sm">${n.assigned_allocations || 0}</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-2 border-t border-white/10">
+        <button onclick="admin.showAllocationsModal(${n.id}, '${n.name}', '${n.fqdn}')" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+          <i data-lucide="radio" class="w-4 h-4"></i> Port Allocations
+        </button>
+      </div>
+    </div>
+    `;
+  }
+
+  _updateNodeCardStats(n) {
+    const usage = n.usage;
+    if (!usage) return;
+
+    const cpuVal = document.getElementById(`node-cpu-val-${n.id}`);
+    const cpuBar = document.getElementById(`node-cpu-bar-${n.id}`);
+    const ramVal = document.getElementById(`node-ram-val-${n.id}`);
+    const ramBar = document.getElementById(`node-ram-bar-${n.id}`);
+    const ssdVal = document.getElementById(`node-ssd-val-${n.id}`);
+    const ssdBar = document.getElementById(`node-ssd-bar-${n.id}`);
+    const netIn = document.getElementById(`node-netin-val-${n.id}`);
+    const netOut = document.getElementById(`node-netout-val-${n.id}`);
+    const loadEl = document.getElementById(`node-load-${n.id}`);
+    const uptimeEl = document.getElementById(`node-uptime-${n.id}`);
+
+    if (cpuVal) cpuVal.textContent = `${usage.cpu_percent}%`;
+    if (cpuBar) cpuBar.style.width = `${Math.min(100, Math.max(2, usage.cpu_percent))}%`;
+    if (ramVal) ramVal.textContent = `${(usage.ram_used_mb / 1024).toFixed(1)} / ${(usage.ram_total_mb / 1024).toFixed(1)} GB (${usage.ram_percent}%)`;
+    if (ramBar) ramBar.style.width = `${Math.min(100, Math.max(2, usage.ram_percent))}%`;
+    if (ssdVal) ssdVal.textContent = `${usage.ssd_used_gb} / ${usage.ssd_total_gb} GB (${usage.ssd_percent}%)`;
+    if (ssdBar) ssdBar.style.width = `${Math.min(100, Math.max(2, usage.ssd_percent))}%`;
+    if (netIn) netIn.textContent = usage.net_in_speed;
+    if (netOut) netOut.textContent = usage.net_out_speed;
+    if (loadEl) loadEl.textContent = usage.load_avg;
+    if (uptimeEl) uptimeEl.textContent = `${usage.uptime_hours}h`;
+
+    const totalAllocEl = document.getElementById(`node-total-allocs-${n.id}`);
+    const assignedAllocEl = document.getElementById(`node-assigned-allocs-${n.id}`);
+    if (totalAllocEl && n.total_allocations !== undefined) totalAllocEl.textContent = n.total_allocations;
+    if (assignedAllocEl && n.assigned_allocations !== undefined) assignedAllocEl.textContent = n.assigned_allocations;
+  }
+
   showNodeUsageModal(nodeId, nodeName) {
     const modalContainer = document.getElementById('modal-container');
     modalContainer.innerHTML = `
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass-panel w-full max-w-lg p-6 rounded-3xl border border-purple-500/30 shadow-2xl space-y-5">
+        <div class="glass-panel w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 rounded-3xl border border-purple-500/30 shadow-2xl space-y-5">
           <div class="flex justify-between items-center border-b border-white/10 pb-3">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2.5">
               <div class="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
                 <i data-lucide="activity" class="w-5 h-5"></i>
               </div>
               <div>
                 <h3 class="text-base font-bold text-white">${nodeName} - Live Usage Status</h3>
-                <p class="text-[10px] text-slate-400 font-mono">NodeUsageStatus v1.0.2 Monitoring Engine</p>
+                <p class="text-[10px] text-slate-400 font-mono flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                  Real-time Node Telemetry (RAM, CPU, SSD, Network)
+                </p>
               </div>
             </div>
             <button onclick="admin.closeNodeUsageModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10">
@@ -2776,23 +3242,23 @@ class AdminManager {
             </button>
           </div>
 
-          <div class="space-y-4">
-            <!-- CPU Box -->
+          <div class="space-y-3.5">
+            <!-- 1. CPU Processor Box -->
             <div class="p-4 rounded-2xl bg-purple-950/20 border border-purple-500/20 space-y-2">
               <div class="flex justify-between items-center text-xs">
-                <span class="font-bold text-purple-300 flex items-center gap-1.5"><i data-lucide="cpu" class="w-4 h-4"></i> Processor Load</span>
+                <span class="font-bold text-purple-300 flex items-center gap-1.5"><i data-lucide="cpu" class="w-4 h-4"></i> Processor Load (CPU)</span>
                 <span id="live-node-cpu-val" class="font-mono font-bold text-white text-sm">--%</span>
               </div>
               <div class="w-full bg-black/40 h-2.5 rounded-full overflow-hidden p-0.5 border border-purple-500/20">
                 <div id="live-node-cpu-bar" class="bg-gradient-to-r from-purple-500 to-indigo-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
               </div>
               <div class="flex justify-between text-[10px] text-slate-400 font-mono">
-                <span id="live-node-cpu-cores">Threads: --</span>
-                <span id="live-node-load">Load: --</span>
+                <span id="live-node-cpu-cores">Cores / Threads: --</span>
+                <span id="live-node-load">Load Avg: --</span>
               </div>
             </div>
 
-            <!-- Memory Box -->
+            <!-- 2. Memory (RAM) Box -->
             <div class="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 space-y-2">
               <div class="flex justify-between items-center text-xs">
                 <span class="font-bold text-cyan-300 flex items-center gap-1.5"><i data-lucide="database" class="w-4 h-4"></i> Memory (RAM) Allocation</span>
@@ -2803,18 +3269,52 @@ class AdminManager {
               </div>
               <div class="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span id="live-node-ram-detail">Used: -- / -- GB</span>
-                <span id="live-node-status" class="text-emerald-400 font-bold">STATUS: OK</span>
+                <span id="live-node-status" class="text-emerald-400 font-bold">OPTIMAL</span>
               </div>
             </div>
 
-            <!-- Host Overview -->
+            <!-- 3. SSD / Disk Storage Box -->
+            <div class="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-emerald-300 flex items-center gap-1.5"><i data-lucide="hard-drive" class="w-4 h-4"></i> Solid State Drive (SSD)</span>
+                <span id="live-node-ssd-val" class="font-mono font-bold text-white text-sm">--%</span>
+              </div>
+              <div class="w-full bg-black/40 h-2.5 rounded-full overflow-hidden p-0.5 border border-emerald-500/20">
+                <div id="live-node-ssd-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+                <span id="live-node-ssd-detail">Disk: -- / -- GB</span>
+                <span id="live-node-ssd-free">Free: -- GB</span>
+              </div>
+            </div>
+
+            <!-- 4. Network Bandwidth (Inbound & Outbound) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-4 rounded-2xl bg-slate-900/70 border border-white/5 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-emerald-300 flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-400"></i> Network (Inbound)</span>
+                </div>
+                <div class="font-mono font-bold text-lg text-emerald-400" id="live-node-net-in">-- MB/s</div>
+                <div class="text-[10px] text-slate-400 font-mono" id="live-node-net-in-total">Total Received: --</div>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-slate-900/70 border border-white/5 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-sky-300 flex items-center gap-1.5"><i data-lucide="arrow-up-right" class="w-4 h-4 text-sky-400"></i> Network (Outbound)</span>
+                </div>
+                <div class="font-mono font-bold text-lg text-sky-400" id="live-node-net-out">-- MB/s</div>
+                <div class="text-[10px] text-slate-400 font-mono" id="live-node-net-out-total">Total Transmitted: --</div>
+              </div>
+            </div>
+
+            <!-- Host Overview Summary -->
             <div class="grid grid-cols-2 gap-3 text-xs font-mono">
               <div class="p-3 rounded-xl bg-slate-900/60 border border-white/5">
                 <span class="text-[10px] text-slate-400 block mb-1">Host Uptime</span>
                 <span id="live-node-uptime" class="text-white font-bold">-- hrs</span>
               </div>
               <div class="p-3 rounded-xl bg-slate-900/60 border border-white/5">
-                <span class="text-[10px] text-slate-400 block mb-1">Status Grade</span>
+                <span class="text-[10px] text-slate-400 block mb-1">Health Grade</span>
                 <span id="live-node-grade" class="text-emerald-400 font-bold">Optimal</span>
               </div>
             </div>
@@ -2837,19 +3337,48 @@ class AdminManager {
           const cpuBar = document.getElementById('live-node-cpu-bar');
           const cpuCores = document.getElementById('live-node-cpu-cores');
           const loadEl = document.getElementById('live-node-load');
+
           const ramVal = document.getElementById('live-node-ram-val');
           const ramBar = document.getElementById('live-node-ram-bar');
           const ramDetail = document.getElementById('live-node-ram-detail');
+          const statusEl = document.getElementById('live-node-status');
+
+          const ssdVal = document.getElementById('live-node-ssd-val');
+          const ssdBar = document.getElementById('live-node-ssd-bar');
+          const ssdDetail = document.getElementById('live-node-ssd-detail');
+          const ssdFree = document.getElementById('live-node-ssd-free');
+
+          const netIn = document.getElementById('live-node-net-in');
+          const netInTotal = document.getElementById('live-node-net-in-total');
+          const netOut = document.getElementById('live-node-net-out');
+          const netOutTotal = document.getElementById('live-node-net-out-total');
+
           const uptimeEl = document.getElementById('live-node-uptime');
           const gradeEl = document.getElementById('live-node-grade');
 
           if (cpuVal) cpuVal.textContent = `${s.cpu_percent}%`;
           if (cpuBar) cpuBar.style.width = `${Math.min(100, Math.max(2, s.cpu_percent))}%`;
-          if (cpuCores) cpuCores.textContent = `Threads: ${s.cores}`;
+          if (cpuCores) cpuCores.textContent = `Cores: ${s.cores}`;
           if (loadEl) loadEl.textContent = `Load: ${s.load_avg}`;
+
           if (ramVal) ramVal.textContent = `${s.ram_percent}%`;
           if (ramBar) ramBar.style.width = `${Math.min(100, Math.max(2, s.ram_percent))}%`;
           if (ramDetail) ramDetail.textContent = `Used: ${(s.ram_used_mb / 1024).toFixed(2)} / ${(s.ram_total_mb / 1024).toFixed(2)} GB`;
+          if (statusEl) {
+            statusEl.textContent = s.status === 'optimal' ? 'OPTIMAL' : 'HIGH LOAD';
+            statusEl.className = s.status === 'optimal' ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
+          }
+
+          if (ssdVal) ssdVal.textContent = `${s.ssd_percent}%`;
+          if (ssdBar) ssdBar.style.width = `${Math.min(100, Math.max(2, s.ssd_percent))}%`;
+          if (ssdDetail) ssdDetail.textContent = `Disk: ${s.ssd_used_gb} / ${s.ssd_total_gb} GB`;
+          if (ssdFree) ssdFree.textContent = `Free: ${s.ssd_free_gb} GB`;
+
+          if (netIn) netIn.textContent = s.net_in_speed;
+          if (netInTotal) netInTotal.textContent = `Total Received: ${s.net_in_total}`;
+          if (netOut) netOut.textContent = s.net_out_speed;
+          if (netOutTotal) netOutTotal.textContent = `Total Sent: ${s.net_out_total}`;
+
           if (uptimeEl) uptimeEl.textContent = `${s.uptime_hours} hrs`;
           if (gradeEl) {
             gradeEl.textContent = s.status === 'optimal' ? 'Optimal' : 'High Load';
@@ -2863,7 +3392,7 @@ class AdminManager {
 
     updateStats();
     if (this._nodeUsageTimer) clearInterval(this._nodeUsageTimer);
-    this._nodeUsageTimer = setInterval(updateStats, 2000);
+    this._nodeUsageTimer = setInterval(updateStats, 1500);
   }
 
   closeNodeUsageModal() {
@@ -2932,24 +3461,49 @@ class AdminManager {
     }
   }
 
-  async showAllocationsModal(nodeId) {
+  async showAllocationsModal(nodeId, nodeName = 'Node', nodeFqdn = '127.0.0.1') {
     const modalContainer = document.getElementById('modal-container');
     modalContainer.innerHTML = `
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass-panel w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 rounded-3xl border border-white/15 shadow-2xl space-y-5">
+        <div class="glass-panel w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 rounded-3xl border border-white/15 shadow-2xl space-y-5">
+          <!-- Header -->
           <div class="flex justify-between items-center border-b border-white/10 pb-3">
-            <h3 class="text-base font-bold text-white flex items-center gap-2">
-              <i data-lucide="radio" class="w-5 h-5 text-cyan-400"></i> Port Allocations Manager
-            </h3>
-            <button onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center">
+            <div class="flex items-center gap-2.5">
+              <div class="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                <i data-lucide="radio" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  Port Allocations Manager
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">${app.escapeHtml(nodeName)}</span>
+                </h3>
+                <p class="text-[10px] text-slate-400 font-mono">Manage port assignments and network bindings (${app.escapeHtml(nodeFqdn)})</p>
+              </div>
+            </div>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
           </div>
 
-          <!-- Add Ports Batch Generator -->
+          <!-- Add Ports Batch Generator & Presets -->
           <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5 space-y-3">
-            <h4 class="text-xs font-bold text-cyan-300">Generate Port Range (e.g. 25565 to 25575)</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Generate Port Range or Individual Ports
+              </h4>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] text-slate-400">Presets:</span>
+                <button type="button" onclick="admin.setPortRangePreset(25565, 25575)" class="text-[10px] px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-all font-mono">Minecraft (25565-25575)</button>
+                <button type="button" onclick="admin.setPortRangePreset(19132, 19142)" class="text-[10px] px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-all font-mono">Bedrock (19132-19142)</button>
+                <button type="button" onclick="admin.setPortRangePreset(3000, 3010)" class="text-[10px] px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-all font-mono">Web/App (3000-3010)</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Target IP / Host</label>
+                <input type="text" id="alloc-target-ip" value="${app.escapeHtml(nodeFqdn || '127.0.0.1')}" placeholder="127.0.0.1" class="w-full glass-input px-3 py-1.5 rounded-xl text-xs font-mono">
+              </div>
               <div>
                 <label class="block text-[11px] text-slate-400 mb-1">Start Port</label>
                 <input type="number" id="alloc-start-port" placeholder="25565" class="w-full glass-input px-3 py-1.5 rounded-xl text-xs font-mono">
@@ -2959,16 +3513,40 @@ class AdminManager {
                 <input type="number" id="alloc-end-port" placeholder="25575" class="w-full glass-input px-3 py-1.5 rounded-xl text-xs font-mono">
               </div>
               <div class="flex items-end">
-                <button onclick="admin.handleBatchGeneratePorts(${nodeId})" class="btn-cyber w-full py-2 rounded-xl text-xs font-semibold">
-                  + Add Ports
+                <button id="alloc-add-btn" onclick="admin.handleBatchGeneratePorts(${nodeId})" class="btn-cyber w-full py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Ports
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Allocations List -->
+          <!-- Port Stats Bar & Search/Filter Controls -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/40 p-3 rounded-2xl border border-white/5">
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-300 border border-white/5">Total: <strong id="alloc-stat-total" class="text-white">0</strong></span>
+              <span class="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">Free: <strong id="alloc-stat-free" class="text-emerald-400">0</strong></span>
+              <span class="px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/20">Assigned: <strong id="alloc-stat-assigned" class="text-amber-400">0</strong></span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="relative flex-1 sm:w-48">
+                <input type="text" id="alloc-filter-search" oninput="admin.filterAllocationsList()" placeholder="Filter port or server..." class="w-full glass-input pl-7 pr-3 py-1 rounded-xl text-xs font-mono">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2"></i>
+              </div>
+              <select id="alloc-filter-status" onchange="admin.filterAllocationsList()" class="glass-input px-2.5 py-1 rounded-xl text-xs font-mono">
+                <option value="all">All</option>
+                <option value="free">Free Only</option>
+                <option value="assigned">Assigned Only</option>
+              </select>
+              <button onclick="admin.clearUnassignedAllocations(${nodeId})" title="Delete all free ports on this node" class="px-3 py-1 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-all flex items-center gap-1 shrink-0">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear Free
+              </button>
+            </div>
+          </div>
+
+          <!-- Allocations List Container -->
           <div id="allocs-list-container" class="space-y-2">
-            <p class="text-xs text-slate-400">Loading existing allocations...</p>
+            <p class="text-xs text-slate-400 text-center py-4">Loading existing allocations...</p>
           </div>
         </div>
       </div>
@@ -2977,60 +3555,181 @@ class AdminManager {
     this.loadNodeAllocations(nodeId);
   }
 
+  setPortRangePreset(start, end) {
+    const startInput = document.getElementById('alloc-start-port');
+    const endInput = document.getElementById('alloc-end-port');
+    if (startInput) startInput.value = start;
+    if (endInput) endInput.value = end;
+  }
+
   async loadNodeAllocations(nodeId) {
     try {
       const data = await app.api(`/api/admin/nodes/${nodeId}`);
-      const allocs = data.allocations || [];
-      const container = document.getElementById('allocs-list-container');
+      this._currentNodeAllocations = data.allocations || [];
+      this._currentNodeAllocationsNodeId = nodeId;
+      this.filterAllocationsList();
 
-      if (!container) return;
-
-      if (allocs.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">No port allocations found on this node.</p>';
-      } else {
-        container.innerHTML = `
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1">
-            ${allocs.map(a => `
-              <div class="glass-card p-2.5 rounded-xl border border-white/5 flex items-center justify-between font-mono text-xs">
-                <span class="${a.assigned ? 'text-amber-400 font-bold' : 'text-slate-300'}">${a.port}</span>
-                <div class="flex items-center gap-1">
-                  ${a.assigned ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded">USED</span>' : '<span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1 rounded">FREE</span>'}
-                  ${!a.assigned ? `<button onclick="admin.deleteAllocation(${nodeId}, ${a.id})" class="text-slate-500 hover:text-rose-400 ml-1"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>` : ''}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
+      // Update node card badge in background if element exists
+      const totalAllocEl = document.getElementById(`node-total-allocs-${nodeId}`);
+      const assignedAllocEl = document.getElementById(`node-assigned-allocs-${nodeId}`);
+      if (totalAllocEl) totalAllocEl.textContent = this._currentNodeAllocations.length;
+      if (assignedAllocEl) assignedAllocEl.textContent = this._currentNodeAllocations.filter(a => a.assigned).length;
     } catch (e) {
       console.error(e);
+      const container = document.getElementById('allocs-list-container');
+      if (container) {
+        container.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Failed to load allocations: ${app.escapeHtml(e.message)}</p>`;
+      }
     }
+  }
+
+  filterAllocationsList() {
+    const allocs = this._currentNodeAllocations || [];
+    const nodeId = this._currentNodeAllocationsNodeId;
+    const container = document.getElementById('allocs-list-container');
+    if (!container) return;
+
+    // Update summary counts
+    const totalEl = document.getElementById('alloc-stat-total');
+    const freeEl = document.getElementById('alloc-stat-free');
+    const assignedEl = document.getElementById('alloc-stat-assigned');
+    const assignedCount = allocs.filter(a => a.assigned).length;
+    const freeCount = allocs.length - assignedCount;
+    if (totalEl) totalEl.textContent = allocs.length;
+    if (freeEl) freeEl.textContent = freeCount;
+    if (assignedEl) assignedEl.textContent = assignedCount;
+
+    const searchInput = document.getElementById('alloc-filter-search');
+    const statusSelect = document.getElementById('alloc-filter-status');
+    const q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+    const statusFilter = statusSelect ? statusSelect.value : 'all';
+
+    let filtered = allocs;
+    if (statusFilter === 'free') {
+      filtered = filtered.filter(a => !a.assigned);
+    } else if (statusFilter === 'assigned') {
+      filtered = filtered.filter(a => a.assigned);
+    }
+
+    if (q) {
+      filtered = filtered.filter(a => {
+        const portStr = String(a.port);
+        const ipStr = String(a.ip || '');
+        const sName = String(a.server_name || '').toLowerCase();
+        return portStr.includes(q) || ipStr.includes(q) || sName.includes(q);
+      });
+    }
+
+    if (allocs.length === 0) {
+      container.innerHTML = '<p class="text-xs text-slate-500 text-center py-6">No port allocations configured on this node yet.</p>';
+      return;
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No allocations match filter "${app.escapeHtml(q)}".</p>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-[50vh] overflow-y-auto p-1 pr-2">
+        ${filtered.map(a => `
+          <div class="glass-card p-3 rounded-xl border ${a.assigned ? 'border-amber-500/30 bg-amber-950/10' : 'border-white/5 bg-slate-900/40'} flex flex-col justify-between gap-1.5 transition-all">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono font-bold text-sm ${a.assigned ? 'text-amber-300' : 'text-cyan-300'}">${a.port}</span>
+                <span class="text-[10px] text-slate-400 font-mono">${app.escapeHtml(a.ip || '0.0.0.0')}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                ${a.assigned
+                  ? '<span class="text-[9px] font-bold tracking-wider uppercase bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">USED</span>'
+                  : '<span class="text-[9px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">FREE</span>'
+                }
+                ${!a.assigned ? `
+                  <button onclick="admin.deleteAllocation(${nodeId}, ${a.id})" title="Delete allocation" class="w-6 h-6 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 flex items-center justify-center ml-1 transition-all">
+                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+            ${a.assigned ? `
+              <div class="text-[10px] text-amber-200/80 font-mono flex items-center gap-1 truncate pt-1 border-t border-white/5">
+                <i data-lucide="server" class="w-3 h-3 shrink-0 text-amber-400"></i>
+                <span class="truncate font-semibold">${app.escapeHtml(a.server_name || 'Server #' + a.server_id)}</span>
+              </div>
+            ` : `
+              <div class="text-[10px] text-slate-500 font-mono flex items-center gap-1 pt-1 border-t border-white/5">
+                <i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i>
+                <span>Available for assignment</span>
+              </div>
+            `}
+          </div>
+        `).join('')}
+      </div>
+    `;
     if (window.lucide) lucide.createIcons();
   }
 
   async handleBatchGeneratePorts(nodeId) {
-    const startPort = document.getElementById('alloc-start-port').value;
-    const endPort = document.getElementById('alloc-end-port').value;
-    if (!startPort || !endPort) return;
+    const ip = document.getElementById('alloc-target-ip')?.value?.trim() || '127.0.0.1';
+    const startPort = document.getElementById('alloc-start-port')?.value?.trim();
+    const endPort = document.getElementById('alloc-end-port')?.value?.trim();
+
+    if (!startPort || !endPort) {
+      app.toast('Please specify both start port and end port', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('alloc-add-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-spin mr-1">⏳</span> Adding...';
+    }
 
     try {
       const data = await app.api(`/api/admin/nodes/${nodeId}/allocations`, {
         method: 'POST',
-        body: JSON.stringify({ startPort, endPort })
+        body: JSON.stringify({ ip, startPort, endPort })
       });
       if (data.success) {
         app.toast(data.message, 'success');
-        this.loadNodeAllocations(nodeId);
+        document.getElementById('alloc-start-port').value = '';
+        document.getElementById('alloc-end-port').value = '';
+        await this.loadNodeAllocations(nodeId);
+      }
+    } catch (err) {
+      app.toast(err.message || 'Failed to generate ports', 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Ports';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+  }
+
+  async deleteAllocation(nodeId, allocId) {
+    if (!confirm('Are you sure you want to delete this port allocation?')) return;
+    try {
+      const data = await app.api(`/api/admin/nodes/${nodeId}/allocations/${allocId}`, { method: 'DELETE' });
+      if (data.success) {
+        app.toast('Port allocation deleted', 'success');
+        if (document.getElementById('admin-network-tbody')) {
+          this.renderNetworkView();
+        } else {
+          this.loadNodeAllocations(nodeId);
+        }
       }
     } catch (err) {
       app.toast(err.message, 'error');
     }
   }
 
-  async deleteAllocation(nodeId, allocId) {
+  async clearUnassignedAllocations(nodeId) {
+    if (!confirm('Are you sure you want to delete ALL free (unassigned) ports on this node?')) return;
     try {
-      const data = await app.api(`/api/admin/nodes/${nodeId}/allocations/${allocId}`, { method: 'DELETE' });
+      const data = await app.api(`/api/admin/nodes/${nodeId}/allocations-clear-unassigned`, { method: 'DELETE' });
       if (data.success) {
+        app.toast(data.message || 'Unassigned ports cleared', 'success');
         this.loadNodeAllocations(nodeId);
       }
     } catch (err) {
@@ -3506,6 +4205,1091 @@ class AdminManager {
       app.toast(err.message || 'Failed to update password', 'error');
     }
   }
+
+  // ==========================================
+  // ADMIN DATABASES VIEW
+  // ==========================================
+  async renderDatabasesView() {
+    this.stopOverviewPolling();
+    const container = document.getElementById('view-container');
+    container.innerHTML = `
+      <div class="space-y-6 pb-12">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Admin Management</span>
+            <h2 class="text-2xl font-black text-white mt-2 flex items-center gap-2">
+              <i data-lucide="database" class="w-6 h-6 text-emerald-400"></i> Global Databases & Hosts
+            </h2>
+            <p class="text-xs text-slate-400">Configure MariaDB & MySQL server hosts and view all databases created across the cluster</p>
+          </div>
+          <button onclick="admin.showAddDatabaseHostModal()" class="btn-cyber flex items-center gap-2 text-xs">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Database Host
+          </button>
+        </div>
+
+        <!-- Section 1: Database Hosts Cards -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i data-lucide="server" class="w-4 h-4 text-emerald-400"></i> Database Hosts
+          </h3>
+          <div id="admin-db-hosts-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="col-span-full text-center py-6 text-slate-500">Loading database hosts...</div>
+          </div>
+        </div>
+
+        <!-- Section 2: Global Server Databases Table -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i data-lucide="table" class="w-4 h-4 text-cyan-400"></i> All Provisioned Server Databases
+          </h3>
+          <div class="glass-panel rounded-2xl border border-white/10 overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300 min-w-[650px]">
+              <thead class="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+                <tr>
+                  <th class="px-5 py-3">Database Name</th>
+                  <th class="px-5 py-3">Server</th>
+                  <th class="px-5 py-3">Host Endpoint</th>
+                  <th class="px-5 py-3">Username</th>
+                  <th class="px-5 py-3">Remote Access</th>
+                  <th class="px-5 py-3">Created</th>
+                </tr>
+              </thead>
+              <tbody id="admin-db-databases-tbody" class="divide-y divide-white/5">
+                <tr><td colspan="6" class="text-center py-6 text-slate-500">Loading databases...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+
+    try {
+      const data = await app.api('/api/admin/databases');
+      const hosts = data.hosts || [];
+      const databases = data.databases || [];
+
+      // Render Hosts
+      const hostsEl = document.getElementById('admin-db-hosts-list');
+      if (hostsEl) {
+        if (hosts.length === 0) {
+          hostsEl.innerHTML = `<div class="glass-card p-6 rounded-2xl text-center col-span-full border border-dashed border-white/20 text-slate-400 text-xs">No database hosts configured yet.</div>`;
+        } else {
+          hostsEl.innerHTML = hosts.map(h => `
+            <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
+                    <i data-lucide="database" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-bold text-white">${h.name}</h4>
+                    <p class="text-[11px] font-mono text-slate-400">${h.host}:${h.port}</p>
+                  </div>
+                </div>
+                ${h.id !== 1 ? `
+                  <button onclick="admin.deleteDatabaseHost(${h.id})" title="Delete Host" class="text-slate-400 hover:text-rose-400 p-1">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                ` : '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">DEFAULT</span>'}
+              </div>
+              <div class="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-white/5">
+                <span>Active Databases: <b class="text-white font-mono">${h.database_count || 0}</b></span>
+                <span>User: <b class="text-slate-300 font-mono">${h.username}</b></span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // Render Databases Table
+      const tbody = document.getElementById('admin-db-databases-tbody');
+      if (tbody) {
+        if (databases.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">No server databases provisioned yet.</td></tr>`;
+        } else {
+          tbody.innerHTML = databases.map(d => `
+            <tr class="hover:bg-white/5 transition">
+              <td class="px-5 py-3 font-mono font-semibold text-emerald-400">${d.database_name}</td>
+              <td class="px-5 py-3">
+                ${d.server_name ? `
+                  <a href="#server-manage/${d.server_id}/databases" class="text-cyan-400 hover:underline font-semibold flex items-center gap-1">
+                    <i data-lucide="server" class="w-3.5 h-3.5"></i> ${d.server_name}
+                  </a>
+                ` : `<span class="text-slate-500">Server #${d.server_id}</span>`}
+              </td>
+              <td class="px-5 py-3 font-mono text-[11px] text-slate-300">${d.host_address || '127.0.0.1'}:${d.host_port || 27017}</td>
+              <td class="px-5 py-3 font-mono text-[11px] text-slate-200">${d.username}</td>
+              <td class="px-5 py-3 font-mono text-[11px] text-slate-400">${d.remote_connections || '%'}</td>
+              <td class="px-5 py-3 text-slate-400">${new Date(d.created_at).toLocaleDateString()}</td>
+            </tr>
+          `).join('');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      app.toast('Failed to load databases: ' + err.message, 'error');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  showAddDatabaseHostModal() {
+    const modalContainer = document.getElementById('modal-container');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-white/15 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="database" class="w-5 h-5 text-emerald-400"></i> Add Database Host
+            </h3>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="text-slate-400 hover:text-white">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <form onsubmit="admin.handleAddDatabaseHostSubmit(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Host Name / Label</label>
+              <input type="text" id="db-host-name" placeholder="e.g. MariaDB 11 Local, MySQL 8 External" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" required>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-2">
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Host / IP</label>
+                <input type="text" id="db-host-ip" placeholder="127.0.0.1" value="127.0.0.1" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Port</label>
+                <input type="number" id="db-host-port" placeholder="27017" value="27017" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" required>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Admin / Root Username</label>
+              <input type="text" id="db-host-user" placeholder="root" value="root" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" required>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Admin / Root Password</label>
+              <input type="password" id="db-host-pass" placeholder="RootPass123!" value="RootPass123!" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" required>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+              <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-white/5">Cancel</button>
+              <button type="submit" class="btn-cyber text-xs">Save Host</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async handleAddDatabaseHostSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('db-host-name').value.trim();
+    const host = document.getElementById('db-host-ip').value.trim();
+    const port = parseInt(document.getElementById('db-host-port').value, 10);
+    const username = document.getElementById('db-host-user').value.trim();
+    const password = document.getElementById('db-host-pass').value;
+
+    try {
+      await app.api('/api/admin/databases/hosts', {
+        method: 'POST',
+        body: JSON.stringify({ name, host, port, username, password })
+      });
+      document.getElementById('modal-container').innerHTML = '';
+      app.toast('Database host added successfully!', 'success');
+      this.renderDatabasesView();
+    } catch (err) {
+      app.toast('Failed to add host: ' + err.message, 'error');
+    }
+  }
+
+  async deleteDatabaseHost(hostId) {
+    if (!confirm('Are you sure you want to delete this database host?')) return;
+    try {
+      await app.api(`/api/admin/databases/hosts/${hostId}`, { method: 'DELETE' });
+      app.toast('Database host deleted.', 'success');
+      this.renderDatabasesView();
+    } catch (err) {
+      app.toast(err.message || 'Failed to delete host', 'error');
+    }
+  }
+
+  // ==========================================
+  // ADMIN BACKUPS VIEW
+  // ==========================================
+  async renderBackupsView() {
+    this.stopOverviewPolling();
+    const container = document.getElementById('view-container');
+    container.innerHTML = `
+      <div class="space-y-6 pb-12">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Admin Management</span>
+            <h2 class="text-2xl font-black text-white mt-2 flex items-center gap-2">
+              <i data-lucide="archive" class="w-6 h-6 text-indigo-400"></i> Cluster Backups Management
+            </h2>
+            <p class="text-xs text-slate-400">View and manage all server archives and snapshots across the entire platform</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="admin.renderBackupsView()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300 transition" title="Refresh">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Backups Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="glass-card p-4 rounded-2xl border border-white/10">
+            <span class="text-[11px] uppercase font-semibold text-slate-400">Total Backups</span>
+            <h3 id="adm-backups-total" class="text-2xl font-bold text-white mt-1">0</h3>
+          </div>
+          <div class="glass-card p-4 rounded-2xl border border-white/10">
+            <span class="text-[11px] uppercase font-semibold text-slate-400">Total Archive Storage</span>
+            <h3 id="adm-backups-size" class="text-2xl font-bold text-indigo-400 mt-1">0 MB</h3>
+          </div>
+          <div class="glass-card p-4 rounded-2xl border border-white/10">
+            <span class="text-[11px] uppercase font-semibold text-slate-400">Storage Location</span>
+            <h3 class="text-sm font-mono font-bold text-slate-200 mt-2 truncate">/backups</h3>
+          </div>
+        </div>
+
+        <!-- Global Backups Table -->
+        <div class="glass-panel rounded-2xl border border-white/10 overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300 min-w-[700px]">
+            <thead class="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+              <tr>
+                <th class="px-5 py-3">Server</th>
+                <th class="px-5 py-3">Backup Name</th>
+                <th class="px-5 py-3">Archive File</th>
+                <th class="px-5 py-3">Size</th>
+                <th class="px-5 py-3">Status</th>
+                <th class="px-5 py-3">Created</th>
+                <th class="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-backups-tbody" class="divide-y divide-white/5">
+              <tr><td colspan="7" class="text-center py-6 text-slate-500">Loading backups...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+
+    try {
+      const data = await app.api('/api/admin/backups');
+      const backups = data.backups || [];
+      const summary = data.summary || { count: 0, total_size: 0 };
+
+      const formatBytes = (b) => {
+        if (!b || b === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(b) / Math.log(k));
+        return (b / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+      };
+
+      const elTotal = document.getElementById('adm-backups-total');
+      if (elTotal) elTotal.innerText = summary.count || 0;
+      const elSize = document.getElementById('adm-backups-size');
+      if (elSize) elSize.innerText = formatBytes(summary.total_size);
+
+      const tbody = document.getElementById('admin-backups-tbody');
+      if (tbody) {
+        if (backups.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500">No backups found across any servers.</td></tr>`;
+        } else {
+          tbody.innerHTML = backups.map(b => `
+            <tr class="hover:bg-white/5 transition">
+              <td class="px-5 py-3">
+                <a href="#server-manage/${b.server_id}/backups" class="text-cyan-400 hover:underline font-semibold flex items-center gap-1">
+                  <i data-lucide="server" class="w-3.5 h-3.5"></i> ${b.server_name || '#' + b.server_id}
+                </a>
+              </td>
+              <td class="px-5 py-3 font-semibold text-white">${b.name}</td>
+              <td class="px-5 py-3 font-mono text-[11px] text-slate-400 truncate max-w-xs">${b.file_name}</td>
+              <td class="px-5 py-3 font-mono text-slate-200">${formatBytes(b.file_size)}</td>
+              <td class="px-5 py-3">
+                ${b.is_locked ? '<span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 font-semibold">Locked</span>' : '<span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400">Standard</span>'}
+              </td>
+              <td class="px-5 py-3 text-slate-400">${new Date(b.created_at).toLocaleString()}</td>
+              <td class="px-5 py-3 text-right">
+                <a href="/api/servers/${b.server_id}/backups/${b.id}/download" download title="Download Backup Archive" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-400 inline-block mr-1">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                </a>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      app.toast('Failed to load backups: ' + err.message, 'error');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  // ==========================================
+  // ADMIN NETWORK VIEW
+  // ==========================================
+  async renderNetworkView() {
+    this.stopOverviewPolling();
+    const container = document.getElementById('view-container');
+    container.innerHTML = `
+      <div class="space-y-6 pb-12">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">Admin Management</span>
+            <h2 class="text-2xl font-black text-white mt-2 flex items-center gap-2">
+              <i data-lucide="radio" class="w-6 h-6 text-amber-400"></i> Cluster Network & Port Allocations
+            </h2>
+            <p class="text-xs text-slate-400">Inspect port allocations across all nodes, view bound servers, and manage available ports</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="admin.showAddAllocationsModal(1)" class="btn-cyber flex items-center gap-2 text-xs">
+              <i data-lucide="plus" class="w-4 h-4"></i> Add Port Range
+            </button>
+            <button onclick="admin.renderNetworkView()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300 transition" title="Refresh">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Node Breakdown Cards -->
+        <div id="admin-network-nodes-breakdown" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Populated by API -->
+        </div>
+
+        <!-- Filter bar -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="text" id="admin-network-search" placeholder="Search by IP, port, server..." oninput="admin.filterNetworkAllocations(this.value)" class="glass-input px-3 py-1.5 rounded-xl text-xs w-full sm:w-64">
+          </div>
+          <div class="flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-white/10 text-xs">
+            <button onclick="admin.filterNetworkStatus('all')" id="net-filter-all" class="px-2.5 py-1 rounded-lg font-semibold bg-cyan-500 text-black">All</button>
+            <button onclick="admin.filterNetworkStatus('assigned')" id="net-filter-assigned" class="px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white">Assigned</button>
+            <button onclick="admin.filterNetworkStatus('free')" id="net-filter-free" class="px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white">Free</button>
+          </div>
+        </div>
+
+        <!-- Allocations Table -->
+        <div class="glass-panel rounded-2xl border border-white/10 overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300 min-w-[650px]">
+            <thead class="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+              <tr>
+                <th class="px-5 py-3">Node</th>
+                <th class="px-5 py-3">IP Address</th>
+                <th class="px-5 py-3">Port</th>
+                <th class="px-5 py-3">Status</th>
+                <th class="px-5 py-3">Assigned Server</th>
+                <th class="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-network-tbody" class="divide-y divide-white/5">
+              <tr><td colspan="6" class="text-center py-6 text-slate-500">Loading allocations...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+
+    try {
+      const data = await app.api('/api/admin/network');
+      this.cachedAllocations = data.allocations || [];
+      const nodes = data.nodes || [];
+
+      // Render Nodes Breakdown
+      const nodesEl = document.getElementById('admin-network-nodes-breakdown');
+      if (nodesEl) {
+        nodesEl.innerHTML = nodes.map(n => {
+          const total = n.total_ports || 0;
+          const assigned = n.assigned_ports || 0;
+          const free = total - assigned;
+          const pct = total > 0 ? Math.round((assigned / total) * 100) : 0;
+          return `
+            <div class="glass-card p-5 rounded-2xl border border-white/10 space-y-3">
+              <div class="flex justify-between items-center">
+                <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                  <i data-lucide="network" class="w-4 h-4 text-cyan-400"></i> ${n.name}
+                </h4>
+                <span class="text-[11px] font-mono text-slate-400">${n.fqdn}</span>
+              </div>
+              <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden">
+                <div class="bg-gradient-to-r from-cyan-500 to-amber-500 h-2 rounded-full" style="width: ${pct}%"></div>
+              </div>
+              <div class="flex justify-between text-xs text-slate-400 font-mono pt-1">
+                <span>Assigned: <b class="text-amber-400">${assigned}</b></span>
+                <span>Free: <b class="text-emerald-400">${free}</b></span>
+                <span>Total: <b class="text-white">${total}</b></span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      this.currentNetworkStatusFilter = 'all';
+      this.currentNetworkSearchQuery = '';
+      this.renderFilteredNetworkAllocations();
+    } catch (err) {
+      console.error(err);
+      app.toast('Failed to load network allocations: ' + err.message, 'error');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  filterNetworkStatus(status) {
+    this.currentNetworkStatusFilter = status;
+    ['all', 'assigned', 'free'].forEach(s => {
+      const btn = document.getElementById(`net-filter-${s}`);
+      if (btn) {
+        if (s === status) {
+          btn.className = 'px-2.5 py-1 rounded-lg font-semibold bg-cyan-500 text-black';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white';
+        }
+      }
+    });
+    this.renderFilteredNetworkAllocations();
+  }
+
+  filterNetworkAllocations(q) {
+    this.currentNetworkSearchQuery = (q || '').toLowerCase();
+    this.renderFilteredNetworkAllocations();
+  }
+
+  renderFilteredNetworkAllocations() {
+    const list = this.cachedAllocations || [];
+    const status = this.currentNetworkStatusFilter || 'all';
+    const query = this.currentNetworkSearchQuery || '';
+
+    const filtered = list.filter(a => {
+      if (status === 'assigned' && !a.assigned) return false;
+      if (status === 'free' && a.assigned) return false;
+      if (query) {
+        const str = `${a.ip} ${a.port} ${a.node_name || ''} ${a.server_name || ''}`.toLowerCase();
+        if (!str.includes(query)) return false;
+      }
+      return true;
+    });
+
+    const tbody = document.getElementById('admin-network-tbody');
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">No matching allocations found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(a => `
+      <tr class="hover:bg-white/5 transition">
+        <td class="px-5 py-3 font-semibold text-slate-200">${a.node_name || 'Node #' + a.node_id}</td>
+        <td class="px-5 py-3 font-mono text-[11px] text-slate-300">${a.ip}</td>
+        <td class="px-5 py-3 font-mono font-bold text-white">${a.port}</td>
+        <td class="px-5 py-3">
+          ${a.assigned ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">ASSIGNED</span>' : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">AVAILABLE</span>'}
+        </td>
+        <td class="px-5 py-3">
+          ${a.server_name ? `
+            <a href="#server-manage/${a.server_id}/console" class="text-cyan-400 hover:underline font-semibold flex items-center gap-1">
+              <i data-lucide="server" class="w-3.5 h-3.5"></i> ${a.server_name}
+            </a>
+          ` : '<span class="text-slate-500">None</span>'}
+        </td>
+        <td class="px-5 py-3 text-right">
+          ${!a.assigned ? `
+            <button onclick="admin.deleteAllocation(${a.node_id}, ${a.id})" title="Delete Allocation" class="p-1 rounded bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          ` : ''}
+        </td>
+      </tr>
+    `).join('');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  showAddAllocationsModal(defaultNodeId = 1) {
+    const modalContainer = document.getElementById('modal-container');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border border-white/15 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="radio" class="w-5 h-5 text-amber-400"></i> Add Port Allocations
+            </h3>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="text-slate-400 hover:text-white">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <form onsubmit="admin.handleAddAllocationsModalSubmit(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Target IP Address</label>
+              <input type="text" id="modal-alloc-ip" value="127.0.0.1" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" required>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Start Port</label>
+                <input type="number" id="modal-alloc-start" placeholder="25565" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">End Port</label>
+                <input type="number" id="modal-alloc-end" placeholder="25575" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" required>
+              </div>
+            </div>
+            <input type="hidden" id="modal-alloc-node-id" value="${defaultNodeId}">
+            <div class="flex justify-end gap-2 pt-2">
+              <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-white/5">Cancel</button>
+              <button type="submit" class="btn-cyber text-xs">Create Ports</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async handleAddAllocationsModalSubmit(e) {
+    e.preventDefault();
+    const ip = document.getElementById('modal-alloc-ip').value.trim() || '127.0.0.1';
+    const startPort = document.getElementById('modal-alloc-start').value.trim();
+    const endPort = document.getElementById('modal-alloc-end').value.trim();
+    const nodeId = document.getElementById('modal-alloc-node-id').value || 1;
+
+    try {
+      const data = await app.api(`/api/admin/nodes/${nodeId}/allocations`, {
+        method: 'POST',
+        body: JSON.stringify({ ip, startPort, endPort })
+      });
+      document.getElementById('modal-container').innerHTML = '';
+      app.toast(data.message || 'Ports added successfully', 'success');
+      this.renderNetworkView();
+    } catch (err) {
+      app.toast(err.message || 'Failed to add ports', 'error');
+    }
+  }
+
+  // ==========================================
+  // Social Login (Blueprint Extension v1.2.0 Port)
+  // ==========================================
+  async renderSocialLoginView() {
+    this.stopOverviewPolling();
+    const container = document.getElementById('view-container');
+    container.innerHTML = `
+      <div class="flex items-center justify-center py-20 text-slate-400">
+        <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-purple-400 mr-3"></i>
+        <span>Loading Social Login Configuration...</span>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+
+    try {
+      const data = await app.api('/api/admin/sociallogin');
+      const settings = data.settings || { allow_register: true, allow_connecting: true };
+      const providers = data.providers || [];
+      const supportedProviders = data.supported_providers || ['discord', 'google', 'github', 'microsoft', 'steam'];
+
+      const currentOrigin = window.location.origin;
+      const redirectUri = `${currentOrigin}/api/auth/social/callback`;
+
+      container.innerHTML = `
+        <div class="space-y-6 pb-12 max-w-7xl mx-auto">
+          <!-- Top Titlebar -->
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20">Blueprint Extension Port</span>
+                <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">v1.2.0</span>
+              </div>
+              <h2 class="text-2xl font-black text-white flex items-center gap-2">
+                <i data-lucide="share-2" class="w-6 h-6 text-purple-400"></i> Social Authentication
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">Configure OAuth2 single sign-on providers and account linking settings</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="admin.renderSocialLoginView()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 border border-white/10 text-slate-300 transition flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Refresh</span>
+              </button>
+              <button onclick="admin.openAddSocialProviderModal()" class="btn-cyber-purple px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-purple-500/20">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Add Provider</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- OAuth Redirect URI Banner -->
+          <div class="glass-panel p-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 to-purple-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
+                <i data-lucide="link" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-white">Universal OAuth Callback URL</h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Configure this exact Redirect URI in your OAuth app settings (Discord, Google, GitHub, etc.):</p>
+                <code class="inline-block mt-1.5 px-2.5 py-1 rounded-lg bg-black/50 border border-white/10 text-xs font-mono text-cyan-300 select-all" id="oauth-redirect-uri-display">${redirectUri}</code>
+              </div>
+            </div>
+            <button onclick="admin.copyRedirectUri('${redirectUri}')" class="shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 border border-white/15 text-white transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy URL</span>
+            </button>
+          </div>
+
+          <!-- Card 1: Social Settings -->
+          <div class="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+            <div class="px-5 py-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <i data-lucide="sliders" class="w-4 h-4 text-purple-400"></i>
+                <h3 class="text-sm font-bold text-white">Social Settings</h3>
+              </div>
+              <span class="text-[11px] text-slate-400 font-mono">Registration & Connection Policy</span>
+            </div>
+            <div class="p-5 space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Allow Registrations -->
+                <div class="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
+                  <label class="block text-xs font-bold text-slate-200">User Registrations</label>
+                  <select id="setting-social-register" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs">
+                    <option value="1" ${settings.allow_register ? 'selected' : ''}>Allowed (Enabled)</option>
+                    <option value="0" ${!settings.allow_register ? 'selected' : ''}>Disallowed (Disabled)</option>
+                  </select>
+                  <p class="text-[11px] text-slate-400 leading-relaxed">
+                    If enabled, unknown users can register and automatically create an account on this panel with their OAuth provider.
+                  </p>
+                </div>
+
+                <!-- Allow Connecting -->
+                <div class="p-4 rounded-xl bg-black/20 border border-white/5 space-y-2">
+                  <label class="block text-xs font-bold text-slate-200">Account Connecting</label>
+                  <select id="setting-social-connect" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs">
+                    <option value="1" ${settings.allow_connecting ? 'selected' : ''}>Allowed (Enabled)</option>
+                    <option value="0" ${!settings.allow_connecting ? 'selected' : ''}>Disallowed (Disabled)</option>
+                  </select>
+                  <p class="text-[11px] text-slate-400 leading-relaxed">
+                    If enabled, users can directly connect their account from the login screen by matching their verified social email address.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button onclick="admin.saveSocialSettings()" id="btn-save-social-settings" class="btn-cyber px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
+                  <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                  <span>Save Social Settings</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Social Providers Table -->
+          <div class="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+            <div class="px-5 py-4 border-b border-white/10 bg-white/[0.02] flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+              <div class="flex items-center gap-2.5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
+                <h3 class="text-sm font-bold text-white">Configured Social Providers</h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-slate-300">${providers.length} installed</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="admin.openAddSocialProviderModal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Add New</span>
+                </button>
+                <button onclick="admin.saveSocialProviders()" id="btn-save-all-providers" class="btn-cyber px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                  <span>Save All Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-black/40 text-[11px] uppercase tracking-wider text-slate-400 border-b border-white/10">
+                  <tr>
+                    <th class="px-5 py-3">Provider</th>
+                    <th class="px-4 py-3">Display Name</th>
+                    <th class="px-4 py-3 text-center">Enabled</th>
+                    <th class="px-4 py-3">Client ID</th>
+                    <th class="px-4 py-3">
+                      <div>Client Secret</div>
+                      <div class="text-[10px] text-slate-400 font-normal lowercase">Leave blank to keep existing</div>
+                    </th>
+                    <th class="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="social-providers-tbody" class="divide-y divide-white/5">
+                  ${providers.length === 0 ? `
+                    <tr>
+                      <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto text-purple-400 mb-3">
+                          <i data-lucide="share-2" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-300">No social providers configured yet</p>
+                        <p class="text-xs text-slate-400 mt-1">Click "Add Provider" above to add Discord, Google, GitHub, or Microsoft OAuth.</p>
+                        <button onclick="admin.openAddSocialProviderModal()" class="mt-4 px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-lg transition">
+                          Add First Provider
+                        </button>
+                      </td>
+                    </tr>
+                  ` : providers.map(p => {
+                    const short = p.short_name.toLowerCase();
+                    let iconName = 'share-2';
+                    if (short === 'discord') iconName = 'disc';
+                    else if (short === 'github') iconName = 'github';
+                    else if (short === 'google') iconName = 'chrome';
+                    else if (short === 'microsoft') iconName = 'layout-grid';
+                    else if (short === 'steam') iconName = 'gamepad-2';
+                    else if (short === 'twitch') iconName = 'tv';
+                    else if (short === 'reddit') iconName = 'message-circle';
+                    else if (short === 'gitlab') iconName = 'code-2';
+                    else if (short === 'spotify') iconName = 'music';
+
+                    return `
+                      <tr class="hover:bg-white/[0.02] transition" data-provider-row="${p.short_name}">
+                        <td class="px-5 py-3.5">
+                          <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-200">
+                              <i data-lucide="${iconName}" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                              <span class="font-bold text-white capitalize">${p.short_name}</span>
+                              <div class="text-[10px] text-slate-400 font-mono">${p.short_name}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3.5">
+                          <input type="text" class="prov-name-input glass-input px-3 py-1.5 rounded-lg text-xs w-36 font-semibold" value="${p.name || p.short_name}">
+                        </td>
+                        <td class="px-4 py-3.5 text-center">
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="prov-enabled-toggle sr-only peer" ${p.enabled ? 'checked' : ''}>
+                            <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          </label>
+                        </td>
+                        <td class="px-4 py-3.5">
+                          <input type="text" class="prov-client-id-input glass-input px-3 py-1.5 rounded-lg text-xs font-mono w-48 sm:w-60 text-cyan-300" value="${p.client_id || ''}" placeholder="OAuth Client ID">
+                        </td>
+                        <td class="px-4 py-3.5">
+                          <input type="password" class="prov-client-secret-input glass-input px-3 py-1.5 rounded-lg text-xs font-mono w-44 sm:w-56" placeholder="${p.has_secret ? '•••••••••••••••• (Saved)' : 'Enter Client Secret'}">
+                        </td>
+                        <td class="px-4 py-3.5 text-right">
+                          <button onclick="admin.deleteSocialProvider('${p.short_name}', '${p.name || p.short_name}')" class="p-2 rounded-lg text-rose-400 hover:bg-rose-500/20 transition" title="Delete Provider">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="px-5 py-4 border-t border-white/10 bg-white/[0.01] flex justify-between items-center">
+              <span class="text-[11px] text-slate-400">Remember to click <strong>Save All Changes</strong> after editing rows.</span>
+              <div class="flex gap-2">
+                <button onclick="admin.openAddSocialProviderModal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 transition flex items-center gap-1.5">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Add New</span>
+                </button>
+                <button onclick="admin.saveSocialProviders()" class="btn-cyber px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                  <span>Save All Changes</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Setup Documentation & Guides -->
+          <div class="glass-card rounded-2xl border border-white/10 p-5 space-y-4">
+            <div class="flex items-center gap-2 text-slate-200">
+              <i data-lucide="book-open" class="w-4 h-4 text-indigo-400"></i>
+              <h3 class="text-sm font-bold text-white">OAuth Provider Setup Instructions</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+              <!-- Discord -->
+              <div class="p-4 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                <div class="flex items-center gap-2 font-bold text-white">
+                  <span class="w-2 h-2 rounded-full bg-[#5865F2]"></span>
+                  <span>Discord</span>
+                </div>
+                <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-slate-400">
+                  <li>Visit <a href="https://discord.com/developers/applications" target="_blank" class="text-cyan-400 underline">Discord Developer Portal</a></li>
+                  <li>Create a <strong>New Application</strong></li>
+                  <li>Go to <strong>OAuth2 &rarr; General</strong></li>
+                  <li>Add Redirect: <code class="text-[10px] text-indigo-300 break-all">${redirectUri}</code></li>
+                  <li>Copy <strong>Client ID</strong> and reset <strong>Client Secret</strong></li>
+                </ol>
+              </div>
+
+              <!-- Google -->
+              <div class="p-4 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                <div class="flex items-center gap-2 font-bold text-white">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <span>Google</span>
+                </div>
+                <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-slate-400">
+                  <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-cyan-400 underline">Google Cloud Console</a></li>
+                  <li>Click <strong>Create Credentials &rarr; OAuth client ID</strong></li>
+                  <li>Select <strong>Web application</strong></li>
+                  <li>Add Authorized Redirect URI: <code class="text-[10px] text-indigo-300 break-all">${redirectUri}</code></li>
+                  <li>Paste generated Client ID and Client Secret</li>
+                </ol>
+              </div>
+
+              <!-- GitHub -->
+              <div class="p-4 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                <div class="flex items-center gap-2 font-bold text-white">
+                  <span class="w-2 h-2 rounded-full bg-slate-200"></span>
+                  <span>GitHub</span>
+                </div>
+                <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-slate-400">
+                  <li>Go to <a href="https://github.com/settings/developers" target="_blank" class="text-cyan-400 underline">GitHub Developer Settings</a></li>
+                  <li>Click <strong>OAuth Apps &rarr; New OAuth App</strong></li>
+                  <li>Set Homepage URL to <code class="text-[10px] text-indigo-300">${currentOrigin}</code></li>
+                  <li>Set Callback URL to <code class="text-[10px] text-indigo-300 break-all">${redirectUri}</code></li>
+                  <li>Generate Client Secret and save both here</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (window.lucide) lucide.createIcons();
+    } catch (err) {
+      console.error('Error rendering social login view:', err);
+      container.innerHTML = `
+        <div class="p-8 text-center space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-400">
+            <i data-lucide="alert-circle" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white">Failed to Load Social Login Configuration</h3>
+          <p class="text-xs text-rose-400 max-w-md mx-auto">${err.message || 'An error occurred while connecting to the backend API.'}</p>
+          <button onclick="admin.renderSocialLoginView()" class="btn-cyber text-xs px-4 py-2">Retry</button>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
+  copyRedirectUri(uri) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(uri).then(() => {
+        app.toast('Callback URL copied to clipboard!', 'success');
+      }).catch(() => {
+        prompt('Copy callback URL:', uri);
+      });
+    } else {
+      prompt('Copy callback URL:', uri);
+    }
+  }
+
+  async saveSocialSettings() {
+    const regSelect = document.getElementById('setting-social-register');
+    const connectSelect = document.getElementById('setting-social-connect');
+    const btn = document.getElementById('btn-save-social-settings');
+
+    if (btn) btn.disabled = true;
+
+    try {
+      const allow_register = regSelect ? regSelect.value === '1' : true;
+      const allow_connecting = connectSelect ? connectSelect.value === '1' : true;
+
+      const res = await app.api('/api/admin/sociallogin/settings', {
+        method: 'PATCH',
+        body: JSON.stringify({ allow_register, allow_connecting })
+      });
+
+      app.toast(res.message || 'Social settings updated successfully.', 'success');
+    } catch (err) {
+      app.toast(err.message || 'Failed to save social settings', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async saveSocialProviders() {
+    const rows = document.querySelectorAll('tr[data-provider-row]');
+    if (!rows.length) {
+      app.toast('No providers to update.', 'info');
+      return;
+    }
+
+    const providers = [];
+    rows.forEach(row => {
+      const shortName = row.getAttribute('data-provider-row');
+      const nameInput = row.querySelector('.prov-name-input');
+      const enabledToggle = row.querySelector('.prov-enabled-toggle');
+      const clientIdInput = row.querySelector('.prov-client-id-input');
+      const clientSecretInput = row.querySelector('.prov-client-secret-input');
+
+      providers.push({
+        short_name: shortName,
+        name: nameInput ? nameInput.value.trim() : shortName,
+        enabled: enabledToggle ? enabledToggle.checked : false,
+        client_id: clientIdInput ? clientIdInput.value.trim() : '',
+        client_secret: clientSecretInput ? clientSecretInput.value.trim() : ''
+      });
+    });
+
+    try {
+      const res = await app.api('/api/admin/sociallogin/providers/bulk', {
+        method: 'POST',
+        body: JSON.stringify({ providers })
+      });
+
+      app.toast(res.message || 'Providers saved successfully.', 'success');
+      this.renderSocialLoginView();
+    } catch (err) {
+      app.toast(err.message || 'Failed to save providers', 'error');
+    }
+  }
+
+  openAddSocialProviderModal() {
+    const modalContainer = document.getElementById('modal-container');
+    if (!modalContainer) return;
+
+    const supportedList = [
+      { id: 'discord', name: 'Discord' },
+      { id: 'google', name: 'Google' },
+      { id: 'github', name: 'GitHub' },
+      { id: 'microsoft', name: 'Microsoft' },
+      { id: 'steam', name: 'Steam' },
+      { id: 'gitlab', name: 'GitLab' },
+      { id: 'twitch', name: 'Twitch' },
+      { id: 'reddit', name: 'Reddit' },
+      { id: 'spotify', name: 'Spotify' },
+      { id: 'apple', name: 'Apple' },
+      { id: 'telegram', name: 'Telegram' },
+      { id: 'twitter', name: 'Twitter / X' },
+      { id: 'paypal', name: 'PayPal' },
+      { id: 'dropbox', name: 'Dropbox' }
+    ];
+
+    const currentOrigin = window.location.origin;
+    const redirectUri = `${currentOrigin}/api/auth/social/callback`;
+
+    modalContainer.innerHTML = `
+      <div id="add-social-provider-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-lg p-6 rounded-3xl border border-white/15 shadow-2xl relative space-y-4">
+          <div class="flex justify-between items-center border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <i data-lucide="share-2" class="w-4 h-4"></i>
+              </div>
+              <h3 class="text-base font-bold text-white">Add New Social Provider</h3>
+            </div>
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="text-slate-400 hover:text-white transition">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <form onsubmit="admin.submitNewSocialProvider(event)" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1">Provider Short Name</label>
+              <select id="modal-prov-short-name" onchange="admin.handleProvSelectChange(this.value)" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" required>
+                ${supportedList.map(s => `<option value="${s.id}">${s.name} (${s.id})</option>`).join('')}
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1">Select from supported Blueprint Socialite providers.</p>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1">Display Name</label>
+              <input type="text" id="modal-prov-name" value="Discord" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="e.g. Discord" required>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1">OAuth Client ID</label>
+              <input type="text" id="modal-prov-client-id" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" placeholder="Provided by the service developer portal" required>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1">OAuth Client Secret</label>
+              <input type="password" id="modal-prov-client-secret" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-mono" placeholder="Secret token" required>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <input type="checkbox" id="modal-prov-enabled" checked class="rounded border-white/20 bg-slate-900 text-purple-500 focus:ring-0">
+              <label for="modal-prov-enabled" class="text-slate-300 font-semibold cursor-pointer">Enable this provider immediately</label>
+            </div>
+
+            <div class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-300">
+              Please ensure your OAuth application callback URL is set to:<br>
+              <code class="font-mono text-[10px] text-cyan-300 select-all font-bold">${redirectUri}</code>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-white/10">
+              <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-white/5 font-semibold">Cancel</button>
+              <button type="submit" class="btn-cyber-purple px-5 py-2 rounded-xl font-bold flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Save Provider</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) lucide.createIcons();
+  }
+
+  handleProvSelectChange(val) {
+    const nameInput = document.getElementById('modal-prov-name');
+    if (!nameInput) return;
+    const names = {
+      discord: 'Discord',
+      google: 'Google',
+      github: 'GitHub',
+      microsoft: 'Microsoft',
+      steam: 'Steam',
+      gitlab: 'GitLab',
+      twitch: 'Twitch',
+      reddit: 'Reddit',
+      spotify: 'Spotify',
+      apple: 'Apple',
+      telegram: 'Telegram',
+      twitter: 'Twitter / X',
+      paypal: 'PayPal',
+      dropbox: 'Dropbox'
+    };
+    nameInput.value = names[val] || (val.charAt(0).toUpperCase() + val.slice(1));
+  }
+
+  async submitNewSocialProvider(e) {
+    e.preventDefault();
+    const short_name = document.getElementById('modal-prov-short-name').value.trim();
+    const name = document.getElementById('modal-prov-name').value.trim();
+    const client_id = document.getElementById('modal-prov-client-id').value.trim();
+    const client_secret = document.getElementById('modal-prov-client-secret').value.trim();
+    const enabled = document.getElementById('modal-prov-enabled').checked;
+
+    try {
+      const res = await app.api('/api/admin/sociallogin/providers', {
+        method: 'POST',
+        body: JSON.stringify({ short_name, name, client_id, client_secret, enabled })
+      });
+
+      document.getElementById('modal-container').innerHTML = '';
+      app.toast(res.message || `Provider ${name} added!`, 'success');
+      this.renderSocialLoginView();
+    } catch (err) {
+      app.toast(err.message || 'Failed to add provider', 'error');
+    }
+  }
+
+  async deleteSocialProvider(shortName, name) {
+    if (!confirm(`Are you sure you want to delete the ${name} (${shortName}) provider?\nExisting user connections will also be removed.`)) {
+      return;
+    }
+
+    try {
+      const res = await app.api(`/api/admin/sociallogin/providers/${shortName}`, {
+        method: 'DELETE'
+      });
+      app.toast(res.message || 'Provider deleted successfully.', 'success');
+      this.renderSocialLoginView();
+    } catch (err) {
+      app.toast(err.message || 'Failed to delete provider', 'error');
+    }
+  }
 }
 
 window.admin = new AdminManager();
+
