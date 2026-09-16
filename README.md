@@ -8,6 +8,10 @@
 
 **Mpanel** is a high-performance, full-featured game and application server web management panel built entirely in **Node.js**. Designed as a modern, lightweight, and blazingly fast alternative to Pterodactyl, Mpanel features real-time terminal streaming, deep Minecraft server management (Live Player Manager, Addon Marketplace, World Installer, Version Changer), an embedded SFTP server, automated GitHub release detection with a live update terminal, interactive auto-tutorials, and multi-theme personalization (Full Black OLED, PteroX V2, LiquidX, Arix).
 
+<p align="center">
+  <img src="public/assets/console-preview.png" alt="Mpanel Server Console & Live Telemetry Dashboard" width="100%" />
+</p>
+
 ---
 
 ## 🚀 Port Configuration
