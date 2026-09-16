@@ -1555,46 +1555,74 @@ class App {
     const container = document.getElementById('modal-container');
     if (!container) return;
 
-    container.innerHTML = `
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in" onclick="if(event.target===this) document.getElementById('modal-container').innerHTML=''">
-        <div class="w-full max-w-sm rounded-3xl overflow-hidden border border-purple-500/30 bg-[#111214] text-slate-200 shadow-2xl relative animate-scale-in font-sans">
-          
-          <!-- Close Button -->
-          <button onclick="document.getElementById('modal-container').innerHTML=''" class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-slate-300 hover:text-white flex items-center justify-center transition backdrop-blur-md">
-            <i data-lucide="x" class="w-4 h-4"></i>
-          </button>
+    const liveHtml = (window.discordLive && typeof window.discordLive.renderCardInner === 'function')
+      ? window.discordLive.renderCardInner()
+      : `
+        <div class="relative w-full bg-[#111214] flex justify-center items-center overflow-hidden">
+          <img src="/images/nobita-discord.png" class="w-full h-auto object-contain select-none" alt="Nobita Discord Profile">
+        </div>
+      `;
 
-          <!-- Discord Profile Card Container -->
-          <div class="relative w-full bg-[#111214] flex justify-center items-center overflow-hidden">
-            <img src="/images/nobita-discord.png" class="w-full h-auto object-contain select-none" alt="Nobita Discord Profile">
+    container.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in" onclick="if(event.target===this) document.getElementById('modal-container').innerHTML=''">
+        <div class="w-full max-w-sm rounded-3xl overflow-hidden border border-indigo-500/30 bg-[#111214] text-slate-200 shadow-2xl relative animate-scale-in font-sans max-h-[92vh] flex flex-col">
+          
+          <!-- Top Bar: View Switcher & Close -->
+          <div class="p-2.5 px-3 bg-[#111214]/90 border-b border-white/5 flex items-center justify-between z-20 shrink-0">
+            <div class="flex items-center gap-1.5 p-0.5 rounded-xl bg-black/40 border border-white/10">
+              <button id="dev-modal-btn-live" onclick="if(window.discordLive) window.discordLive.toggleView('live')" class="px-2.5 py-1 rounded-lg bg-indigo-500/30 text-indigo-300 font-bold border border-indigo-500/40 text-[11px] flex items-center gap-1 transition">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Live Discord</span>
+              </button>
+              <button id="dev-modal-btn-popout" onclick="if(window.discordLive) window.discordLive.toggleView('popout')" class="px-2.5 py-1 rounded-lg bg-transparent hover:bg-white/5 text-slate-400 hover:text-slate-200 text-[11px] flex items-center gap-1 transition">
+                <i data-lucide="image" class="w-3 h-3"></i>
+                <span>Snapshot</span>
+              </button>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="document.getElementById('modal-container').innerHTML=''" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition border border-white/10">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
 
-          <!-- Interactive Action Buttons -->
-          <div class="p-4 bg-[#111214] border-t border-white/5 space-y-2">
+          <!-- Dynamic Content Area -->
+          <div id="developer-modal-content-area" class="flex-1 overflow-y-auto custom-scrollbar">
+            <div id="discord-live-card-body">
+              ${liveHtml}
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="p-3 bg-[#111214] border-t border-white/5 space-y-2 shrink-0">
             <div class="grid grid-cols-2 gap-2">
-              <a href="https://discord.com/users/924366651443527710" target="_blank" class="py-2.5 px-3 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-md shadow-indigo-500/20 active:scale-95">
-                <i data-lucide="message-square" class="w-4 h-4"></i>
+              <a href="https://discord.com/users/924366651443527710" target="_blank" class="py-2 px-3 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-md shadow-indigo-500/20 active:scale-95">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
                 <span>Open Discord</span>
               </a>
-              <a href="https://nobitahost.in/" target="_blank" class="py-2.5 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-md shadow-cyan-500/20 active:scale-95">
-                <i data-lucide="globe" class="w-4 h-4"></i>
+              <a href="https://nobitahost.in/" target="_blank" class="py-2 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-md shadow-cyan-500/20 active:scale-95">
+                <i data-lucide="globe" class="w-3.5 h-3.5"></i>
                 <span>nobitahost.in</span>
               </a>
             </div>
 
-            <button onclick="app.copyToClipboard('<@924366651443527710>')" class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-mono flex items-center justify-center gap-1.5 border border-white/10 transition active:scale-98">
-              <i data-lucide="copy" class="w-3.5 h-3.5 text-purple-400"></i>
-              <span>Copy Mention: &lt;@924366651443527710&gt;</span>
-            </button>
-            <button onclick="app.copyToClipboard('924366651443527710')" class="w-full py-1.5 px-3 rounded-xl bg-transparent hover:bg-white/5 text-slate-400 hover:text-slate-300 text-[10px] font-mono flex items-center justify-center gap-1 transition">
-              <span>Discord ID: 924366651443527710</span>
-            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="app.copyToClipboard('<@924366651443527710>')" class="py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-mono flex items-center justify-center gap-1.5 border border-white/10 transition active:scale-98">
+                <i data-lucide="copy" class="w-3 h-3 text-purple-400"></i>
+                <span>&lt;@924366651443527710&gt;</span>
+              </button>
+              <button onclick="app.copyToClipboard('924366651443527710')" class="py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-mono flex items-center justify-center gap-1 border border-white/10 transition active:scale-98">
+                <i data-lucide="hash" class="w-3 h-3 text-cyan-400"></i>
+                <span>ID: 924366651443527710</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     `;
     if (window.lucide) lucide.createIcons();
   }
+
 
   logout() {
     localStorage.removeItem('mpanel_token');
