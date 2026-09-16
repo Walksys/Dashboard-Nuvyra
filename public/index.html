@@ -434,15 +434,15 @@
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2 min-w-0 cursor-pointer" onclick="app.showDeveloperCardModal()" title="View Nobita Developer Profile">
             <div class="relative w-7 h-7 rounded-full overflow-hidden border border-purple-400/50 bg-slate-900 shrink-0">
-              <img src="/images/nobita-discord.png" class="w-[85px] max-w-none absolute -top-2.5 -left-2.5" alt="Nobita">
-              <span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-slate-900" title="Do Not Disturb"></span>
+              <img id="sidebar-dev-avatar" src="/images/nobita-discord.png" class="w-[85px] max-w-none absolute -top-2.5 -left-2.5 transition-all duration-300" alt="Nobita">
+              <span id="sidebar-dev-status-dot" class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-slate-900 transition-colors duration-300" title="Discord: Online"></span>
             </div>
             <div class="min-w-0">
               <div class="flex items-center gap-1">
-                <span class="font-bold text-white text-[11px] truncate">Nobita</span>
+                <span id="sidebar-dev-name" class="font-bold text-white text-[11px] truncate">Nobita</span>
                 <span class="text-[9px] font-mono font-bold px-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">DEV</span>
               </div>
-              <p class="text-[10px] text-slate-400 truncate font-mono">nobita.dev</p>
+              <p id="sidebar-dev-handle" class="text-[10px] text-slate-400 truncate font-mono">nobita.dev</p>
             </div>
           </div>
           <div class="flex items-center gap-1 shrink-0">
@@ -467,8 +467,9 @@
         <div class="inline-flex flex-wrap items-center justify-center gap-2.5 px-4 py-2 rounded-2xl bg-slate-950/80 border border-white/10 backdrop-blur-md shadow-xl text-xs text-slate-400">
           <span class="text-slate-300 font-semibold flex items-center gap-1.5">
             <i data-lucide="code-2" class="w-4 h-4 text-cyan-400"></i> Engineered by
-            <a href="javascript:void(0)" onclick="app.showDeveloperCardModal()" class="text-purple-300 hover:text-purple-200 font-bold hover:underline transition flex items-center gap-1">
-              <span>Nobita</span>
+            <a href="javascript:void(0)" onclick="app.showDeveloperCardModal()" class="text-purple-300 hover:text-purple-200 font-bold hover:underline transition flex items-center gap-1.5">
+              <span id="footer-dev-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 inline-block transition-colors duration-300"></span>
+              <span id="footer-dev-name">Nobita</span>
               <span class="text-[10px] font-mono px-1 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">nobita.dev</span>
             </a>
           </span>
@@ -493,6 +494,7 @@
   <!-- Application Javascript Modules -->
   <script src="/js/auth.js?v=2.3.3"></script>
   <script src="/js/app.js?v=3.5.5"></script>
+  <script src="/js/discordLive.js?v=1.0.0"></script>
   <script src="/js/settings.js?v=2.3.3"></script>
   <script src="/js/console.js?v=3.5.1"></script>
   <script src="/js/filemanager.js?v=3.5.1"></script>

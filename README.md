@@ -312,6 +312,7 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 <p align="center">
   <b>Developed &amp; Engineered by Nobita (<code>nobita.dev</code>)</b><br/>
   💬 Discord: <a href="https://discord.com/users/924366651443527710" target="_blank"><code>nobita.dev</code> (ID: <code>924366651443527710</code>)</a> • Mention: <code>&lt;@924366651443527710&gt;</code><br/>
+  ⚡ Live Presence: <b>Real-time Discord Gateway &amp; Lanyard Live Sync</b><br/>
   🌐 Official Website: <a href="https://nobitahost.in/" target="_blank"><b>https://nobitahost.in/</b></a>
 </p>
 
