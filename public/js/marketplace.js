@@ -4592,6 +4592,35 @@ sudo apt install -y playit</pre>
           </div>
         </div>
 
+        <!-- Featured Blueprint Extension: AutoBackups -->
+        <div class="glass-panel p-5 rounded-3xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/60 via-slate-900/80 to-blue-950/50 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-lg shrink-0">
+              <i data-lucide="clock" class="w-8 h-8"></i>
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-cyan-300 bg-cyan-500/20 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                  ⚡ Core Extension
+                </span>
+                <span class="text-[10px] font-mono text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full">v1.0</span>
+                <span class="text-[10px] text-slate-400 font-mono">by makkmarci13</span>
+              </div>
+              <h4 class="text-xl font-black text-white flex items-center gap-2">
+                AutoBackups
+              </h4>
+              <p class="text-xs text-slate-300 max-w-2xl">
+                Ported from <code>nobita329/Nobita-Cloud (autobackups.blueprint)</code>. Automatically generate daily server snapshots, schedule execution times, configure tiered retention policies (Days / Weeks / Months), and exclude nodes.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="app.navigate('admin-autobackups')" class="btn-cyber px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-95">
+              <i data-lucide="settings" class="w-4 h-4"></i> Manage Auto Backup
+            </button>
+          </div>
+        </div>
+
         <!-- Section 1: 1-Click Essential Plugins -->
         <div class="glass-panel p-5 rounded-2xl border border-white/10 space-y-4">
           <div class="flex items-center justify-between pb-2 border-b border-white/5">

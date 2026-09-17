@@ -862,6 +862,8 @@ class App {
         await admin.renderDatabasesView();
       } else if (hash === 'admin-backups') {
         await admin.renderBackupsView();
+      } else if (hash === 'admin-autobackups') {
+        await admin.renderAutoBackupsView();
       } else if (hash === 'admin-network') {
         await admin.renderNetworkView();
       } else if (hash === 'admin-nodes') {

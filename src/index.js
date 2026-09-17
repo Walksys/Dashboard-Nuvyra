@@ -34,6 +34,8 @@ const serverWorldRoutes = require('./routes/serverWorldRoutes');
 const serverImporterRoutes = require('./routes/serverImporterRoutes');
 const serverPropertiesRoutes = require('./routes/serverPropertiesRoutes');
 const serverSplitterRoutes = require('./routes/serverSplitterRoutes');
+const autoBackupRoutes = require('./routes/autoBackupRoutes');
+const autoBackupService = require('./services/autoBackupService');
 const socialLoginRoutes = require('./routes/socialLoginRoutes');
 const adminUpdateRoutes = require('./routes/adminUpdateRoutes');
 const developerProfileRoutes = require('./routes/developerProfileRoutes');
@@ -46,6 +48,7 @@ async function bootstrap() {
   await initDatabase();
   await seedDatabase();
   await scheduleService.initSchedules();
+  await autoBackupService.initAutoBackupCron();
   autoSuspensionService.init();
 
   // 1. Web UI & API App (Port 3001)
@@ -74,7 +77,10 @@ async function bootstrap() {
   app.use('/api/admin/nodes', nodeRoutes);
   app.use('/api/admin/locations', locationRoutes);
   app.use('/api/admin/api-keys', apiKeyRoutes);
+  app.use('/api/admin/extensions/autobackups', autoBackupRoutes);
+  app.use('/api/admin/autobackups', autoBackupRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/client/extensions/autobackups', autoBackupRoutes);
   app.use('/api', socialLoginRoutes);
   app.use('/api/servers', serverRoutes);
   app.use('/api/servers/:serverId/files', serverFilesRoutes);
@@ -86,6 +92,8 @@ async function bootstrap() {
   app.use('/api/servers/:serverId/importer', serverImporterRoutes);
   app.use('/api/servers/:serverId/properties', serverPropertiesRoutes);
   app.use('/api/servers/:serverId/splitter', serverSplitterRoutes);
+  app.use('/api/autobackups', autoBackupRoutes);
+  app.use('/api', autoBackupRoutes);
   app.use('/api/mcjars', mcjarsRoutes);
   app.use('/api/activity', activityRoutes);
   app.use('/api/marketplace', marketplaceRoutes);

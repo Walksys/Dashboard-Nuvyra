@@ -987,6 +987,12 @@ class ServerConsole {
     } catch (e) {
       console.error(e);
     }
+
+    // AutoBackups Extension Integration (autobackups.blueprint)
+    if (window.autoBackups) {
+      await autoBackups.renderSection(container, this.serverId);
+    }
+
     if (window.lucide) lucide.createIcons();
   }
 
