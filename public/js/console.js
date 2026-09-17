@@ -107,6 +107,19 @@ class ServerConsole {
       const addrEl = document.getElementById('stat-addr-val');
       if (addrEl) addrEl.innerText = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
 
+      const cpuLimit = (s.cpu_limit !== undefined && s.cpu_limit !== null) ? parseInt(s.cpu_limit, 10) : 100;
+      const maxCpuStr = (cpuLimit > 0) ? `${cpuLimit}%` : (cpuLimit === 0 ? '&infin;' : '100%');
+
+      const maxCpuEl = document.getElementById('stat-cpu-max');
+      if (maxCpuEl) {
+        maxCpuEl.innerHTML = `/ ${maxCpuStr}`;
+      }
+
+      const chartCpuMaxEl = document.getElementById('chart-cpu-max');
+      if (chartCpuMaxEl) {
+        chartCpuMaxEl.innerHTML = `/ ${maxCpuStr}`;
+      }
+
       const maxMemEl = document.getElementById('stat-mem-max');
       if (maxMemEl) {
         const memMb = s.memory_mb || 1024;
@@ -152,6 +165,14 @@ class ServerConsole {
     const uptimeEl = document.getElementById('stat-uptime-val');
     if (status === 'offline') {
       if (uptimeEl) uptimeEl.innerText = 'Offline';
+      const cpuVal = document.getElementById('stat-cpu-val');
+      if (cpuVal) cpuVal.innerText = '0.00%';
+      const chartCpu = document.getElementById('chart-cpu-val');
+      if (chartCpu) chartCpu.innerText = '0.00%';
+      const memVal = document.getElementById('stat-mem-val');
+      if (memVal) memVal.innerText = '0 MiB';
+      const chartMem = document.getElementById('chart-mem-val');
+      if (chartMem) chartMem.innerText = '0 MiB';
       this.currentUptime = 0;
       if (this.uptimeInterval) {
         clearInterval(this.uptimeInterval);
@@ -251,6 +272,8 @@ class ServerConsole {
     const s = this.serverData || {};
     const maxMemStr = s.memory_mb ? (s.memory_mb >= 1024 ? `${(s.memory_mb/1024).toFixed(1)} GiB` : `${s.memory_mb} MiB`) : '1 GiB';
     const maxDiskStr = s.disk_mb ? (s.disk_mb >= 1024 ? `${(s.disk_mb/1024).toFixed(1)} GiB` : `${s.disk_mb} MiB`) : '5 GiB';
+    const cpuLimit = (s.cpu_limit !== undefined && s.cpu_limit !== null) ? parseInt(s.cpu_limit, 10) : 100;
+    const maxCpuStr = (cpuLimit > 0) ? `${cpuLimit}%` : (cpuLimit === 0 ? '&infin;' : '100%');
 
     container.innerHTML = `
       <div class="space-y-4">
@@ -338,7 +361,7 @@ class ServerConsole {
               </div>
               <div class="flex-1 min-w-0">
                 <p class="nook-stat-title">CPU Load</p>
-                <p class="nook-stat-value"><span id="stat-cpu-val">0.00%</span> <span class="text-slate-500 text-[10px] font-normal">/ &infin;</span></p>
+                <p class="nook-stat-value"><span id="stat-cpu-val">0.00%</span> <span id="stat-cpu-max" class="text-slate-500 text-[10px] font-normal">/ ${maxCpuStr}</span></p>
               </div>
             </div>
 
@@ -394,7 +417,10 @@ class ServerConsole {
           <div class="nook-chart-card">
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-semibold text-slate-300">CPU Load</span>
-              <span id="chart-cpu-val" class="text-xs font-mono font-bold text-cyan-400">0.00%</span>
+              <div class="flex items-center gap-1 font-mono">
+                <span id="chart-cpu-val" class="text-xs font-bold text-cyan-400">0.00%</span>
+                <span id="chart-cpu-max" class="text-[10px] text-slate-500 font-normal">/ ${maxCpuStr}</span>
+              </div>
             </div>
             <div class="h-28 w-full relative">
               <canvas id="nook-cpu-chart"></canvas>
@@ -624,6 +650,8 @@ class ServerConsole {
             ...commonOptions.scales,
             y: {
               ...commonOptions.scales.y,
+              suggestedMin: 0,
+              suggestedMax: (this.serverData?.cpu_limit && this.serverData.cpu_limit > 0) ? this.serverData.cpu_limit : 100,
               ticks: {
                 ...commonOptions.scales.y.ticks,
                 callback: v => `${Math.round(v)}%`
@@ -802,7 +830,8 @@ class ServerConsole {
     }
 
     // CPU Load
-    const cpu = typeof stats.cpu === 'number' ? stats.cpu : 0;
+    const isOffline = this.serverStatus === 'offline';
+    const cpu = (!isOffline && typeof stats.cpu === 'number') ? stats.cpu : 0;
     const cpuVal = document.getElementById('stat-cpu-val');
     if (cpuVal) cpuVal.innerText = `${cpu.toFixed(2)}%`;
 
