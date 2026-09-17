@@ -211,10 +211,39 @@ class App {
     localStorage.setItem('mpanel_active_theme', activeTheme);
     this.activeTheme = activeTheme;
 
-    document.documentElement.classList.remove('theme-arix', 'theme-nook', 'theme-liquidx', 'theme-pterox');
+    document.documentElement.classList.remove('theme-arix', 'theme-nook', 'theme-liquidx', 'theme-pterox', 'theme-nebula');
 
     const logoEl = document.getElementById('header-logo-img');
     const subNameEl = document.getElementById('header-sub-name');
+
+    if (activeTheme === 'nebula') {
+      document.documentElement.classList.add('theme-nebula');
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/mpanel-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
+        logoEl.src = '/assets/nebula-logo.svg';
+      }
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Mpanel' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('PteroX'))) {
+        subNameEl.innerText = 'Nebula Theme v2.0';
+      }
+      if (window.nebulaEditor) {
+        if (s.nebula_config) {
+          try {
+            const parsed = typeof s.nebula_config === 'string' ? JSON.parse(s.nebula_config) : s.nebula_config;
+            window.nebulaEditor.config = { ...window.nebulaEditor.config, ...parsed };
+          } catch (e) {}
+        }
+        window.nebulaEditor.applyConfig();
+      }
+    } else {
+      const banner = document.getElementById('nebula-alert-banner');
+      if (banner) banner.classList.add('hidden');
+      document.body.classList.remove('nebula-sidebar-compact', 'nebula-btn-outline', 'nebula-btn-line');
+      document.documentElement.classList.remove('nebula-sidebar-compact', 'nebula-btn-outline', 'nebula-btn-line');
+      const wallLayer = document.getElementById('wallpaper-layer');
+      if (wallLayer) {
+        const patternClasses = Array.from(wallLayer.classList).filter(c => c.startsWith('nebula-pattern-'));
+        patternClasses.forEach(c => wallLayer.classList.remove(c));
+      }
+    }
 
     if (activeTheme === 'pterox') {
       document.documentElement.classList.add('theme-pterox');

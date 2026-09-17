@@ -108,7 +108,8 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       'arix_primary_color',
       'liquidx_primary_color',
       'tutorials_enabled',
-      'tutorials_autostart_enabled'
+      'tutorials_autostart_enabled',
+      'nebula_config'
     ];
 
     for (const [key, value] of Object.entries(updates)) {
