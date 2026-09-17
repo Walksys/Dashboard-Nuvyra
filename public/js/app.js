@@ -1017,6 +1017,9 @@ class App {
       if (sDisk) sDisk.innerText = totalDisk > 1024 ? `${(totalDisk/1024).toFixed(1)} GB` : `${totalDisk} MB`;
 
       const grid = document.getElementById('overview-servers-grid');
+      if (window.customServerSort) {
+        servers = customServerSort.sortServers(servers, 'user');
+      }
       if (servers.length === 0) {
         grid.innerHTML = `
           <div class="glass-card p-10 rounded-2xl text-center col-span-full border border-dashed border-white/20">
@@ -1053,7 +1056,8 @@ class App {
             </h2>
             <p class="text-xs text-slate-400">View and control all your deployed server applications</p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <div id="user-servers-sort-toolbar-slot"></div>
             <button onclick="app.renderUserServers()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300">
               <i data-lucide="refresh-cw" class="w-4 h-4"></i>
             </button>
@@ -1073,8 +1077,15 @@ class App {
 
     try {
       const data = await this.api('/api/servers');
-      const servers = data.servers || [];
+      let servers = data.servers || [];
       const grid = document.getElementById('user-servers-list-grid');
+
+      // Custom Server Sort Extension (customserversort.blueprint)
+      if (window.customServerSort) {
+        const slot = document.getElementById('user-servers-sort-toolbar-slot');
+        if (slot) slot.innerHTML = customServerSort.renderToolbarHTML('user', 'app.handleServerSortChange');
+        servers = customServerSort.sortServers(servers, 'user');
+      }
 
       if (servers.length === 0) {
         grid.innerHTML = `
@@ -1093,11 +1104,21 @@ class App {
         `;
       } else {
         grid.innerHTML = servers.map(s => this.renderServerCardHTML(s)).join('');
+        if (window.customServerSort) {
+          customServerSort.attachSortable(grid, 'user');
+        }
       }
     } catch (e) {
       console.error(e);
     }
     if (window.lucide) lucide.createIcons();
+  }
+
+  handleServerSortChange(newMode) {
+    if (window.customServerSort) {
+      customServerSort.setSortMode('user', newMode);
+      this.renderUserServersView();
+    }
   }
 
   // HTML Template for Server Card
@@ -1143,15 +1164,18 @@ class App {
     const ipPort = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
 
     return `
-      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between border ${isSuspended ? 'border-rose-500/30' : 'border-white/10 hover:border-cyan-500/40'} transition">
+      <div data-server-id="${s.id}" class="glass-card rounded-2xl p-5 flex flex-col justify-between border ${isSuspended ? 'border-rose-500/30' : 'border-white/10 hover:border-cyan-500/40'} transition relative">
         <div class="space-y-3">
           <div class="flex items-start justify-between gap-2">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${typeIcons[s.server_type] || s.server_type}</span>
-                ${expBadge}
+            <div class="flex items-start gap-2.5 min-w-0">
+              ${window.customServerSort ? customServerSort.renderDragHandleHTML() : ''}
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${typeIcons[s.server_type] || s.server_type}</span>
+                  ${expBadge}
+                </div>
+                <h4 class="text-base font-bold text-white hover:text-cyan-400 cursor-pointer truncate max-w-[200px]" onclick="app.navigate('server-manage/${s.id}/console')">${s.name}</h4>
               </div>
-              <h4 class="text-base font-bold text-white hover:text-cyan-400 cursor-pointer truncate max-w-[200px]" onclick="app.navigate('server-manage/${s.id}/console')">${s.name}</h4>
             </div>
             ${statusBadge}
           </div>
@@ -1219,14 +1243,17 @@ class App {
     }
 
     return `
-      <div class="pterox-server-card flex flex-col justify-between group">
+      <div data-server-id="${s.id}" class="pterox-server-card flex flex-col justify-between group relative">
         <!-- Top Banner Header -->
         <div class="pterox-server-card-banner" style="background-image: url('${bannerImg}');">
           <div class="pterox-server-card-banner-overlay"></div>
           <div class="pterox-server-card-top relative z-10 flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-cyan-400 border border-cyan-500/30 backdrop-blur-sm">
-              ${(s.server_type || 'generic').toUpperCase()}
-            </span>
+            <div class="flex items-center gap-1.5">
+              ${window.customServerSort ? customServerSort.renderDragHandleHTML() : ''}
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-cyan-400 border border-cyan-500/30 backdrop-blur-sm">
+                ${(s.server_type || 'generic').toUpperCase()}
+              </span>
+            </div>
             <span class="flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm ${statusBadgeColor}">
               <span class="w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : (isStarting ? 'bg-amber-400 animate-ping' : 'bg-rose-400')}"></span>
               ${statusText}

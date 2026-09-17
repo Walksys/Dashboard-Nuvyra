@@ -4621,6 +4621,33 @@ sudo apt install -y playit</pre>
           </div>
         </div>
 
+        <!-- Featured Blueprint Extension: Custom Server Sort -->
+        <div class="glass-panel p-5 rounded-3xl border border-indigo-500/40 bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-cyan-950/50 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <img src="/assets/customserversort_icon.png" alt="Custom Server Sort" class="w-16 h-16 rounded-2xl object-cover border border-indigo-500/30 shadow-lg shrink-0">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-indigo-300 bg-indigo-500/20 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
+                  ⚡ UI Extension
+                </span>
+                <span class="text-[10px] font-mono text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full">v1.0.3</span>
+                <span class="text-[10px] text-slate-400 font-mono">by kiip</span>
+              </div>
+              <h4 class="text-xl font-black text-white flex items-center gap-2">
+                Custom Server Sort
+              </h4>
+              <p class="text-xs text-slate-300 max-w-2xl">
+                Ported from <code>nobita329/Nobita-Cloud (customserversort.blueprint)</code>. Reorder your server list with interactive drag-and-drop handles, sort by name (A-Z, Z-A), online status, server ID, or RAM allocation, with seamless multi-device cloud synchronization.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="app.navigate('servers')" class="btn-cyber px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-95">
+              <i data-lucide="arrow-up-down" class="w-4 h-4"></i> Try Server Sort
+            </button>
+          </div>
+        </div>
+
         <!-- Section 1: 1-Click Essential Plugins -->
         <div class="glass-panel p-5 rounded-2xl border border-white/10 space-y-4">
           <div class="flex items-center justify-between pb-2 border-b border-white/5">
