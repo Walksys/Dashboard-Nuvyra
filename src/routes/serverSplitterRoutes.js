@@ -10,7 +10,7 @@ const { authenticate, requireServerAccess } = require('../middleware/auth');
 const runnerService = require('../services/runnerService');
 const mcjarsService = require('../services/mcjarsService');
 const imagesConfig = require('../config/images');
-const { logActivity } = require('./activityRoutes');
+const { logActivity } = require('../services/activityService');
 
 /**
  * Helper: Resolve master server and current server context

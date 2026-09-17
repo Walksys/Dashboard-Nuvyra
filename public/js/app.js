@@ -109,19 +109,31 @@ class App {
       .replace(/'/g, '&#039;');
   }
 
-  // Generic API Requester
-  async api(endpoint, options = {}) {
-    const headers = options.headers || {};
+  // Generic API Requester (supports options object or method + body)
+  async api(endpoint, options = {}, maybeBody = null) {
+    let opts = options;
+    if (typeof options === 'string') {
+      opts = { method: options.toUpperCase() };
+      if (maybeBody !== null && maybeBody !== undefined) {
+        opts.body = (maybeBody instanceof FormData || typeof maybeBody === 'string')
+          ? maybeBody
+          : JSON.stringify(maybeBody);
+      }
+    } else if (opts && opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
+      opts.body = JSON.stringify(opts.body);
+    }
+
+    const headers = (opts && opts.headers) ? { ...opts.headers } : {};
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
-    if (!(options.body instanceof FormData)) {
+    if (opts && !(opts.body instanceof FormData) && !headers['Content-Type']) {
       headers['Content-Type'] = 'application/json';
     }
 
     try {
       const res = await fetch(endpoint, {
-        ...options,
+        ...opts,
         headers
       });
 
