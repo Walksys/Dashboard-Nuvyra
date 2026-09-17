@@ -157,9 +157,11 @@ class DockerService {
     const cmdParts = ['/bin/sh', '-c', finalCmd];
 
     if (isVmServer) {
+      envArray = envArray.filter(e => !e.startsWith('KVM=') && !e.startsWith('NOKVM=') && !e.startsWith('NO_KVM=') && !e.startsWith('LICENSE='));
       envArray.push('LICENSE=UNLOCKED_NO_LICENSE_NEEDED');
       envArray.push(`KVM=${effectiveKvm}`);
       envArray.push(`NOKVM=${isKvmOff ? '1' : '0'}`);
+      envArray.push(`NO_KVM=${isKvmOff ? '1' : '0'}`);
       if (!parsedEnv.SERVER_PORT) envArray.push(`SERVER_PORT=${port || 2222}`);
       if (!parsedEnv.VM_RAM_MB) envArray.push(`VM_RAM_MB=${Math.round((server.memory_mb || 2048) * 0.8)}`);
       if (!parsedEnv.VM_DISK_GB) envArray.push(`VM_DISK_GB=${Math.round((server.disk_mb || 10240) / 1024 * 0.8) || 10}`);

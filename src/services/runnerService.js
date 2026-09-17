@@ -244,7 +244,7 @@ class RunnerService {
         startupCmd = `java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}`;
       } else if (server.server_type === 'python') {
         startupCmd = 'python3 {{MAIN_FILE}}';
-      } else if (server.server_type === 'lumenvm' || server.server_type === 'vm') {
+      } else if (server.server_type === 'lumenvm' || server.server_type === 'vm' || server.server_type === 'nokvm' || server.server_type === 'lumenvm_nokvm') {
         startupCmd = '/start.sh';
       } else {
         startupCmd = 'node {{MAIN_FILE}}';
