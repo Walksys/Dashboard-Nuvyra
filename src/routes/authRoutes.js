@@ -267,5 +267,42 @@ router.put('/profile', authenticate, async (req, res) => {
   }
 });
 
+// Get User Custom Server Order (Custom Server Sort extension)
+router.get('/server-order', authenticate, async (req, res) => {
+  try {
+    const row = await query.get('SELECT server_order FROM users WHERE id = ?', [req.user.id]);
+    let parsed = null;
+    if (row && row.server_order) {
+      try {
+        parsed = JSON.parse(row.server_order);
+      } catch (e) {
+        parsed = row.server_order;
+      }
+    }
+    res.json({ success: true, server_order: parsed });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Update User Custom Server Order (Custom Server Sort extension)
+router.put('/server-order', authenticate, async (req, res) => {
+  try {
+    const { server_order } = req.body;
+    let orderStr = null;
+    if (server_order !== null && server_order !== undefined) {
+      if (Array.isArray(server_order)) {
+        orderStr = JSON.stringify(server_order.map(Number).filter(n => !isNaN(n) && n > 0));
+      } else if (typeof server_order === 'string' && server_order.trim() !== '' && server_order !== 'null') {
+        orderStr = server_order.trim();
+      }
+    }
+    await query.run('UPDATE users SET server_order = ? WHERE id = ?', [orderStr, req.user.id]);
+    res.json({ success: true, message: 'Server order updated successfully.', server_order: orderStr ? JSON.parse(orderStr) : null });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
 

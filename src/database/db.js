@@ -398,6 +398,11 @@ async function initDatabase() {
     }
   } catch (e) {}
 
+  // Custom Server Sort schema migration on users table
+  try {
+    await pool.query('ALTER TABLE users ADD COLUMN server_order TEXT DEFAULT NULL');
+  } catch (e) {}
+
   console.log('✅ MariaDB Schema initialized successfully.');
 }
 

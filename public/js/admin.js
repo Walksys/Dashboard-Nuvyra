@@ -481,6 +481,9 @@ class AdminManager {
             <p class="text-xs text-slate-400 mt-1 font-medium">Manage and monitor all your servers</p>
           </div>
           <div class="flex items-center gap-2.5 flex-wrap">
+            <!-- Custom Server Sort Toolbar Slot -->
+            <div id="adm-servers-sort-toolbar-slot"></div>
+
             <!-- Card / List segmented switcher (Default: card) -->
             <div class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-white/10 shadow-inner">
               <button onclick="admin.setServerViewMode('card')" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${isCard ? 'bg-cyan-500 text-black shadow-md' : 'text-slate-400 hover:text-white'}">
@@ -571,8 +574,15 @@ class AdminManager {
         app.api('/api/admin/users')
       ]);
 
-      const servers = serversRes.servers || [];
+      let servers = serversRes.servers || [];
       const users = usersRes.users || [];
+
+      // Custom Server Sort Extension (customserversort.blueprint)
+      if (window.customServerSort) {
+        const slot = document.getElementById('adm-servers-sort-toolbar-slot');
+        if (slot) slot.innerHTML = customServerSort.renderToolbarHTML('admin', 'admin.handleServerSortChange');
+        servers = customServerSort.sortServers(servers, 'admin');
+      }
 
       // Build quick users map
       const usersMap = {};
@@ -611,7 +621,7 @@ class AdminManager {
         } else if (isCard) {
           // ================= CARD VIEW (DEFAULT) =================
           srvTarget.innerHTML = `
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div id="adm-servers-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
               ${servers.map(s => {
                 const owner = usersMap[s.user_id] || {
                   id: s.user_id,
@@ -650,11 +660,12 @@ class AdminManager {
                 const diskFmt = s.disk_mb >= 1024 ? (s.disk_mb / 1024).toFixed(1) + ' GiB' : (s.disk_mb || 5120) + ' MB';
 
                 return `
-                  <div class="glass-panel p-5 rounded-3xl border border-white/10 hover:border-cyan-500/30 transition shadow-xl space-y-4 flex flex-col justify-between">
+                  <div data-server-id="${s.id}" class="glass-panel p-5 rounded-3xl border border-white/10 hover:border-cyan-500/30 transition shadow-xl space-y-4 flex flex-col justify-between relative">
                     <div class="space-y-3.5">
                       <!-- 1. Server Name & Status -->
                       <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 min-w-0">
+                          ${window.customServerSort ? customServerSort.renderDragHandleHTML() : ''}
                           <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0 mt-0.5 shadow-inner">
                             <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' || s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' ? 'server' : 'terminal'))}" class="w-5 h-5"></i>
                           </div>
@@ -853,10 +864,11 @@ class AdminManager {
                       const diskFmt = s.disk_mb >= 1024 ? (s.disk_mb / 1024).toFixed(1) + ' GiB' : (s.disk_mb || 5120) + ' MB';
 
                       return `
-                        <tr class="hover:bg-white/5 transition-colors">
+                        <tr data-server-id="${s.id}" class="hover:bg-white/5 transition-colors">
                           <!-- Server Name -->
                           <td class="px-4 py-3">
                             <div class="flex items-center gap-2.5">
+                              ${window.customServerSort ? customServerSort.renderDragHandleHTML() : ''}
                               <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0">
                                 <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' || s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' ? 'server' : 'terminal'))}" class="w-4 h-4"></i>
                               </div>
@@ -1065,12 +1077,27 @@ class AdminManager {
           }).join('');
         }
       }
+
+      // Custom Server Sort Extension (customserversort.blueprint)
+      if (window.customServerSort) {
+        const sortContainer = isCard ? document.getElementById('adm-servers-grid') : document.getElementById('adm-servers-tbody');
+        if (sortContainer) {
+          customServerSort.attachSortable(sortContainer, 'admin');
+        }
+      }
     } catch (err) {
       console.error('Error rendering servers & accounts view:', err);
       app.toast('Failed to load server and account data: ' + err.message, 'error');
     }
 
     if (window.lucide) lucide.createIcons();
+  }
+
+  handleServerSortChange(newMode) {
+    if (window.customServerSort) {
+      customServerSort.setSortMode('admin', newMode);
+      this.renderServersView();
+    }
   }
 
   async sendServerPower(serverId, action) {
