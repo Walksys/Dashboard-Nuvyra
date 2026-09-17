@@ -33,6 +33,7 @@ const serverPlayerRoutes = require('./routes/serverPlayerRoutes');
 const serverWorldRoutes = require('./routes/serverWorldRoutes');
 const serverImporterRoutes = require('./routes/serverImporterRoutes');
 const serverPropertiesRoutes = require('./routes/serverPropertiesRoutes');
+const serverSplitterRoutes = require('./routes/serverSplitterRoutes');
 const socialLoginRoutes = require('./routes/socialLoginRoutes');
 const adminUpdateRoutes = require('./routes/adminUpdateRoutes');
 const developerProfileRoutes = require('./routes/developerProfileRoutes');
@@ -84,6 +85,7 @@ async function bootstrap() {
   app.use('/api/servers/:serverId/worlds', serverWorldRoutes);
   app.use('/api/servers/:serverId/importer', serverImporterRoutes);
   app.use('/api/servers/:serverId/properties', serverPropertiesRoutes);
+  app.use('/api/servers/:serverId/splitter', serverSplitterRoutes);
   app.use('/api/mcjars', mcjarsRoutes);
   app.use('/api/activity', activityRoutes);
   app.use('/api/marketplace', marketplaceRoutes);

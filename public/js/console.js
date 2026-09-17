@@ -219,6 +219,8 @@ class ServerConsole {
       if (window.playerManager) playerManager.renderPlayerManagerTab(area, this.serverId, this.serverData);
     } else if (tabName === 'importer') {
       if (window.serverImporter) serverImporter.renderImporterTab(area, this.serverId);
+    } else if (tabName === 'splitter') {
+      if (window.serverSplitter) serverSplitter.renderSplitterTab(area, this.serverId);
     } else if (tabName === 'worlds') {
       if (window.worldManager) worldManager.renderWorldManagerTab(area, this.serverId);
     } else if (tabName === 'marketplace') {
