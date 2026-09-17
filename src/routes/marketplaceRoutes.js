@@ -409,40 +409,119 @@ router.post('/spigot/install', authenticate, requireServerAccess('files.write'),
 // PROPERTIES UI (GRAPHICAL SERVER.PROPERTIES)
 // -----------------------------------------------------------------------------
 
-// Get server.properties
+// -----------------------------------------------------------------------------
+
+// Get server config file (server.properties or any config file)
 router.get('/properties', authenticate, requireServerAccess('files.read'), async (req, res) => {
   try {
     const serverId = req.server?.id || req.params.serverId || req.query?.serverId || req.body?.serverId;
     if (!serverId) {
       return res.status(400).json({ success: false, error: 'Server ID is required.' });
     }
-    const data = propertiesService.getProperties(serverId);
-    res.json({ success: true, ...data });
+    const requestedFile = req.query?.file || 'server.properties';
+
+    if (requestedFile === 'server.properties') {
+      const data = propertiesService.getProperties(serverId);
+      return res.json({ success: true, filePath: 'server.properties', fileType: 'properties', ...data });
+    }
+
+    // Read any other config file via fileManagerService
+    try {
+      const content = await fileManagerService.readFileContent(serverId, requestedFile);
+      const ext = path.extname(requestedFile).toLowerCase().replace('.', '') || 'txt';
+      res.json({
+        success: true,
+        filePath: requestedFile,
+        fileType: ext,
+        raw: content,
+        properties: {},
+        definitions: []
+      });
+    } catch (err) {
+      res.status(404).json({ success: false, error: `Config file not found: ${requestedFile}` });
+    }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Save server.properties
+// Save server config file (server.properties or any config file)
 router.post('/properties', authenticate, requireServerAccess('files.write'), async (req, res) => {
   try {
     const serverId = req.server?.id || req.params.serverId || req.body?.serverId || req.query?.serverId;
+    const requestedFile = req.body?.file || req.query?.file || 'server.properties';
     const { updates, raw } = req.body;
 
     if (!serverId) {
       return res.status(400).json({ success: false, error: 'Server ID is required.' });
     }
 
-    const data = propertiesService.saveProperties(serverId, updates, raw);
+    if (requestedFile === 'server.properties') {
+      const data = propertiesService.saveProperties(serverId, updates, raw);
+      logActivity(
+        req.user.id,
+        serverId,
+        'PROPERTIES_UPDATE',
+        'Updated Minecraft server.properties configuration',
+        req
+      );
+      return res.json({ success: true, filePath: 'server.properties', message: 'Configuration saved successfully.', ...data });
+    }
+
+    // Save any other config file
+    if (typeof raw !== 'string') {
+      return res.status(400).json({ success: false, error: 'Raw file content string is required.' });
+    }
+
+    await fileManagerService.writeFileContent(serverId, requestedFile, raw);
     logActivity(
       req.user.id,
       serverId,
-      'PROPERTIES_UPDATE',
-      'Updated Minecraft server.properties configuration',
+      'CONFIG_FILE_UPDATE',
+      `Updated config file ${requestedFile} via Config Editor`,
       req
     );
 
-    res.json({ success: true, message: 'Configuration saved successfully.', ...data });
+    res.json({ success: true, filePath: requestedFile, message: `Saved ${requestedFile} successfully.` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Discover all configuration files present on server
+router.get('/config-files/discover', authenticate, requireServerAccess('files.read'), async (req, res) => {
+  try {
+    const serverId = req.query?.serverId || req.server?.id;
+    if (!serverId) {
+      return res.status(400).json({ success: false, error: 'Server ID is required.' });
+    }
+
+    const catalog = [
+      { path: 'server.properties', name: 'Server Properties', type: 'properties', icon: 'sliders', desc: 'Minecraft Server Core' },
+      { path: 'spigot.yml', name: 'Spigot Config', type: 'yml', icon: 'file-code', desc: 'Spigot Engine & Performance' },
+      { path: 'bukkit.yml', name: 'Bukkit Config', type: 'yml', icon: 'box', desc: 'Bukkit Core & Spawn Rates' },
+      { path: 'paper-global.yml', name: 'Paper Global', type: 'yml', icon: 'cpu', desc: 'Paper High-Performance' },
+      { path: 'paper.yml', name: 'Paper Config', type: 'yml', icon: 'cpu', desc: 'Legacy Paper Configuration' },
+      { path: 'paper-world-defaults.yml', name: 'Paper World Defaults', type: 'yml', icon: 'globe', desc: 'Paper World Mechanics' },
+      { path: 'purpur.yml', name: 'Purpur Config', type: 'yml', icon: 'zap', desc: 'Purpur Gameplay & Entities' },
+      { path: 'server.cfg', name: 'Server Config', type: 'cfg', icon: 'server', desc: 'FiveM / Valve Engine' },
+      { path: 'config.yml', name: 'General Config', type: 'yml', icon: 'file-text', desc: 'Plugin / Addon Config' },
+      { path: 'config.json', name: 'JSON Config', type: 'json', icon: 'code', desc: 'JSON Engine Configuration' },
+      { path: 'ops.json', name: 'Server Operators', type: 'json', icon: 'shield', desc: 'OP Permissions List' },
+      { path: 'whitelist.json', name: 'Whitelist', type: 'json', icon: 'users', desc: 'Allowed Players List' }
+    ];
+
+    const detected = [];
+    for (const f of catalog) {
+      try {
+        const safePath = fileManagerService.getSafePath(serverId, f.path);
+        if (fs.existsSync(safePath)) {
+          detected.push({ ...f, exists: true });
+        }
+      } catch (e) {}
+    }
+
+    res.json({ success: true, files: detected, catalog });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

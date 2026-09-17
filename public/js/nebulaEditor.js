@@ -717,3 +717,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.nebulaEditor.applyConfig();
   }
 });
+

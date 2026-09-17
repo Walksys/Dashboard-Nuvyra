@@ -354,7 +354,7 @@ class MarketplaceController {
             <i data-lucide="archive" class="w-4 h-4 text-rose-400"></i> Modpacks
           </button>
           <button onclick="marketplace.switchCategory('properties')" id="cat-btn-properties" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'properties' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
-            <i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Properties UI
+            <i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Config Editor
           </button>
           <button onclick="marketplace.switchCategory('tools')" id="cat-btn-tools" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'tools' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="wrench" class="w-4 h-4 text-indigo-400"></i> Server Tools
@@ -1524,7 +1524,7 @@ class MarketplaceController {
             <i data-lucide="archive" class="w-4 h-4 text-rose-400"></i> Modpacks
           </button>
           <button onclick="marketplace.switchCategory('properties')" id="cat-btn-properties" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'properties' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
-            <i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Properties UI
+            <i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Config Editor
           </button>
           <button onclick="marketplace.switchCategory('tools')" id="cat-btn-tools" class="cat-pill flex-1 min-w-[110px] px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${this.activeTab === 'tools' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800/60 text-slate-300 hover:bg-white/10'}">
             <i data-lucide="wrench" class="w-4 h-4 text-indigo-400"></i> Server Tools
@@ -3948,11 +3948,17 @@ sudo apt install -y playit</pre>
       container.innerHTML = `
         <div class="glass-panel p-12 rounded-3xl border border-white/10 text-center space-y-3">
           <i data-lucide="alert-circle" class="w-10 h-10 text-amber-400 mx-auto"></i>
-          <h4 class="text-base font-bold text-white">No Minecraft Server Selected</h4>
-          <p class="text-sm font-semibold text-slate-300">Please create or select an active Minecraft server to configure its server.properties.</p>
+          <h4 class="text-base font-bold text-white">No Server Selected</h4>
+          <p class="text-sm font-semibold text-slate-300">Please create or select an active server to configure its settings.</p>
         </div>
       `;
       if (window.lucide) lucide.createIcons();
+      return;
+    }
+
+    // Modern Universal Config Editor Blueprint Engine
+    if (window.configEditor) {
+      await window.configEditor.render(container, this.currentServerId, 'server.properties');
       return;
     }
 
