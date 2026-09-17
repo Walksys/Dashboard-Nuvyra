@@ -73,7 +73,8 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
         minecraft: imagesConfig.minecraft,
         nodejs: imagesConfig.nodejs,
         python: imagesConfig.python,
-        lumenvm: imagesConfig.lumenvm
+        lumenvm: imagesConfig.lumenvm,
+        nokvm: imagesConfig.nokvm
       }
     });
   } catch (err) {

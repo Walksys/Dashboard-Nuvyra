@@ -49,6 +49,18 @@ module.exports = {
     { label: "Alpine (Blank Disk / Custom ISO / Windows)", value: "ghcr.io/sosuku325/aerovm:alpine", defaultCmd: "/start.sh" },
     { label: "Shell (Debug / Rescue Mode)", value: "ghcr.io/sosuku325/aerovm:shell", defaultCmd: "/start.sh" }
   ],
+  nokvm: [
+    { label: "Debian 12 (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-debian-12", defaultCmd: "/start.sh" },
+    { label: "Ubuntu 24.04 LTS (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04", defaultCmd: "/start.sh" },
+    { label: "Ubuntu 22.04 LTS (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-ubuntu-22.04", defaultCmd: "/start.sh" },
+    { label: "Debian 13 (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-debian-13", defaultCmd: "/start.sh" },
+    { label: "Debian 11 (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-debian-11", defaultCmd: "/start.sh" },
+    { label: "Kali Linux (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-kali", defaultCmd: "/start.sh" },
+    { label: "Fedora 40 (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-fedora", defaultCmd: "/start.sh" },
+    { label: "Arch Linux (No-KVM Software Emulation)", value: "ghcr.io/sosuku325/aerovm:guest-arch", defaultCmd: "/start.sh" },
+    { label: "Alpine (No-KVM Blank / Custom ISO)", value: "ghcr.io/sosuku325/aerovm:alpine", defaultCmd: "/start.sh" },
+    { label: "Shell (Rescue Mode)", value: "ghcr.io/sosuku325/aerovm:shell", defaultCmd: "/start.sh" }
+  ],
   categoriesWallpapers: [
     { id: "black-dark", name: "Black & Dark Aesthetic", preview: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80" },
     { id: "space", name: "Deep Space & Nebula", preview: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=80" },

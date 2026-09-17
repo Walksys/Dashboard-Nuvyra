@@ -656,7 +656,7 @@ class AdminManager {
                       <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 min-w-0">
                           <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0 mt-0.5 shadow-inner">
-                            <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' ? 'server' : 'terminal'))}" class="w-5 h-5"></i>
+                            <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' || s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' ? 'server' : 'terminal'))}" class="w-5 h-5"></i>
                           </div>
                           <div class="min-w-0">
                             <div class="flex items-center gap-2">
@@ -858,7 +858,7 @@ class AdminManager {
                           <td class="px-4 py-3">
                             <div class="flex items-center gap-2.5">
                               <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold shrink-0">
-                                <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' ? 'server' : 'terminal'))}" class="w-4 h-4"></i>
+                                <i data-lucide="${s.server_type === 'minecraft' ? 'box' : (s.server_type === 'nodejs' ? 'file-code-2' : (s.server_type === 'lumenvm' || s.server_type === 'vm' || s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' ? 'server' : 'terminal'))}" class="w-4 h-4"></i>
                               </div>
                               <div class="min-w-0">
                                 <div class="font-bold text-white hover:text-cyan-300 cursor-pointer truncate max-w-xs transition text-xs" onclick="app.navigate('server-manage/${s.id}/console')">
@@ -1295,7 +1295,7 @@ class AdminManager {
     let suffix = mcSuffixes[Math.floor(Math.random() * mcSuffixes.length)];
     if (type === 'nodejs') suffix = nodeSuffixes[Math.floor(Math.random() * nodeSuffixes.length)];
     if (type === 'python') suffix = pySuffixes[Math.floor(Math.random() * pySuffixes.length)];
-    if (type === 'lumenvm' || type === 'vm') suffix = ['VM', 'VPS', 'Cloud', 'Box', 'Node', 'Linux', 'Host'][Math.floor(Math.random() * 7)];
+    if (type === 'lumenvm' || type === 'vm' || type === 'nokvm' || type === 'lumenvm_nokvm') suffix = ['VM', 'VPS', 'Cloud', 'Box', 'Node', 'Linux', 'Host'][Math.floor(Math.random() * 7)];
 
     const num = Math.floor(10 + Math.random() * 90);
     return `${prefix}-${suffix}-${num}`;
@@ -1304,6 +1304,7 @@ class AdminManager {
   generateServerDesc(type = 'minecraft', engine = 'Paper', ver = '1.21.4') {
     if (type === 'nodejs') return `Ultra-fast Node.js application container with automated process supervisor.`;
     if (type === 'python') return `Low-latency Python application container with automatic runtime environments.`;
+    if (type === 'nokvm' || type === 'lumenvm_nokvm') return `No-KVM Virtual Machine instance (Software Emulation - Runs on any VPS) with zero license requirement.`;
     if (type === 'lumenvm' || type === 'vm') return `KVM hardware-accelerated Virtual Machine instance (LumenVM) with zero license requirement.`;
     return `High-performance ${engine || 'Minecraft'} ${ver || '1.21.4'} server instance with auto-suspension telemetry.`;
   }
@@ -1602,7 +1603,7 @@ class AdminManager {
             <!-- 2. Server Type Selector -->
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-2">Supported Server Type</label>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
                 <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-cyan-400 transition">
                   <input type="radio" name="create_srv_type" value="minecraft" checked onchange="admin.onServerTypeChange('minecraft')" class="accent-cyan-400">
                   <i data-lucide="box" class="w-6 h-6 text-cyan-400"></i>
@@ -1625,10 +1626,19 @@ class AdminManager {
                   <input type="radio" name="create_srv_type" value="lumenvm" onchange="admin.onServerTypeChange('lumenvm')" class="accent-amber-400">
                   <i data-lucide="server" class="w-6 h-6 text-amber-400"></i>
                   <span class="text-xs font-bold text-white flex items-center gap-1">
-                    <span>LumenVM</span>
-                    <span class="px-1 py-0.2 rounded text-[8px] bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">Free</span>
+                    <span>LumenVM (KVM)</span>
+                    <span class="px-1 py-0.2 rounded text-[8px] bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">Fast</span>
                   </span>
-                  <span class="text-[10px] text-slate-400 text-center">Debian, Ubuntu, Kali, Windows</span>
+                  <span class="text-[10px] text-slate-400 text-center">Hardware Accelerated</span>
+                </label>
+                <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-blue-400 transition">
+                  <input type="radio" name="create_srv_type" value="nokvm" onchange="admin.onServerTypeChange('nokvm')" class="accent-blue-400">
+                  <i data-lucide="shield-check" class="w-6 h-6 text-blue-400"></i>
+                  <span class="text-xs font-bold text-white flex items-center gap-1">
+                    <span>LumenVM (No-KVM)</span>
+                    <span class="px-1 py-0.2 rounded text-[8px] bg-blue-500/20 text-blue-300 font-extrabold border border-blue-500/30">Universal</span>
+                  </span>
+                  <span class="text-[10px] text-slate-400 text-center">Software Emulation (Any VPS)</span>
                 </label>
               </div>
             </div>
@@ -1959,12 +1969,22 @@ class AdminManager {
                 </div>
               </div>
 
-              <div class="p-2.5 rounded-xl bg-black/40 border border-white/5 text-[11px] text-slate-300 flex items-center justify-between">
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2.5 rounded-xl bg-black/40 border border-white/5 text-[11px] text-slate-300">
                 <div class="flex items-center gap-2">
                   <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
                   <span id="vm-kvm-status-text">Hardware Virtualization: <strong class="text-emerald-400">KVM ON (Hardware Accelerated)</strong></span>
                 </div>
-                <span class="text-emerald-400 text-[10px] font-bold">100% License-Free</span>
+                <div class="flex items-center gap-1.5 self-end sm:self-auto">
+                  <button type="button" onclick="admin.setVmKvmMode('on')" id="btn-kvm-toggle-on" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 bg-emerald-500 text-black shadow">
+                    <i data-lucide="zap" class="w-3 h-3"></i> KVM ON
+                  </button>
+                  <button type="button" onclick="admin.setVmKvmMode('off')" id="btn-kvm-toggle-off" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 text-slate-300 hover:text-white bg-white/5">
+                    <i data-lucide="shield" class="w-3 h-3"></i> No-KVM (OFF)
+                  </button>
+                  <button type="button" onclick="admin.setVmKvmMode('auto')" id="btn-kvm-toggle-auto" class="px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 text-slate-400 hover:text-white bg-white/5">
+                    Auto
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -2330,7 +2350,7 @@ class AdminManager {
       { label: 'Shell (Debug / Rescue Mode)', value: 'ghcr.io/sosuku325/aerovm:shell' }
     ];
 
-    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, lumenvm: vmImages, vm: vmImages };
+    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, lumenvm: vmImages, vm: vmImages, nokvm: vmImages, lumenvm_nokvm: vmImages };
     const list = map[type] || mcImages;
 
     select.innerHTML = list.map(item => `
@@ -2346,8 +2366,16 @@ class AdminManager {
       else mcBox.classList.add('hidden');
     }
     if (vmBox) {
-      if (type === 'lumenvm' || type === 'vm') vmBox.classList.remove('hidden');
-      else vmBox.classList.add('hidden');
+      if (type === 'lumenvm' || type === 'vm' || type === 'nokvm' || type === 'lumenvm_nokvm') {
+        vmBox.classList.remove('hidden');
+        if (type === 'nokvm' || type === 'lumenvm_nokvm') {
+          this.setVmKvmMode('off');
+        } else if (type === 'lumenvm' || type === 'vm') {
+          this.setVmKvmMode('on');
+        }
+      } else {
+        vmBox.classList.add('hidden');
+      }
     }
     this.populateDockerImages(type);
     if (type === 'minecraft') {
@@ -2368,9 +2396,27 @@ class AdminManager {
     }
   }
 
+  setVmKvmMode(val) {
+    const select = document.getElementById('vm-kvm-mode');
+    if (select) select.value = val;
+    this.onVmKvmModeChange(val);
+  }
+
   onVmKvmModeChange(val) {
     const badge = document.getElementById('vm-kvm-badge');
     const statusText = document.getElementById('vm-kvm-status-text');
+    const btnOn = document.getElementById('btn-kvm-toggle-on');
+    const btnOff = document.getElementById('btn-kvm-toggle-off');
+    const btnAuto = document.getElementById('btn-kvm-toggle-auto');
+
+    const resetBtn = (btn) => {
+      if (!btn) return;
+      btn.className = 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 text-slate-300 hover:text-white bg-white/5';
+    };
+    resetBtn(btnOn);
+    resetBtn(btnOff);
+    resetBtn(btnAuto);
+
     if (val === 'off') {
       if (badge) {
         badge.textContent = 'NO-KVM (OFF)';
@@ -2378,6 +2424,9 @@ class AdminManager {
       }
       if (statusText) {
         statusText.innerHTML = 'Hardware Virtualization: <strong class="text-amber-400">No-KVM / OFF (Software Emulation - Runs anywhere)</strong>';
+      }
+      if (btnOff) {
+        btnOff.className = 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 bg-amber-500 text-black shadow font-black';
       }
     } else if (val === 'auto') {
       if (badge) {
@@ -2387,6 +2436,9 @@ class AdminManager {
       if (statusText) {
         statusText.innerHTML = 'Hardware Virtualization: <strong class="text-blue-400">AUTO (Detects /dev/kvm support)</strong>';
       }
+      if (btnAuto) {
+        btnAuto.className = 'px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 bg-blue-500 text-white shadow font-black';
+      }
     } else {
       if (badge) {
         badge.textContent = 'KVM ON';
@@ -2395,7 +2447,11 @@ class AdminManager {
       if (statusText) {
         statusText.innerHTML = 'Hardware Virtualization: <strong class="text-emerald-400">KVM ON (Hardware Accelerated)</strong>';
       }
+      if (btnOn) {
+        btnOn.className = 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 bg-emerald-500 text-black shadow font-black';
+      }
     }
+    if (window.lucide) lucide.createIcons();
   }
 
   async handleCreateServer(e) {
@@ -2430,12 +2486,15 @@ class AdminManager {
     if (server_type === 'minecraft') {
       mc_jar_type = document.getElementById('mc-jar-type')?.value;
       mc_jar_version = document.getElementById('mc-jar-version')?.value;
-    } else if (server_type === 'lumenvm' || server_type === 'vm') {
+    } else if (server_type === 'lumenvm' || server_type === 'vm' || server_type === 'nokvm' || server_type === 'lumenvm_nokvm') {
+      const kvmVal = document.getElementById('vm-kvm-mode')?.value || (server_type.includes('nokvm') ? 'off' : 'on');
+      const isNokvm = server_type.includes('nokvm') || kvmVal === 'off';
       env_vars = {
         OS_HOSTNAME: document.getElementById('vm-hostname')?.value.trim() || 'lumenvm',
         OS_PASSWORD: document.getElementById('vm-password')?.value || 'admin123',
         DISPLAY_MODE: document.getElementById('vm-display-mode')?.value || 'ssh',
-        KVM: document.getElementById('vm-kvm-mode')?.value || 'on',
+        KVM: kvmVal,
+        NOKVM: isNokvm ? '1' : '0',
         VM_RAM_MB: 'auto',
         VM_DISK_GB: 'auto',
         IPV4_MODE: 'open',

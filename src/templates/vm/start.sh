@@ -57,6 +57,12 @@ OVERWRITE_IP="${OVERWRITE_IP:-}"
 BANNER="${BANNER:-}"
 CLOUD_OS_FAMILY="${CLOUD_OS_FAMILY:-}"
 KVM="${KVM:-auto}"
+if [ -n "$NOKVM" ] && [ "$NOKVM" != "0" ] && [ "$NOKVM" != "false" ]; then
+    KVM="off"
+fi
+if [ -n "$NO_KVM" ] && [ "$NO_KVM" != "0" ] && [ "$NO_KVM" != "false" ]; then
+    KVM="off"
+fi
 OS_ISO_URL="${OS_ISO_URL:-}"
 
 # Fixed container port the noVNC web server listens on (DISPLAY_MODE=novnc).
