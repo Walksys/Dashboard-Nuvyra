@@ -311,6 +311,22 @@ router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (re
       } catch (e) {}
     }
 
+    let finalEnv = env_vars ? (typeof env_vars === 'object' ? { ...env_vars } : JSON.parse(env_vars || '{}')) : (current.env_vars ? JSON.parse(current.env_vars || '{}') : {});
+    const isVmType = current.server_type === 'lumenvm' || current.server_type === 'vm' || current.server_type === 'nokvm' || current.server_type === 'lumenvm_nokvm';
+    if (isVmType) {
+      const isNokvmType = current.server_type === 'nokvm' || current.server_type === 'lumenvm_nokvm';
+      if (isNokvmType) {
+        finalEnv.KVM = 'off';
+        finalEnv.NOKVM = '1';
+        finalEnv.NO_KVM = '1';
+      } else if (finalEnv.KVM !== undefined || finalEnv.NOKVM !== undefined) {
+        const isOff = finalEnv.KVM === 'off' || finalEnv.KVM === 'nokvm' || finalEnv.NOKVM === '1' || finalEnv.NO_KVM === '1';
+        finalEnv.KVM = isOff ? 'off' : ((finalEnv.KVM || '').toLowerCase() === 'auto' ? 'auto' : 'on');
+        finalEnv.NOKVM = isOff ? '1' : '0';
+        finalEnv.NO_KVM = isOff ? '1' : '0';
+      }
+    }
+
     await query.run(`
       UPDATE servers SET
         name = ?,
@@ -337,7 +353,7 @@ router.put('/:id', authenticate, requireServerAccess('settings.edit'), async (re
       newDisk,
       targetUserId,
       newAllocId,
-      env_vars ? (typeof env_vars === 'object' ? JSON.stringify(env_vars) : env_vars) : current.env_vars,
+      JSON.stringify(finalEnv),
       newExpiration,
       newSuspended,
       serverId
