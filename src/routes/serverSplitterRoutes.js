@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const { query } = require('../database/db');
 const config = require('../config/config');
-const { authenticate, requireServerAccess } = require('../middleware/authMiddleware');
+const { authenticate, requireServerAccess } = require('../middleware/auth');
 const runnerService = require('../services/runnerService');
 const mcjarsService = require('../services/mcjarsService');
 const imagesConfig = require('../config/images');
