@@ -1074,6 +1074,8 @@ class App {
       nodejs: '⚡ Node.js',
       python: '🐍 Python',
       lumenvm: '🖥️ LumenVM (VPS)',
+      nokvm: '🛡️ LumenVM (No-KVM)',
+      lumenvm_nokvm: '🛡️ LumenVM (No-KVM)',
       vm: '🖥️ Virtual Machine'
     };
 

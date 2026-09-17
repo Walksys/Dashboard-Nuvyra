@@ -1237,7 +1237,7 @@ class ServerConsole {
     const isMinecraft = s.server_type === 'minecraft' || !s.server_type;
     const isPython = s.server_type === 'python';
     const isNode = s.server_type === 'nodejs' || s.server_type === 'node';
-    const isVm = s.server_type === 'lumenvm' || s.server_type === 'vm';
+    const isVm = s.server_type === 'lumenvm' || s.server_type === 'vm' || s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm';
 
     // Set standard variables based on server type if not yet defined
     if (isMinecraft) {
@@ -1253,7 +1253,9 @@ class ServerConsole {
       if (envVars.REQUIREMENTS_FILE === undefined) envVars.REQUIREMENTS_FILE = 'requirements.txt';
       if (envVars.PYTHON_VERSION === undefined) envVars.PYTHON_VERSION = '3.12';
     } else if (isVm) {
-      if (envVars.KVM === undefined) envVars.KVM = 'on';
+      const isNokvm = s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' || envVars.NOKVM === '1';
+      if (envVars.KVM === undefined) envVars.KVM = isNokvm ? 'off' : 'on';
+      if (envVars.NOKVM === undefined) envVars.NOKVM = isNokvm ? '1' : '0';
       if (envVars.OS_HOSTNAME === undefined) envVars.OS_HOSTNAME = 'mpanel-vm';
       if (envVars.OS_PASSWORD === undefined) envVars.OS_PASSWORD = 'root';
       if (envVars.DISPLAY_MODE === undefined) envVars.DISPLAY_MODE = 'ssh';
@@ -1306,20 +1308,26 @@ class ServerConsole {
       ];
     } else if (isVm) {
       dockerOptions = [
-        { label: 'Debian 12 (Bookworm)', value: 'ghcr.io/david1117dev/lumenvm:debian-12' },
-        { label: 'Debian 13 (Trixie)', value: 'ghcr.io/david1117dev/lumenvm:debian-13' },
-        { label: 'Debian Desktop GUI', value: 'ghcr.io/david1117dev/lumenvm:debian-desktop' },
-        { label: 'Ubuntu 24.04 LTS', value: 'ghcr.io/david1117dev/lumenvm:ubuntu-24' },
-        { label: 'Ubuntu 22.04 LTS', value: 'ghcr.io/david1117dev/lumenvm:ubuntu-22' },
-        { label: 'Ubuntu Desktop GUI', value: 'ghcr.io/david1117dev/lumenvm:ubuntu-desktop' },
-        { label: 'Kali Linux', value: 'ghcr.io/david1117dev/lumenvm:kali' },
-        { label: 'Fedora 40', value: 'ghcr.io/david1117dev/lumenvm:fedora-40' },
-        { label: 'Arch Linux', value: 'ghcr.io/david1117dev/lumenvm:arch' },
-        { label: 'Alpine (Blank Disk / Custom ISO)', value: 'ghcr.io/david1117dev/lumenvm:alpine' }
+        { label: 'Debian 12 (Ready to use, Recommended)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-12' },
+        { label: 'Ubuntu 24.04 LTS (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04' },
+        { label: 'Ubuntu 22.04 LTS (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-22.04' },
+        { label: 'Ubuntu 20.04 LTS (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-20.04' },
+        { label: 'Debian 13 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-13' },
+        { label: 'Debian 11 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-11' },
+        { label: 'Debian 10 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-10' },
+        { label: 'Kali Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-kali' },
+        { label: 'Fedora 40 (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-fedora' },
+        { label: 'Arch Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-arch' },
+        { label: 'Rocky Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-rockylinux' },
+        { label: 'Alma Linux (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-almalinux' },
+        { label: 'Debian 12 Desktop (GUI Preinstalled)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-12-desktop' },
+        { label: 'Ubuntu 24.04 Desktop (GUI Preinstalled)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04-desktop' },
+        { label: 'Alpine (Blank Disk / Custom ISO / Windows)', value: 'ghcr.io/sosuku325/aerovm:alpine' },
+        { label: 'Shell (Debug / Rescue Mode)', value: 'ghcr.io/sosuku325/aerovm:shell' }
       ];
     }
 
-    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isVm ? 'ghcr.io/david1117dev/lumenvm:debian-12' : (isNode ? 'ghcr.io/parkervcp/yolks:nodejs_20' : 'ghcr.io/parkervcp/yolks:python_3.12')));
+    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isVm ? 'ghcr.io/sosuku325/aerovm:guest-debian-12' : (isNode ? 'ghcr.io/parkervcp/yolks:nodejs_20' : 'ghcr.io/parkervcp/yolks:python_3.12')));
     const matchedPreset = dockerOptions.find(o => o.value === currentDocker);
     const isCustomDocker = !matchedPreset;
 
@@ -1523,7 +1531,7 @@ class ServerConsole {
   evaluateStartupCommand(template, envVars) {
     let cmd = template || '';
     if (!cmd.trim() || cmd.startsWith('#Powered by LumenVM')) {
-      if (this.serverData?.server_type === 'lumenvm' || this.serverData?.server_type === 'vm') {
+      if (this.serverData?.server_type === 'lumenvm' || this.serverData?.server_type === 'vm' || this.serverData?.server_type === 'nokvm' || this.serverData?.server_type === 'lumenvm_nokvm') {
         cmd = '/start.sh';
       } else if (this.serverData?.server_type === 'minecraft' || !this.serverData?.server_type) {
         cmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';

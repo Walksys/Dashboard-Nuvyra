@@ -88,6 +88,8 @@ class DockerService {
     // Check if this is a VM / LumenVM server
     const isVmServer = server.server_type === 'lumenvm' || 
                        server.server_type === 'vm' || 
+                       server.server_type === 'nokvm' ||
+                       server.server_type === 'lumenvm_nokvm' ||
                        (server.docker_image && (server.docker_image.includes('aerovm') || server.docker_image.includes('lumenvm')));
 
     const hostBinds = [`${serverDir}:/home/container:rw`];
@@ -103,9 +105,19 @@ class DockerService {
     } catch (e) {}
 
     // Check KVM mode (on / off / auto / nokvm)
-    const rawKvm = String(parsedEnv.KVM || 'on').toLowerCase();
-    const isKvmOff = rawKvm === 'off' || rawKvm === 'nokvm' || rawKvm === '0' || rawKvm === 'false';
-    const effectiveKvm = isKvmOff ? 'off' : (rawKvm === 'auto' ? 'auto' : 'on');
+    const globalDefaultKvm = process.env.VM_KVM_MODE || 'on';
+    let isKvmOff = false;
+    if (server.server_type === 'nokvm' || server.server_type === 'lumenvm_nokvm') {
+      isKvmOff = true;
+    } else if (parsedEnv.NOKVM !== undefined && (parsedEnv.NOKVM === '1' || parsedEnv.NOKVM === 1 || parsedEnv.NOKVM === true || String(parsedEnv.NOKVM).toLowerCase() === 'true')) {
+      isKvmOff = true;
+    } else if (parsedEnv.NO_KVM !== undefined && (parsedEnv.NO_KVM === '1' || parsedEnv.NO_KVM === 1 || parsedEnv.NO_KVM === true || String(parsedEnv.NO_KVM).toLowerCase() === 'true')) {
+      isKvmOff = true;
+    } else {
+      const rawKvm = String(parsedEnv.KVM || globalDefaultKvm).toLowerCase();
+      isKvmOff = rawKvm === 'off' || rawKvm === 'nokvm' || rawKvm === '0' || rawKvm === 'false';
+    }
+    const effectiveKvm = isKvmOff ? 'off' : ((parsedEnv.KVM || globalDefaultKvm).toLowerCase() === 'auto' ? 'auto' : 'on');
 
     // Check for KVM acceleration
     const devices = [];
@@ -146,9 +158,8 @@ class DockerService {
 
     if (isVmServer) {
       envArray.push('LICENSE=UNLOCKED_NO_LICENSE_NEEDED');
-      if (parsedEnv.KVM === undefined) {
-        envArray.push(`KVM=${effectiveKvm}`);
-      }
+      envArray.push(`KVM=${effectiveKvm}`);
+      envArray.push(`NOKVM=${isKvmOff ? '1' : '0'}`);
       if (!parsedEnv.SERVER_PORT) envArray.push(`SERVER_PORT=${port || 2222}`);
       if (!parsedEnv.VM_RAM_MB) envArray.push(`VM_RAM_MB=${Math.round((server.memory_mb || 2048) * 0.8)}`);
       if (!parsedEnv.VM_DISK_GB) envArray.push(`VM_DISK_GB=${Math.round((server.disk_mb || 10240) / 1024 * 0.8) || 10}`);

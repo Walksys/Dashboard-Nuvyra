@@ -18,7 +18,8 @@ module.exports = {
         DB_PASSWORD: 'PanelPass123!',
         DB_NAME: 'panel',
         CURSEFORGE_API_KEY: '$2a$10$2LouREiMl.mx0kVBK.RlK.nloje4XS3oF8uSw809VZr07O.0A5cLq',
-        CURSEFORGE_BASE_URL: 'https://api.curseforge.com/v1'
+        CURSEFORGE_BASE_URL: 'https://api.curseforge.com/v1',
+        VM_KVM_MODE: 'auto'
       }
     }
   ]
