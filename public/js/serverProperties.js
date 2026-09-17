@@ -19,14 +19,14 @@ class ServerProperties {
               <span class="text-[10px] font-mono text-slate-400">v2.0.2</span>
             </div>
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <i data-lucide="sliders" class="w-5 h-5 text-purple-400"></i> Server Properties & Subdomains
+              <i data-lucide="sliders" class="w-5 h-5 text-purple-400"></i> Config Editor & Subdomains
             </h2>
-            <p class="text-xs text-slate-400">Configure Minecraft gameplay rules, world generation, and custom hostnames visually.</p>
+            <p class="text-xs text-slate-400">Configure Minecraft & game server configuration files visually or in raw code, and manage custom subdomains.</p>
           </div>
 
           <div class="flex items-center gap-2">
             <button type="button" id="btn-tab-props" onclick="serverProperties.switchView('properties')" class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600/30 text-purple-300 border border-purple-500/30 transition">
-              <i data-lucide="sliders" class="w-3.5 h-3.5 inline mr-1"></i> Visual Properties
+              <i data-lucide="sliders" class="w-3.5 h-3.5 inline mr-1"></i> Config Editor
             </button>
             <button type="button" id="btn-tab-subdomains" onclick="serverProperties.switchView('subdomains')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white glass-btn transition">
               <i data-lucide="globe" class="w-3.5 h-3.5 inline mr-1"></i> Subdomains
@@ -34,64 +34,11 @@ class ServerProperties {
           </div>
         </div>
 
-        <!-- Visual Properties View -->
+        <!-- Visual Config Editor View -->
         <div id="view-properties-content" class="space-y-6">
-          <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-4">
-              <div class="relative w-full sm:w-80">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5"></i>
-                <input type="text" id="prop-search" oninput="serverProperties.handleSearch(this.value)" placeholder="Filter properties (e.g. pvp, motd, flight)..." class="w-full glass-input pl-10 pr-4 py-2 rounded-xl text-xs font-mono">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <button onclick="serverProperties.loadProperties()" class="px-3 py-2 rounded-xl text-xs font-semibold glass-btn text-slate-300 hover:text-white flex items-center gap-1.5 transition">
-                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reload
-                </button>
-                <button onclick="serverProperties.handleSaveProperties()" class="btn-cyber px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-600/20">
-                  <i data-lucide="save" class="w-4 h-4"></i> Save Properties
-                </button>
-              </div>
-            </div>
-
-            <!-- Key Gameplay Presets Row -->
-            <div id="presets-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Gamemode -->
-              <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
-                <label class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="sword" class="w-4 h-4 text-cyan-400"></i> Default Game Mode
-                </label>
-                <div class="grid grid-cols-4 gap-1.5 pt-1" id="gamemode-buttons">
-                  <button type="button" onclick="serverProperties.setProp('gamemode', 'survival')" class="prop-gm-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-gm="survival">Survival</button>
-                  <button type="button" onclick="serverProperties.setProp('gamemode', 'creative')" class="prop-gm-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-gm="creative">Creative</button>
-                  <button type="button" onclick="serverProperties.setProp('gamemode', 'adventure')" class="prop-gm-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-gm="adventure">Adventure</button>
-                  <button type="button" onclick="serverProperties.setProp('gamemode', 'spectator')" class="prop-gm-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-gm="spectator">Spectator</button>
-                </div>
-              </div>
-
-              <!-- Difficulty -->
-              <div class="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2">
-                <label class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i> World Difficulty
-                </label>
-                <div class="grid grid-cols-4 gap-1.5 pt-1" id="difficulty-buttons">
-                  <button type="button" onclick="serverProperties.setProp('difficulty', 'peaceful')" class="prop-diff-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-diff="peaceful">Peaceful</button>
-                  <button type="button" onclick="serverProperties.setProp('difficulty', 'easy')" class="prop-diff-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-diff="easy">Easy</button>
-                  <button type="button" onclick="serverProperties.setProp('difficulty', 'normal')" class="prop-diff-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-diff="normal">Normal</button>
-                  <button type="button" onclick="serverProperties.setProp('difficulty', 'hard')" class="prop-diff-btn px-2 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-slate-400 hover:text-white" data-diff="hard">Hard</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Dynamic Properties Grid -->
-            <div id="props-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div class="col-span-full text-center py-8 text-slate-400">Loading server.properties...</div>
-            </div>
-
-            <div class="flex justify-end pt-4 border-t border-white/10">
-              <button onclick="serverProperties.handleSaveProperties()" class="btn-cyber px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-purple-600/20">
-                <i data-lucide="save" class="w-4 h-4"></i> Save & Apply Properties
-              </button>
-            </div>
+          <div class="glass-panel p-12 rounded-3xl border border-white/10 text-center space-y-3">
+            <div class="animate-spin inline-block w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"></div>
+            <p class="text-sm font-semibold text-slate-300">Loading Config Editor...</p>
           </div>
         </div>
 
@@ -120,10 +67,14 @@ class ServerProperties {
     `;
 
     if (window.lucide) lucide.createIcons();
-    await this.loadProperties();
+
+    const propsContent = document.getElementById('view-properties-content');
+    if (window.configEditor && propsContent) {
+      await window.configEditor.render(propsContent, serverId, 'server.properties');
+    }
   }
 
-  switchView(view) {
+  async switchView(view) {
     this.activeTab = view;
     const propsContent = document.getElementById('view-properties-content');
     const subdomainsContent = document.getElementById('view-subdomains-content');
@@ -135,6 +86,9 @@ class ServerProperties {
       subdomainsContent.classList.add('hidden');
       btnProps.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-purple-600/30 text-purple-300 border border-purple-500/30 transition';
       btnSubdomains.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white glass-btn transition';
+      if (window.configEditor && propsContent && (!propsContent.children || propsContent.children.length === 0 || propsContent.querySelector('.animate-spin'))) {
+        await window.configEditor.render(propsContent, this.currentServerId, 'server.properties');
+      }
     } else {
       propsContent.classList.add('hidden');
       subdomainsContent.classList.remove('hidden');
