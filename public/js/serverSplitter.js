@@ -627,7 +627,10 @@ class ServerSplitter {
         btn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full mr-1.5"></span> Splitting...`;
       }
 
-      const res = await app.api(`/api/servers/${this.currentServerId}/splitter`, 'POST', payload);
+      const res = await app.api(`/api/servers/${this.currentServerId}/splitter`, {
+        method: 'POST',
+        body: payload
+      });
       if (!res.success) throw new Error(res.error || 'Failed to create split');
 
       app.toast(res.message || 'Split server created successfully!', 'success');
@@ -754,10 +757,13 @@ class ServerSplitter {
     if (!this.resizeTarget) return;
 
     try {
-      const res = await app.api(`/api/servers/${this.currentServerId}/splitter/${this.resizeTarget.id}`, 'PUT', {
-        memory_mb: this.resizeForm.memory,
-        cpu_limit: this.resizeForm.cpu,
-        disk_mb: this.resizeForm.disk
+      const res = await app.api(`/api/servers/${this.currentServerId}/splitter/${this.resizeTarget.id}`, {
+        method: 'PUT',
+        body: {
+          memory_mb: this.resizeForm.memory,
+          cpu_limit: this.resizeForm.cpu,
+          disk_mb: this.resizeForm.disk
+        }
       });
 
       if (!res.success) throw new Error(res.error || 'Failed to resize');
@@ -775,7 +781,9 @@ class ServerSplitter {
 
   async syncSubusers(splitId) {
     try {
-      const res = await app.api(`/api/servers/${this.currentServerId}/splitter/${splitId}/sync-subusers`, 'POST');
+      const res = await app.api(`/api/servers/${this.currentServerId}/splitter/${splitId}/sync-subusers`, {
+        method: 'POST'
+      });
       if (!res.success) throw new Error(res.error || 'Failed to sync subusers');
       app.toast(res.message || 'Subusers synced successfully!', 'success');
     } catch (err) {
@@ -796,7 +804,9 @@ class ServerSplitter {
 
   async deleteSplit(splitId) {
     try {
-      const res = await app.api(`/api/servers/${this.currentServerId}/splitter/${splitId}`, 'DELETE');
+      const res = await app.api(`/api/servers/${this.currentServerId}/splitter/${splitId}`, {
+        method: 'DELETE'
+      });
       if (!res.success) throw new Error(res.error || 'Failed to delete split');
       app.toast(res.message || 'Split server deleted and resources refunded.', 'success');
       await this.renderSplitterTab(this.container, this.currentServerId);
