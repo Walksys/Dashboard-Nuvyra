@@ -113,7 +113,6 @@ graph TD
 
 ### 3. 🎨 PteroX V2.0.2 Theme Suite
 - **Complete Visual Assets**: High-resolution branding logos, status illustrations, and server card banners.
-- **New Customer Portals**: Billing & Subscriptions portal (`#billing`) with multi-tier pricing plans, wallet balance, and invoice receipts.
 - **Theme Palette & Layouts**: Deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 
 ### 4. 🛠️ McTools Blueprint Extension Suite
@@ -259,7 +258,6 @@ npm run pm2:logs
 │       ├── updates.js       # Auto-detect updates engine & live xterm.js terminal
 │       ├── autoTutorial.js  # Spotlight guided walkthrough engine
 │       ├── knowledge.js     # Tutorials Hub & live configuration generators
-│       ├── billing.js       # Billing, pricing tiers & wallet receipt portal
 │       ├── admin.js         # Global System Overview, servers, users, telemetry
 │       ├── settings.js      # Themes, 4K wallpapers, feature toggles
 │       ├── marketplace.js   # CurseForge, Modrinth & SpigotMC marketplace
