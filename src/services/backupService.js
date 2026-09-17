@@ -6,8 +6,9 @@ const config = require('../config/config');
 const { query } = require('../database/db');
 
 class BackupService {
-  async createBackup(serverId, backupName = 'Manual Backup') {
+  async createBackup(serverId, backupName = 'Manual Backup', options = {}) {
     const sId = Number(serverId);
+    const isAutomatic = options.isAutomatic ? 1 : 0;
     const serverDir = path.join(config.SERVERS_DIR, `server${sId}`);
     if (!fs.existsSync(serverDir)) {
       fs.mkdirSync(serverDir, { recursive: true });
@@ -33,8 +34,8 @@ class BackupService {
     const fileSize = stats.size;
 
     const res = await query.run(
-      'INSERT INTO backups (server_id, name, file_name, file_size, path) VALUES (?, ?, ?, ?, ?)',
-      [sId, backupName, fileName, fileSize, destPath]
+      'INSERT INTO backups (server_id, name, file_name, file_size, path, is_automatic) VALUES (?, ?, ?, ?, ?, ?)',
+      [sId, backupName, fileName, fileSize, destPath, isAutomatic]
     );
 
     return {
@@ -43,11 +44,15 @@ class BackupService {
       name: backupName,
       fileName,
       fileSize,
+      isAutomatic: isAutomatic === 1,
       createdAt: new Date().toISOString()
     };
   }
 
-  async listBackups(serverId) {
+  async listBackups(serverId, filter = {}) {
+    if (filter.isAutomatic !== undefined) {
+      return query.all('SELECT * FROM backups WHERE server_id = ? AND is_automatic = ? ORDER BY created_at DESC', [serverId, filter.isAutomatic ? 1 : 0]);
+    }
     return query.all('SELECT * FROM backups WHERE server_id = ? ORDER BY created_at DESC', [serverId]);
   }
 

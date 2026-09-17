@@ -195,8 +195,10 @@ async function initDatabase() {
       file_size BIGINT DEFAULT 0,
       path VARCHAR(500) NOT NULL,
       is_locked TINYINT(1) DEFAULT 0,
+      is_automatic TINYINT(1) DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       INDEX idx_backups_server (server_id),
+      INDEX idx_backups_auto (is_automatic),
       CONSTRAINT fk_backups_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -364,6 +366,36 @@ async function initDatabase() {
   } catch (e) {}
   try {
     await pool.query('CREATE INDEX idx_servers_parent ON servers(parent_id)');
+  } catch (e) {}
+
+  // AutoBackups schema migration on backups table
+  try {
+    await pool.query('ALTER TABLE backups ADD COLUMN is_automatic TINYINT(1) DEFAULT 0');
+  } catch (e) {}
+  try {
+    await pool.query('CREATE INDEX idx_backups_auto ON backups(is_automatic)');
+  } catch (e) {}
+
+  // Seed default AutoBackups settings
+  try {
+    const autoSettings = [
+      { key: 'autobackups_enabled', value: '1', type: 'boolean', desc: 'Enable daily automatic backups' },
+      { key: 'autobackups_run_at', value: '02:00', type: 'string', desc: 'Daily time (HH:mm) to run automatic backups' },
+      { key: 'autobackups_days', value: '7', type: 'number', desc: 'Days of daily backups to store' },
+      { key: 'autobackups_weeks', value: '4', type: 'number', desc: 'Weeks of weekly backups to store' },
+      { key: 'autobackups_months', value: '3', type: 'number', desc: 'Months of monthly backups to store' },
+      { key: 'autobackups_name', value: 'Automatic Backup [DATE]', type: 'string', desc: 'Automatic backup name format template' },
+      { key: 'autobackups_excluded_nodes', value: '[]', type: 'json', desc: 'JSON array of node IDs excluded from auto backups' },
+      { key: 'autobackups_last_run', value: '', type: 'string', desc: 'Timestamp of last automatic backup execution' },
+      { key: 'autobackups_last_status', value: 'Idle', type: 'string', desc: 'Status summary of last automatic backup run' }
+    ];
+
+    for (const s of autoSettings) {
+      const exists = await query.get('SELECT `key` FROM settings WHERE `key` = ?', [s.key]);
+      if (!exists) {
+        await query.run('INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES (?, ?, ?, ?)', [s.key, s.value, s.type, s.desc]);
+      }
+    }
   } catch (e) {}
 
   console.log('✅ MariaDB Schema initialized successfully.');

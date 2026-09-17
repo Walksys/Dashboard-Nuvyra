@@ -4736,6 +4736,358 @@ class AdminManager {
   }
 
   // ==========================================
+  // ADMIN AUTO BACKUPS VIEW (autobackups.blueprint)
+  // ==========================================
+  async renderAutoBackupsView() {
+    this.stopOverviewPolling();
+    const container = document.getElementById('view-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="space-y-6 animate-fade-in pb-12">
+        <!-- 1. Header Hero -->
+        <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-slate-900/60 to-blue-950/40 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-black uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20 flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Auto Backup
+              </span>
+              <span class="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-800/80 text-cyan-300 border border-white/10 uppercase">
+                v1.0 Blueprint
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono">by makkmarci13</span>
+            </div>
+            <h3 class="text-2xl font-black text-white flex items-center gap-2">
+              Automatic Backup & Retention Engine
+            </h3>
+            <p class="text-xs text-slate-300 max-w-2xl">
+              Configure daily scheduled snapshots, multi-tiered retention windows (Days / Weeks / Months), and node exclusions across all servers.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="admin.triggerAutoBackupsRunNow()" id="btn-autobackup-run" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2">
+              <i data-lucide="play" class="w-4 h-4 fill-current"></i> Run Auto Backup Now
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Status Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold">
+              <span>Auto Backups</span>
+              <i data-lucide="archive" class="w-4 h-4 text-cyan-400"></i>
+            </div>
+            <div id="adm-ab-total-backups" class="text-2xl font-black text-white font-mono">...</div>
+            <p class="text-[10px] text-slate-400">Total automated snapshots</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold">
+              <span>Storage Consumed</span>
+              <i data-lucide="hard-drive" class="w-4 h-4 text-purple-400"></i>
+            </div>
+            <div id="adm-ab-total-bytes" class="text-2xl font-black text-purple-400 font-mono">...</div>
+            <p class="text-[10px] text-slate-400">Disk space used by auto backups</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold">
+              <span>Eligible Servers</span>
+              <i data-lucide="server" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div id="adm-ab-servers-count" class="text-2xl font-black text-emerald-400 font-mono">...</div>
+            <p class="text-[10px] text-slate-400">Servers targeted by scheduler</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-2xl border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold">
+              <span>Daily Schedule</span>
+              <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div id="adm-ab-run-time" class="text-2xl font-black text-amber-300 font-mono">...</div>
+            <p id="adm-ab-last-run-sub" class="text-[10px] text-slate-400 truncate">Last run: None</p>
+          </div>
+        </div>
+
+        <!-- 3. Two Column Form and Documentation Layout (Blueprint Layout) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Left: Settings Form (2 Cols) -->
+          <div class="lg:col-span-2 glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+              <h4 class="text-base font-bold text-white flex items-center gap-2">
+                <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i> Automatic Backup Settings
+              </h4>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <span class="text-xs font-bold text-slate-300">Enabled</span>
+                <input type="checkbox" id="adm-ab-enabled" class="toggle-checkbox sr-only peer" checked>
+                <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+              </label>
+            </div>
+
+            <form onsubmit="admin.saveAutoBackupsSettings(event)" class="space-y-4">
+              <!-- Run At Every Day -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i> Run At Every Day
+                </label>
+                <input type="time" id="adm-ab-run-at" class="glass-input px-3.5 py-2.5 rounded-xl text-xs font-mono w-full sm:w-64" required>
+                <p class="text-[11px] text-slate-400 mt-1">Time of day to execute backup creation and retention cleanup.</p>
+              </div>
+
+              <div class="border-t border-white/5 pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Days to Store -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Days to Store</label>
+                  <div class="flex items-center gap-2">
+                    <input type="number" min="0" max="365" id="adm-ab-days" class="glass-input px-3.5 py-2 rounded-xl text-xs font-mono w-full" required>
+                    <span class="text-xs font-semibold text-slate-400 shrink-0">Day(s)</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Stores every backup in the last N days.</p>
+                </div>
+
+                <!-- Weeks to Store -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Weeks to Store</label>
+                  <div class="flex items-center gap-2">
+                    <input type="number" min="0" max="104" id="adm-ab-weeks" class="glass-input px-3.5 py-2 rounded-xl text-xs font-mono w-full" required>
+                    <span class="text-xs font-semibold text-slate-400 shrink-0">Week(s)</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Stores 1st backup of week in last N weeks.</p>
+                </div>
+
+                <!-- Months to Store -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Months to Store</label>
+                  <div class="flex items-center gap-2">
+                    <input type="number" min="0" max="60" id="adm-ab-months" class="glass-input px-3.5 py-2 rounded-xl text-xs font-mono w-full" required>
+                    <span class="text-xs font-semibold text-slate-400 shrink-0">Month(s)</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Stores 1st backup of month in last N months.</p>
+                </div>
+              </div>
+
+              <div class="border-t border-white/5 pt-4 space-y-4">
+                <!-- Backup Name Format -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i data-lucide="tag" class="w-3.5 h-3.5 text-purple-400"></i> Backup Name Template
+                  </label>
+                  <input type="text" id="adm-ab-name" class="glass-input px-3.5 py-2 rounded-xl text-xs font-mono w-full" required>
+                  <p class="text-[11px] text-slate-400 mt-1">
+                    <code class="text-cyan-300 bg-white/5 px-1 rounded font-mono">[DATE]</code> will be dynamically replaced by the current date (e.g. <code>2026-09-17</code>).
+                  </p>
+                </div>
+
+                <!-- Excluded Nodes -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i data-lucide="network" class="w-3.5 h-3.5 text-amber-400"></i> Excluded Nodes
+                  </label>
+                  <div id="adm-ab-nodes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-2xl bg-black/30 border border-white/10 max-h-48 overflow-y-auto custom-scrollbar">
+                    <span class="text-xs text-slate-500 italic">Loading nodes...</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-1">Servers allocated on selected nodes will be skipped during auto backup execution.</p>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-white/10 flex justify-end">
+                <button type="submit" id="btn-autobackup-save" class="btn-cyber px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2">
+                  <i data-lucide="save" class="w-4 h-4"></i> Save Settings
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Right: Help & Policy Card (1 Col) -->
+          <div class="space-y-4">
+            <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+              <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm border-b border-white/10 pb-3">
+                <i data-lucide="help-circle" class="w-4 h-4"></i> Retention Policy Documentation
+              </div>
+              <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+                <p>
+                  Backup <b class="text-white">creation</b> and <b class="text-white">deletion</b> will be processed automatically every day at the configured schedule time.
+                </p>
+                <div class="p-3 rounded-2xl bg-slate-900/90 border border-white/5 space-y-2 font-mono text-[11px]">
+                  <div><span class="text-cyan-400 font-bold">Days:</span> Keeps every daily backup in the last N days.</div>
+                  <div><span class="text-purple-400 font-bold">Weeks:</span> Keeps the 1st backup of the week in the last N weeks (counted before the days).</div>
+                  <div><span class="text-amber-400 font-bold">Months:</span> Keeps the 1st backup of the month in the last N months (counted before the weeks).</div>
+                </div>
+                <div class="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/30 text-amber-200 text-[11px] space-y-1">
+                  <div class="font-bold flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i> Locked Backups Exemption</div>
+                  <p>All old automatic backups beyond the retention limits are permanently purged, <b>except locked backups</b>, which are never automatically deleted.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Last Run Diagnostics Card -->
+            <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-2">
+              <div class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="activity" class="w-3.5 h-3.5 text-cyan-400"></i> Engine Status
+              </div>
+              <div id="adm-ab-last-status-box" class="text-xs font-mono text-slate-200 p-2.5 rounded-xl bg-black/40 border border-white/5">
+                Idle
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) lucide.createIcons();
+    await this.loadAutoBackupsSettings();
+  }
+
+  async loadAutoBackupsSettings() {
+    try {
+      const res = await app.api('/api/admin/extensions/autobackups');
+      if (!res.success) throw new Error(res.error || 'Failed to fetch AutoBackups status');
+
+      const { settings, stats, nodes, is_running } = res;
+
+      // Stats
+      const formatBytes = (bytes) => {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      };
+
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+      setVal('adm-ab-total-backups', stats.total_backups || 0);
+      setVal('adm-ab-total-bytes', formatBytes(stats.total_bytes || 0));
+      setVal('adm-ab-servers-count', stats.eligible_servers || 0);
+      setVal('adm-ab-run-time', settings.run_at || '02:00');
+
+      const lastRunEl = document.getElementById('adm-ab-last-run-sub');
+      if (lastRunEl) {
+        lastRunEl.innerText = settings.last_run ? `Last run: ${new Date(settings.last_run).toLocaleString()}` : 'Last run: Never';
+      }
+
+      const statusBox = document.getElementById('adm-ab-last-status-box');
+      if (statusBox) {
+        statusBox.innerText = is_running ? 'Running automatic backups now...' : (settings.last_status || 'Idle');
+      }
+
+      // Populate form
+      const elEnabled = document.getElementById('adm-ab-enabled');
+      if (elEnabled) elEnabled.checked = settings.enabled !== false;
+
+      const elRunAt = document.getElementById('adm-ab-run-at');
+      if (elRunAt) elRunAt.value = settings.run_at || '02:00';
+
+      const elDays = document.getElementById('adm-ab-days');
+      if (elDays) elDays.value = settings.days !== undefined ? settings.days : 7;
+
+      const elWeeks = document.getElementById('adm-ab-weeks');
+      if (elWeeks) elWeeks.value = settings.weeks !== undefined ? settings.weeks : 4;
+
+      const elMonths = document.getElementById('adm-ab-months');
+      if (elMonths) elMonths.value = settings.months !== undefined ? settings.months : 3;
+
+      const elName = document.getElementById('adm-ab-name');
+      if (elName) elName.value = settings.name || 'Automatic Backup [DATE]';
+
+      // Render Excluded Nodes checkboxes
+      const nodesContainer = document.getElementById('adm-ab-nodes-list');
+      if (nodesContainer) {
+        if (!nodes || nodes.length === 0) {
+          nodesContainer.innerHTML = `<span class="text-xs text-slate-500">No nodes registered.</span>`;
+        } else {
+          const excluded = settings.excluded_nodes || [];
+          nodesContainer.innerHTML = nodes.map(n => `
+            <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-white/5 cursor-pointer text-xs text-slate-300">
+              <input type="checkbox" name="excluded_node" value="${n.id}" ${excluded.includes(Number(n.id)) ? 'checked' : ''} class="rounded border-slate-700 text-cyan-500 focus:ring-0">
+              <span class="font-semibold text-white">${admin.escapeHtml(n.name)}</span>
+              <span class="text-[10px] font-mono text-slate-500 ml-auto">#${n.id}</span>
+            </label>
+          `).join('');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      app.toast('Failed to load AutoBackups settings: ' + err.message, 'error');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async saveAutoBackupsSettings(e) {
+    if (e) e.preventDefault();
+    const saveBtn = document.getElementById('btn-autobackup-save');
+
+    try {
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full mr-1.5"></span> Saving...`;
+      }
+
+      const excluded = [];
+      document.querySelectorAll('input[name="excluded_node"]:checked').forEach(cb => {
+        excluded.push(Number(cb.value));
+      });
+
+      const payload = {
+        enabled: document.getElementById('adm-ab-enabled')?.checked,
+        run_at: document.getElementById('adm-ab-run-at')?.value.trim() || '02:00',
+        days: parseInt(document.getElementById('adm-ab-days')?.value || '7', 10),
+        weeks: parseInt(document.getElementById('adm-ab-weeks')?.value || '4', 10),
+        months: parseInt(document.getElementById('adm-ab-months')?.value || '3', 10),
+        name: document.getElementById('adm-ab-name')?.value.trim() || 'Automatic Backup [DATE]',
+        excluded_nodes: excluded
+      };
+
+      const res = await app.api('/api/admin/extensions/autobackups', {
+        method: 'PUT',
+        body: payload
+      });
+
+      if (!res.success) throw new Error(res.error || 'Failed to save settings');
+      app.toast('AutoBackups settings saved successfully!', 'success');
+      await this.loadAutoBackupsSettings();
+    } catch (err) {
+      app.toast(err.message, 'error');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> Save Settings`;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+  }
+
+  async triggerAutoBackupsRunNow() {
+    const runBtn = document.getElementById('btn-autobackup-run');
+    if (!confirm('Are you sure you want to trigger the automatic backup and retention cycle now across all eligible servers?')) {
+      return;
+    }
+
+    try {
+      if (runBtn) {
+        runBtn.disabled = true;
+        runBtn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full mr-1.5"></span> Running...`;
+      }
+      app.toast('Starting automated backup process across servers...', 'info');
+
+      const res = await app.api('/api/admin/extensions/autobackups/run', { method: 'POST' });
+      if (!res.success) throw new Error(res.error || 'Failed to run AutoBackups');
+
+      app.toast(`AutoBackups completed! ${res.summary}`, 'success');
+      await this.loadAutoBackupsSettings();
+    } catch (err) {
+      app.toast(err.message, 'error');
+    } finally {
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.innerHTML = `<i data-lucide="play" class="w-4 h-4 fill-current"></i> Run Auto Backup Now`;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+  }
+
+  // ==========================================
   // ADMIN NETWORK VIEW
   // ==========================================
   async renderNetworkView() {
