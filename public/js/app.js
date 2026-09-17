@@ -862,10 +862,6 @@ class App {
         if (window.knowledgeManager) {
           knowledgeManager.renderKnowledgeView();
         }
-      } else if (hash === 'billing' || hash === 'user-billing') {
-        if (window.billingManager) {
-          billingManager.renderBillingView();
-        }
       } else if (hash === 'profile' || hash === 'user-profile') {
         await this.renderUserProfile();
       } else if (hash === 'activity' || hash === 'user-activity') {
