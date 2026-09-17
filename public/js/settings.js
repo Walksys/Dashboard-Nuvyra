@@ -90,10 +90,10 @@ class SettingsManager {
                   <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4 text-purple-400"></i> Panel Theme Selection
                   </h3>
-                  <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme v2.1.3, and LiquidX Theme v1.0</p>
+                  <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme, LiquidX, PteroX, and Nebula Theme v2.0</p>
                 </div>
-                <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'liquidx' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : (this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40')}">
-                  ${this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : 'NookTheme Active')}
+                <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'nebula' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : (this.currentTheme.activeTheme === 'liquidx' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : (this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'))}">
+                  ${this.currentTheme.activeTheme === 'nebula' ? 'Nebula Theme v2.0 Active' : (this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : (this.currentTheme.activeTheme === 'pterox' ? 'PteroX Theme v2.0.2 Active' : 'NookTheme Active')))}
                 </span>
               </div>
 
@@ -196,6 +196,32 @@ class SettingsManager {
                     </div>
                     <button type="button" id="btn-theme-pterox" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'pterox' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
                       ${this.currentTheme.activeTheme === 'pterox' ? '✓ Active Theme' : 'Activate PteroX'}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Option E: Nebula Theme v2.0 -->
+                <div id="theme-card-nebula" onclick="settingsManager.selectTheme('nebula')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'nebula' ? 'active bg-purple-950/20 border-purple-500/50 ring-1 ring-purple-500/30' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
+                  <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 p-2 flex items-center justify-center shadow-inner">
+                      <img src="/assets/nebula-logo.svg" alt="Nebula Theme" class="w-full h-full object-contain">
+                    </div>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 font-mono">Nebula v2.0</span>
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-white flex items-center gap-1.5">
+                      Nebula Theme <span class="text-xs text-purple-400 font-normal">v2.0</span>
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Deep space violet aesthetic with 16 procedural magic patterns, modular wide/compact sidebars, and full live visual theme designer.</p>
+                  </div>
+                  <div class="pt-2 flex items-center justify-between border-t border-white/5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-3 h-3 rounded-full bg-[#b288ff]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#874fff]"></span>
+                      <span class="w-3 h-3 rounded-full bg-[#151221]"></span>
+                    </div>
+                    <button type="button" id="btn-theme-nebula" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'nebula' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
+                      ${this.currentTheme.activeTheme === 'nebula' ? '✓ Active Theme' : 'Activate Nebula'}
                     </button>
                   </div>
                 </div>
@@ -310,6 +336,141 @@ class SettingsManager {
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
                       <img src="${localStorage.getItem('pterox_login_header_logo') || '/images/pterox-login-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-login-header">
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Nebula Theme Customizer & Studio ("edit bhi kar pahe thame ko") -->
+              <div id="nebula-options-panel" class="pt-4 border-t border-white/10 space-y-5 ${this.currentTheme.activeTheme === 'nebula' ? '' : 'opacity-60'}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-purple-950/20 p-4 rounded-2xl border border-purple-500/25">
+                  <div>
+                    <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                      <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> Nebula Theme Live Customizer &amp; Studio
+                    </h4>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Live real-time theme tweaking: modify color palettes, sidebar layout, magic background patterns, and announcements</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button type="button" onclick="window.nebulaEditor ? window.nebulaEditor.openStudio() : null" class="btn-cyber px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-purple-900/40">
+                      <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                      <span>🎨 Open Theme Studio</span>
+                    </button>
+                    <button type="button" onclick="window.nebulaEditor ? window.nebulaEditor.saveConfig() : null" class="px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition">
+                      <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                      <span>Save Changes</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Live Preset Pills -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300">1-Click Color Presets</label>
+                    <span class="text-[10px] text-slate-400">Click any preset to instantly apply to entire panel</span>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="window.nebulaEditor.applyPreset('default')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/30 text-purple-300 flex items-center gap-1.5 transition">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#b288ff]"></span> Default Nebula
+                    </button>
+                    <button type="button" onclick="window.nebulaEditor.applyPreset('slate')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-950/40 hover:bg-sky-900/50 border border-sky-500/30 text-sky-300 flex items-center gap-1.5 transition">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#38bdf8]"></span> Slate Ice
+                    </button>
+                    <button type="button" onclick="window.nebulaEditor.applyPreset('pyro')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-300 flex items-center gap-1.5 transition">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#ff6b4a]"></span> Pyro Blaze
+                    </button>
+                    <button type="button" onclick="window.nebulaEditor.applyPreset('leaf')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 text-emerald-300 flex items-center gap-1.5 transition">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#34d399]"></span> Leaf Emerald
+                    </button>
+                    <button type="button" onclick="window.nebulaEditor.applyPreset('catppuccin')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/30 text-indigo-300 flex items-center gap-1.5 transition">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#cba6f7]"></span> Catppuccin Mocha
+                    </button>
+                    <button type="button" onclick="window.nebulaEditor.applyPreset('cyberpunk')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-pink-950/40 hover:bg-pink-900/50 border border-pink-500/30 text-pink-300 flex items-center gap-1.5 transition">
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span> Cyberpunk Neon
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Real-Time Color Inputs Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                  <div class="p-3 rounded-xl bg-slate-900/40 border border-white/5 space-y-1.5">
+                    <label class="font-semibold text-slate-300">Primary Accent</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="nebula-color-primary" value="${window.nebulaEditor ? window.nebulaEditor.config.pagePrimaryHover : '#b288ff'}" oninput="window.nebulaEditor.applyLive('pagePrimaryHover', this.value); window.nebulaEditor.applyLive('sidebarSecondarySelected', this.value);" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+                      <span class="text-[11px] font-mono text-slate-400">Buttons &amp; Badges</span>
+                    </div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-slate-900/40 border border-white/5 space-y-1.5">
+                    <label class="font-semibold text-slate-300">Page Background</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="nebula-color-page-bg" value="${window.nebulaEditor ? window.nebulaEditor.config.pageBackground : '#0e0c17'}" oninput="window.nebulaEditor.applyLive('pageBackground', this.value)" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+                      <span class="text-[11px] font-mono text-slate-400">Panel Canvas</span>
+                    </div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-slate-900/40 border border-white/5 space-y-1.5">
+                    <label class="font-semibold text-slate-300">Sidebar Background</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="nebula-color-sidebar-bg" value="${window.nebulaEditor ? window.nebulaEditor.config.sidebarBackground : '#151221'}" oninput="window.nebulaEditor.applyLive('sidebarBackground', this.value)" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+                      <span class="text-[11px] font-mono text-slate-400">Nav Shell</span>
+                    </div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-slate-900/40 border border-white/5 space-y-1.5">
+                    <label class="font-semibold text-slate-300">Sidebar Active Glow</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="nebula-color-sidebar-btn" value="${window.nebulaEditor ? window.nebulaEditor.config.sidebarButtonActive : '#b288ff'}" oninput="window.nebulaEditor.applyLive('sidebarButtonActive', this.value)" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+                      <span class="text-[11px] font-mono text-slate-400">Nav Indicator</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sidebar & Pattern Controls -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Sidebar Layout</label>
+                    <select id="nebula-sidebar-mode" onchange="window.nebulaEditor.applyLive('sidebarMode', this.value)" class="w-full glass-input px-3 py-2 rounded-xl">
+                      <option value="wide" ${window.nebulaEditor?.config?.sidebarMode === 'wide' ? 'selected' : ''}>Wide Sidebar (Full Navigation)</option>
+                      <option value="compact" ${window.nebulaEditor?.config?.sidebarMode === 'compact' ? 'selected' : ''}>Compact Sidebar (Icons Only)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Sidebar Button Style</label>
+                    <select id="nebula-btn-style" onchange="window.nebulaEditor.applyLive('sidebarButtonStyle', this.value)" class="w-full glass-input px-3 py-2 rounded-xl">
+                      <option value="default" ${window.nebulaEditor?.config?.sidebarButtonStyle === 'default' ? 'selected' : ''}>Filled Glow Solid</option>
+                      <option value="outline" ${window.nebulaEditor?.config?.sidebarButtonStyle === 'outline' ? 'selected' : ''}>Cyber Outline Border</option>
+                      <option value="line" ${window.nebulaEditor?.config?.sidebarButtonStyle === 'line' ? 'selected' : ''}>Minimal Left Accent Line</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Magic Background Pattern</label>
+                    <select id="nebula-pattern-select" onchange="window.nebulaEditor.applyLive('magicPattern', this.value)" class="w-full glass-input px-3 py-2 rounded-xl">
+                      <option value="" ${!window.nebulaEditor?.config?.magicPattern ? 'selected' : ''}>None (Pure Clean Space)</option>
+                      <option value="cubes" ${window.nebulaEditor?.config?.magicPattern === 'cubes' ? 'selected' : ''}>3D Isometric Cubes</option>
+                      <option value="tiles" ${window.nebulaEditor?.config?.magicPattern === 'tiles' ? 'selected' : ''}>Geometric Tiles</option>
+                      <option value="rotated-squares" ${window.nebulaEditor?.config?.magicPattern === 'rotated-squares' ? 'selected' : ''}>Rotated Cyber Squares</option>
+                      <option value="zig-zag" ${window.nebulaEditor?.config?.magicPattern === 'zig-zag' ? 'selected' : ''}>Zig-Zag Synth Wave</option>
+                      <option value="chevrons" ${window.nebulaEditor?.config?.magicPattern === 'chevrons' ? 'selected' : ''}>High Velocity Chevrons</option>
+                      <option value="polka" ${window.nebulaEditor?.config?.magicPattern === 'polka' ? 'selected' : ''}>Cosmic Polka Matrix</option>
+                      <option value="moon" ${window.nebulaEditor?.config?.magicPattern === 'moon' ? 'selected' : ''}>Lunar Gradient Spheres</option>
+                      <option value="wavy-checkerboard" ${window.nebulaEditor?.config?.magicPattern === 'wavy-checkerboard' ? 'selected' : ''}>Wavy Checkerboard</option>
+                      <option value="l-shape" ${window.nebulaEditor?.config?.magicPattern === 'l-shape' ? 'selected' : ''}>L-Shape Grid</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Announcement Alert Banner Config & Reset Button -->
+                <div class="p-3.5 rounded-2xl bg-black/20 border border-white/5 space-y-2.5 text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                      <i data-lucide="megaphone" class="w-3.5 h-3.5 text-purple-400"></i> Dashboard Announcement Alert
+                    </span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="nebula-alert-toggle" ${window.nebulaEditor?.config?.alertEnabled ? 'checked' : ''} onchange="window.nebulaEditor.applyLive('alertEnabled', this.checked)" class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="nebula-alert-text" value="${window.nebulaEditor?.config?.alertText || ''}" oninput="window.nebulaEditor.applyLive('alertText', this.value)" class="flex-1 glass-input px-3 py-2 rounded-xl text-xs" placeholder="Announcement message to show at top of dashboard...">
+                    <button type="button" onclick="window.nebulaEditor.resetToDefault()" class="px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition flex items-center gap-1 shrink-0">
+                      <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Defaults
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1021,7 +1182,13 @@ class SettingsManager {
       arix_primary_color: this.currentTheme.arixPrimaryColor,
       liquidx_primary_color: this.currentTheme.liquidxPrimaryColor
     });
-    if (themeName === 'pterox') {
+    if (themeName === 'nebula') {
+      app.playSound('online');
+      app.toast('Nebula Theme v2.0 activated!', 'success');
+      if (window.nebulaEditor) {
+        window.nebulaEditor.applyConfig();
+      }
+    } else if (themeName === 'pterox') {
       app.playSound('online');
       app.toast('PteroX Theme V2.0.2 activated!', 'success');
     } else if (themeName === 'liquidx') {
@@ -1080,27 +1247,32 @@ class SettingsManager {
     const cardNook = document.getElementById('theme-card-nook');
     const cardLiquidx = document.getElementById('theme-card-liquidx');
     const cardPterox = document.getElementById('theme-card-pterox');
+    const cardNebula = document.getElementById('theme-card-nebula');
     const btnArix = document.getElementById('btn-theme-arix');
     const btnNook = document.getElementById('btn-theme-nook');
     const btnLiquidx = document.getElementById('btn-theme-liquidx');
     const btnPterox = document.getElementById('btn-theme-pterox');
+    const btnNebula = document.getElementById('btn-theme-nebula');
     const badge = document.getElementById('active-theme-badge');
     const arixPanel = document.getElementById('arix-options-panel');
     const liquidxPanel = document.getElementById('liquidx-options-panel');
     const pteroxPanel = document.getElementById('pterox-options-panel');
+    const nebulaPanel = document.getElementById('nebula-options-panel');
 
     if (badge) {
       const labels = {
         nook: 'NookTheme Active',
         arix: 'Arix Theme v2.1.3 Active',
         liquidx: 'LiquidX Theme v1.0 Active',
-        pterox: 'PteroX Theme v2.0.2 Active'
+        pterox: 'PteroX Theme v2.0.2 Active',
+        nebula: 'Nebula Theme v2.0 Active'
       };
       const badgeClasses = {
         nook: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
         arix: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
         liquidx: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-        pterox: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+        pterox: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+        nebula: 'bg-purple-500/20 text-purple-300 border-purple-500/40'
       };
       badge.innerText = labels[theme] || `${theme} Active`;
       badge.className = `text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${badgeClasses[theme] || badgeClasses.nook}`;
@@ -1118,8 +1290,19 @@ class SettingsManager {
     resetCard(cardArix, btnArix, 'Arix');
     resetCard(cardLiquidx, btnLiquidx, 'LiquidX');
     resetCard(cardPterox, btnPterox, 'PteroX');
+    resetCard(cardNebula, btnNebula, 'Nebula');
 
-    if (theme === 'pterox') {
+    if (theme === 'nebula') {
+      if (cardNebula) cardNebula.className = 'theme-select-card p-5 rounded-2xl border active bg-purple-950/20 border-purple-500/50 ring-1 ring-purple-500/30 flex flex-col justify-between space-y-4';
+      if (btnNebula) {
+        btnNebula.innerText = '✓ Active Theme';
+        btnNebula.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+      }
+      if (arixPanel) arixPanel.classList.add('opacity-60');
+      if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
+      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nebulaPanel) nebulaPanel.classList.remove('opacity-60');
+    } else if (theme === 'pterox') {
       if (cardPterox) cardPterox.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
       if (btnPterox) {
         btnPterox.innerText = '✓ Active Theme';
@@ -1128,6 +1311,7 @@ class SettingsManager {
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
       if (pteroxPanel) pteroxPanel.classList.remove('opacity-60');
+      if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else if (theme === 'liquidx') {
       if (cardLiquidx) cardLiquidx.className = 'theme-select-card p-5 rounded-2xl border active bg-amber-950/20 border-amber-500/50 flex flex-col justify-between space-y-4';
       if (btnLiquidx) {
@@ -1137,6 +1321,7 @@ class SettingsManager {
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.remove('opacity-60');
       if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else if (theme === 'arix') {
       if (cardArix) cardArix.className = 'theme-select-card p-5 rounded-2xl border active bg-purple-950/20 border-purple-500/50 flex flex-col justify-between space-y-4';
       if (btnArix) {
@@ -1146,6 +1331,7 @@ class SettingsManager {
       if (arixPanel) arixPanel.classList.remove('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
       if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else {
       if (cardNook) cardNook.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
       if (btnNook) {
@@ -1155,6 +1341,7 @@ class SettingsManager {
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
       if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     }
   }
 
@@ -1813,6 +2000,7 @@ class SettingsManager {
       panel_sounds_enabled: this.currentTheme.panelSoundsEnabled ? '1' : '0',
       arix_primary_color: this.currentTheme.arixPrimaryColor || '#4A35CF',
       liquidx_primary_color: this.currentTheme.liquidxPrimaryColor || '#e0841b',
+      nebula_config: JSON.stringify(window.nebulaEditor ? window.nebulaEditor.config : {}),
       registration_enabled: document.getElementById('set-registration')?.checked ? '1' : '0',
       tutorials_enabled: document.getElementById('set-tutorials-enabled')?.checked ? '1' : '0',
       tutorials_autostart_enabled: document.getElementById('set-tutorials-autostart-enabled')?.checked ? '1' : '0'
