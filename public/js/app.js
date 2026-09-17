@@ -733,6 +733,7 @@ class App {
       { tab: 'properties', name: 'Properties', icon: 'sliders' },
       { tab: 'players', name: 'Players', icon: 'gamepad-2' },
       { tab: 'importer', name: 'Importer', icon: 'download-cloud' },
+      { tab: 'splitter', name: 'Splitter', icon: 'git-fork' },
       { tab: 'marketplace', name: 'Addons', icon: 'shopping-bag' },
       { tab: 'databases', name: 'Databases', icon: 'database' },
       { tab: 'schedules', name: 'Schedules', icon: 'clock' },

@@ -4565,6 +4565,33 @@ sudo apt install -y playit</pre>
           </div>
         </div>
 
+        <!-- Featured Blueprint Extension: Server Splitter -->
+        <div class="glass-panel p-5 rounded-3xl border border-purple-500/40 bg-gradient-to-r from-purple-950/60 via-indigo-950/40 to-slate-900/80 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <img src="/assets/serversplitter_icon.jpg" alt="Server Splitter" class="w-16 h-16 rounded-2xl object-cover border border-purple-500/30 shadow-lg shrink-0">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/20 px-2.5 py-0.5 rounded-full border border-purple-500/30">
+                  ⚡ Core Extension
+                </span>
+                <span class="text-[10px] font-mono text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full">v1.1.4</span>
+                <span class="text-[10px] text-slate-400 font-mono">by 0x7d8 • nobita329</span>
+              </div>
+              <h4 class="text-xl font-black text-white flex items-center gap-2">
+                Server Splitter
+              </h4>
+              <p class="text-xs text-slate-300 max-w-2xl">
+                Ported from <code>nobita329/Nobita-Cloud (serversplitter.blueprint)</code>. Easily partition your server RAM, CPU cores, and Disk into independent Minecraft, Node.js, Python, or VM sub-servers with dedicated ports and live resizing.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="app.navigate('server-manage/' + (marketplace.currentServerId || 1) + '/splitter')" class="btn-cyber px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-purple-500/20 active:scale-95">
+              <i data-lucide="git-fork" class="w-4 h-4"></i> Open Server Splitter
+            </button>
+          </div>
+        </div>
+
         <!-- Section 1: 1-Click Essential Plugins -->
         <div class="glass-panel p-5 rounded-2xl border border-white/10 space-y-4">
           <div class="flex items-center justify-between pb-2 border-b border-white/5">

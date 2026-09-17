@@ -328,6 +328,42 @@ async function initDatabase() {
         "INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('tutorials_autostart_enabled', '0', 'boolean', 'Automatically launch the interactive auto-tutorial for new users on their first login')"
       );
     }
+
+    // Seed default Server Splitter blueprint settings
+    const splitEnabled = await query.get("SELECT `key` FROM settings WHERE `key` = 'splitter_enabled'");
+    if (!splitEnabled) {
+      await query.run("INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('splitter_enabled', '1', 'boolean', 'Enable or disable the Server Splitter extension')");
+    }
+    const splitCpu = await query.get("SELECT `key` FROM settings WHERE `key` = 'splitter_reserved_cpu'");
+    if (!splitCpu) {
+      await query.run("INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('splitter_reserved_cpu', '10', 'number', 'Reserved/Minimum CPU (%) reserved for parent server')");
+    }
+    const splitMem = await query.get("SELECT `key` FROM settings WHERE `key` = 'splitter_reserved_memory'");
+    if (!splitMem) {
+      await query.run("INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('splitter_reserved_memory', '256', 'number', 'Reserved/Minimum Memory (MB) reserved for parent server')");
+    }
+    const splitDisk = await query.get("SELECT `key` FROM settings WHERE `key` = 'splitter_reserved_disk'");
+    if (!splitDisk) {
+      await query.run("INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('splitter_reserved_disk', '512', 'number', 'Reserved/Minimum Disk (MB) reserved for parent server')");
+    }
+    const splitLimit = await query.get("SELECT `key` FROM settings WHERE `key` = 'splitter_default_limit'");
+    if (!splitLimit) {
+      await query.run("INSERT INTO settings (`key`, `value`, `type`, `description`) VALUES ('splitter_default_limit', '3', 'number', 'Default maximum splits allowed per server')");
+    }
+  } catch (e) {}
+
+  // Server Splitter schema migrations on servers table
+  try {
+    await pool.query('ALTER TABLE servers ADD COLUMN parent_id INT DEFAULT NULL');
+  } catch (e) {}
+  try {
+    await pool.query('ALTER TABLE servers ADD COLUMN splitter_limit INT DEFAULT 3');
+  } catch (e) {}
+  try {
+    await pool.query('ALTER TABLE servers ADD COLUMN is_split TINYINT(1) DEFAULT 0');
+  } catch (e) {}
+  try {
+    await pool.query('CREATE INDEX idx_servers_parent ON servers(parent_id)');
   } catch (e) {}
 
   console.log('✅ MariaDB Schema initialized successfully.');
