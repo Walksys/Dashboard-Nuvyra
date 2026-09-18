@@ -212,7 +212,8 @@ class RunnerService {
       throw new Error(`Server with ID ${sId} not found.`);
     }
 
-    if (this.isServerRunning(sId)) {
+    const existingRec = this.activeProcesses.get(sId);
+    if (this.isServerRunning(sId) && (!existingRec || !existingRec.isRestarting)) {
       throw new Error('Server is already running.');
     }
 
@@ -337,10 +338,12 @@ class RunnerService {
             record.stream = stream;
             stream.on('data', chunk => this.appendLog(sId, chunk));
             stream.on('end', () => {
-              record.status = 'offline';
-              query.run('UPDATE servers SET status = ? WHERE id = ?', ['offline', sId]);
-              this.broadcast(sId, { type: 'status', status: 'offline' });
-              try { require('./playerService').clearOnlinePlayers(sId); } catch (e) {}
+              if (!record.isRestarting) {
+                record.status = 'offline';
+                query.run('UPDATE servers SET status = ? WHERE id = ?', ['offline', sId]).catch(() => {});
+                this.broadcast(sId, { type: 'status', status: 'offline' });
+                try { require('./playerService').clearOnlinePlayers(sId); } catch (e) {}
+              }
             });
           }
         });
@@ -383,11 +386,13 @@ class RunnerService {
       child.on('close', (code) => {
         this.appendLog(sId, `\r\n\x1b[31m[Mpanel]\x1b[0m Server process stopped with exit code ${code}.\r\n`);
         record.process = null;
-        record.status = 'offline';
-        query.run('UPDATE servers SET status = ? WHERE id = ?', ['offline', sId]);
-        this.broadcast(sId, { type: 'status', status: 'offline' });
-        this.stopStatsMonitoring(sId);
-        try { require('./playerService').clearOnlinePlayers(sId); } catch (e) {}
+        if (!record.isRestarting) {
+          record.status = 'offline';
+          query.run('UPDATE servers SET status = ? WHERE id = ?', ['offline', sId]).catch(() => {});
+          this.broadcast(sId, { type: 'status', status: 'offline' });
+          this.stopStatsMonitoring(sId);
+          try { require('./playerService').clearOnlinePlayers(sId); } catch (e) {}
+        }
       });
 
       child.on('error', (err) => {
@@ -411,9 +416,11 @@ class RunnerService {
       return { success: true, message: 'Server is already offline.' };
     }
 
-    record.status = 'stopping';
-    await query.run('UPDATE servers SET status = ? WHERE id = ?', ['stopping', sId]);
-    this.broadcast(sId, { type: 'status', status: 'stopping' });
+    if (!record.isRestarting) {
+      record.status = 'stopping';
+      await query.run('UPDATE servers SET status = ? WHERE id = ?', ['stopping', sId]);
+      this.broadcast(sId, { type: 'status', status: 'stopping' });
+    }
     this.appendLog(sId, `\r\n\x1b[33m[Mpanel]\x1b[0m Stopping server...\r\n`);
 
     if (record.container) {
@@ -446,12 +453,14 @@ class RunnerService {
     const sId = Number(serverId);
     const record = this.activeProcesses.get(sId);
     if (record) {
+      record.isRestarting = false;
       if (record.container) {
         try { await record.container.kill(); } catch (e) {}
       }
       if (record.process) {
         try { record.process.kill('SIGKILL'); } catch (e) {}
       }
+      record.status = 'offline';
     }
     await query.run('UPDATE servers SET status = ? WHERE id = ?', ['offline', sId]);
     this.broadcast(sId, { type: 'status', status: 'offline' });
@@ -460,8 +469,28 @@ class RunnerService {
   }
 
   async restartServer(serverId) {
+    const sId = Number(serverId);
+    let record = this.activeProcesses.get(sId);
+    if (!record) {
+      this.activeProcesses.set(sId, {
+        process: null,
+        stream: null,
+        logBuffer: [],
+        sockets: new Set(),
+        status: 'restarting'
+      });
+      record = this.activeProcesses.get(sId);
+    }
+    record.status = 'restarting';
+    record.isRestarting = true;
+    await query.run('UPDATE servers SET status = ? WHERE id = ?', ['restarting', sId]).catch(() => {});
+    this.broadcast(sId, { type: 'status', status: 'restarting' });
+    this.appendLog(sId, `\r\n\x1b[33m[Mpanel]\x1b[0m Server is restarting...\r\n`);
+
     await this.stopServer(serverId);
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 1500));
+    record.isRestarting = false;
+    record.status = 'offline';
     return this.startServer(serverId);
   }
 
@@ -510,10 +539,12 @@ class RunnerService {
                   record.stream = stream;
                   stream.on('data', chunk => this.appendLog(sId, chunk));
                   stream.on('end', () => {
-                    record.status = 'offline';
-                    query.run('UPDATE servers SET status = ? WHERE id = ?', ['offline', sId]).catch(() => {});
-                    this.broadcast(sId, { type: 'status', status: 'offline' });
-                    try { require('./playerService').clearOnlinePlayers(sId); } catch (e) {}
+                    if (!record.isRestarting) {
+                      record.status = 'offline';
+                      query.run('UPDATE servers SET status = ? WHERE id = ?', ['offline', sId]).catch(() => {});
+                      this.broadcast(sId, { type: 'status', status: 'offline' });
+                      try { require('./playerService').clearOnlinePlayers(sId); } catch (e) {}
+                    }
                   });
                 }
               });
@@ -578,10 +609,19 @@ class RunnerService {
     return { success: true };
   }
 
+  getServerStatus(serverId) {
+    const sId = Number(serverId);
+    const record = this.activeProcesses.get(sId);
+    if (record && record.status) {
+      return record.status;
+    }
+    return 'offline';
+  }
+
   isServerRunning(serverId) {
     const sId = Number(serverId);
     const record = this.activeProcesses.get(sId);
-    return !!(record && (record.status === 'running' || record.status === 'starting'));
+    return !!(record && (record.status === 'running' || record.status === 'starting' || record.status === 'restarting'));
   }
 
   startStatsMonitoring(serverId, serverDir) {

@@ -2,18 +2,41 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 const { query } = require('../database/db');
 
-// Authenticate JWT Token
+// Authenticate JWT Token or API Key
 async function authenticate(req, res, next) {
   try {
     let token = req.headers.authorization;
     if (token && token.startsWith('Bearer ')) {
       token = token.slice(7);
+    } else if (req.headers['x-api-key']) {
+      token = req.headers['x-api-key'];
     } else if (req.query && req.query.token) {
       token = req.query.token;
+    } else if (req.query && req.query.api_key) {
+      token = req.query.api_key;
     }
 
     if (!token) {
       return res.status(401).json({ success: false, error: 'Authentication token missing or invalid.' });
+    }
+
+    // Check if it's an Mpanel API Key (mpk_...)
+    if (token.startsWith('mpk_')) {
+      const apiKey = await query.get('SELECT * FROM api_keys WHERE key_token = ?', [token]);
+      if (!apiKey) {
+        return res.status(401).json({ success: false, error: 'Invalid API key.' });
+      }
+      query.run('UPDATE api_keys SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?', [apiKey.id]).catch(() => {});
+      const user = await query.get('SELECT id, uuid, username, email, role, two_factor_enabled, suspended, avatar FROM users WHERE id = ?', [apiKey.user_id]);
+      if (!user) {
+        return res.status(401).json({ success: false, error: 'API key owner no longer exists.' });
+      }
+      if (user.suspended) {
+        return res.status(403).json({ success: false, error: 'Account has been suspended.' });
+      }
+      req.user = user;
+      req.apiKey = apiKey;
+      return next();
     }
 
     const decoded = jwt.verify(token, config.JWT_SECRET);

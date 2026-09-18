@@ -46,10 +46,15 @@ router.get('/', authenticate, async (req, res) => {
     // Attach runtime live status to servers
     const enriched = servers.map(s => {
       const isSuspended = !!s.is_suspended;
-      const isRunning = !isSuspended && runnerService.isServerRunning(s.id);
+      if (isSuspended) {
+        return { ...s, status: 'suspended', is_running: false };
+      }
+      const liveStatus = runnerService.getServerStatus(s.id);
+      const effectiveStatus = (liveStatus && liveStatus !== 'offline') ? liveStatus : (s.status || 'offline');
       return {
         ...s,
-        status: isSuspended ? 'suspended' : (isRunning ? (s.status === 'starting' ? 'starting' : 'running') : 'offline')
+        status: effectiveStatus,
+        is_running: effectiveStatus === 'running'
       };
     });
 
@@ -244,8 +249,9 @@ router.get('/:id', authenticate, requireServerAccess('view'), async (req, res) =
     }
 
     const isSuspended = !!server.is_suspended;
-    server.status = isSuspended ? 'suspended' : (runnerService.isServerRunning(server.id) ? (server.status === 'starting' ? 'starting' : 'running') : 'offline');
-    server.is_running = !isSuspended && runnerService.isServerRunning(server.id);
+    const liveStatus = runnerService.getServerStatus(server.id);
+    server.status = isSuspended ? 'suspended' : ((liveStatus && liveStatus !== 'offline') ? liveStatus : (server.status || 'offline'));
+    server.is_running = !isSuspended && (server.status === 'running');
     server.sftp_username = `${req.user.username}.${server.id}`;
     server.sftp_host = server.node_fqdn || '127.0.0.1';
     server.sftp_port = server.sftp_port || config.PORT_SFTP;
