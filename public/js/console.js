@@ -45,23 +45,31 @@ class ServerConsole {
       <div class="space-y-4">
         <!-- NookTheme Server Header Bar -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-          <div>
-            <h2 id="srv-header-name" class="text-2xl font-bold text-white tracking-tight leading-tight">Server #${serverId}</h2>
-            <p id="srv-header-desc" class="text-xs text-slate-400 mt-0.5 font-normal">Node.js Container Instance</p>
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <h2 id="srv-header-name" class="text-2xl font-bold text-white tracking-tight leading-tight">Server #${serverId}</h2>
+                <div id="srv-header-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all shadow-sm bg-rose-500/15 text-rose-400 border-rose-500/30">
+                  <span id="srv-header-status-dot" class="w-2 h-2 rounded-full bg-rose-500"></span>
+                  <span id="srv-header-status-text">🔴 Offline / Stopped</span>
+                </div>
+              </div>
+              <p id="srv-header-desc" class="text-xs text-slate-400 mt-0.5 font-normal">Node.js Container Instance</p>
+            </div>
           </div>
 
           <!-- Quick Power Action Controls (Start / Restart / Stop) -->
-          <div class="flex items-center gap-2">
-            <button onclick="serverConsole.triggerPower(${serverId}, 'start')" class="btn-nook-start">
+          <div class="flex items-center gap-2" id="srv-power-controls">
+            <button id="btn-power-start" onclick="serverConsole.triggerPower(${serverId}, 'start')" class="btn-nook-start transition">
               <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Start
             </button>
-            <button onclick="serverConsole.triggerPower(${serverId}, 'restart')" class="btn-nook-restart">
+            <button id="btn-power-restart" onclick="serverConsole.triggerPower(${serverId}, 'restart')" class="btn-nook-restart transition">
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Restart
             </button>
-            <button onclick="serverConsole.triggerPower(${serverId}, 'stop')" class="btn-nook-stop">
+            <button id="btn-power-stop" onclick="serverConsole.triggerPower(${serverId}, 'stop')" class="btn-nook-stop transition">
               <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i> Stop
             </button>
-            <button onclick="serverConsole.triggerPower(${serverId}, 'kill')" title="Force Kill" class="p-2 rounded-lg text-xs font-bold bg-[#212121] hover:bg-rose-950 text-rose-400 border border-white/10 transition">
+            <button id="btn-power-kill" onclick="serverConsole.triggerPower(${serverId}, 'kill')" title="Force Kill" class="p-2 rounded-lg text-xs font-bold bg-[#212121] hover:bg-rose-950 text-rose-400 border border-white/10 transition">
               <i data-lucide="zap-off" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -105,7 +113,19 @@ class ServerConsole {
       if (titleEl) titleEl.innerText = `Terminal - ${s.name}`;
 
       const addrEl = document.getElementById('stat-addr-val');
-      if (addrEl) addrEl.innerText = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
+      if (addrEl) {
+        const addrText = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
+        addrEl.innerText = addrText;
+        addrEl.title = addrText;
+        addrEl.setAttribute('data-addr', addrText);
+        if (addrText.length > 18) {
+          addrEl.style.fontSize = '9px';
+        } else if (addrText.length > 15) {
+          addrEl.style.fontSize = '9.8px';
+        } else {
+          addrEl.style.fontSize = '10.5px';
+        }
+      }
 
       const cpuLimit = (s.cpu_limit !== undefined && s.cpu_limit !== null) ? parseInt(s.cpu_limit, 10) : 100;
       const maxCpuStr = (cpuLimit > 0) ? `${cpuLimit}%` : (cpuLimit === 0 ? '&infin;' : '100%');
@@ -150,20 +170,160 @@ class ServerConsole {
     }
   }
 
+  getStatusConfig(rawStatus) {
+    const s = String(rawStatus || 'offline').toLowerCase().trim();
+    if (s === 'running' || s === 'online' || s === 'started') {
+      return {
+        key: 'running',
+        label: '🟢 Online / Started',
+        shortLabel: 'Online',
+        badgeClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        dotClass: 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse',
+        canStart: false,
+        canRestart: true,
+        canStop: true,
+        canKill: true
+      };
+    }
+    if (s === 'starting') {
+      return {
+        key: 'starting',
+        label: '🔵 Starting',
+        shortLabel: 'Starting',
+        badgeClass: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+        dotClass: 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-ping',
+        canStart: false,
+        canRestart: false,
+        canStop: true,
+        canKill: true
+      };
+    }
+    if (s === 'restarting') {
+      return {
+        key: 'restarting',
+        label: '🟡 Restarting',
+        shortLabel: 'Restarting',
+        badgeClass: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+        dotClass: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse',
+        canStart: false,
+        canRestart: false,
+        canStop: true,
+        canKill: true
+      };
+    }
+    if (s === 'stopping') {
+      return {
+        key: 'stopping',
+        label: '⚫ Stopping',
+        shortLabel: 'Stopping',
+        badgeClass: 'bg-slate-500/20 text-slate-300 border-slate-500/40',
+        dotClass: 'bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.6)] animate-pulse',
+        canStart: false,
+        canRestart: false,
+        canStop: false,
+        canKill: true
+      };
+    }
+    if (s === 'suspended') {
+      return {
+        key: 'suspended',
+        label: '🔒 Suspended',
+        shortLabel: 'Suspended',
+        badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+        dotClass: 'bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.8)]',
+        canStart: false,
+        canRestart: false,
+        canStop: false,
+        canKill: false
+      };
+    }
+    return {
+      key: 'offline',
+      label: '🔴 Offline / Stopped',
+      shortLabel: 'Offline',
+      badgeClass: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+      dotClass: 'bg-rose-500',
+      canStart: true,
+      canRestart: false,
+      canStop: false,
+      canKill: false
+    };
+  }
+
   updateStatusBadge(status) {
     const prevStatus = this.serverStatus;
     this.serverStatus = status;
 
+    const cfg = this.getStatusConfig(status);
+
     if (prevStatus && prevStatus !== status) {
-      if (status === 'running') {
+      if (cfg.key === 'running') {
         app.playSound('online');
-      } else if (status === 'offline') {
+      } else if (cfg.key === 'offline') {
         app.playSound('offline');
       }
     }
 
+    // 1. Update Header Status Badge
+    const headerBadge = document.getElementById('srv-header-status-badge');
+    const headerDot = document.getElementById('srv-header-status-dot');
+    const headerText = document.getElementById('srv-header-status-text');
+    if (headerBadge && headerDot && headerText) {
+      headerBadge.className = `px-2.5 py-0.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all shadow-sm ${cfg.badgeClass}`;
+      headerDot.className = `w-2 h-2 rounded-full ${cfg.dotClass}`;
+      headerText.innerText = cfg.label;
+    }
+
+    // 2. Update Terminal Titlebar Status Badge
+    const termBadge = document.getElementById('term-status-badge');
+    const termDot = document.getElementById('term-status-dot');
+    const termText = document.getElementById('term-status-text');
+    if (termBadge && termDot && termText) {
+      termBadge.className = `ml-2 px-2.5 py-0.5 rounded text-[11px] font-bold border flex items-center gap-1.5 font-sans transition-all ${cfg.badgeClass}`;
+      termDot.className = `w-2 h-2 rounded-full ${cfg.dotClass}`;
+      termText.innerText = cfg.label;
+    }
+
+    const uptimeIcon = document.getElementById('stat-uptime-icon');
+    if (uptimeIcon) {
+      uptimeIcon.className = `nook-stat-icon-mini nook-glow-mini-uptime ${cfg.key || ''}`;
+    }
+
+    // 3. Update Power Buttons Enable/Disable State
+    const isSuspended = this.serverData && (this.serverData.is_suspended || this.serverData.status === 'suspended');
+    const btnStart = document.getElementById('btn-power-start');
+    const btnRestart = document.getElementById('btn-power-restart');
+    const btnStop = document.getElementById('btn-power-stop');
+    const btnKill = document.getElementById('btn-power-kill');
+
+    if (btnStart) {
+      btnStart.disabled = isSuspended || !cfg.canStart;
+      btnStart.classList.toggle('opacity-40', btnStart.disabled);
+      btnStart.classList.toggle('cursor-not-allowed', btnStart.disabled);
+      btnStart.classList.toggle('pointer-events-none', btnStart.disabled);
+    }
+    if (btnRestart) {
+      btnRestart.disabled = isSuspended || !cfg.canRestart;
+      btnRestart.classList.toggle('opacity-40', btnRestart.disabled);
+      btnRestart.classList.toggle('cursor-not-allowed', btnRestart.disabled);
+      btnRestart.classList.toggle('pointer-events-none', btnRestart.disabled);
+    }
+    if (btnStop) {
+      btnStop.disabled = isSuspended || !cfg.canStop;
+      btnStop.classList.toggle('opacity-40', btnStop.disabled);
+      btnStop.classList.toggle('cursor-not-allowed', btnStop.disabled);
+      btnStop.classList.toggle('pointer-events-none', btnStop.disabled);
+    }
+    if (btnKill) {
+      btnKill.disabled = isSuspended || !cfg.canKill;
+      btnKill.classList.toggle('opacity-40', btnKill.disabled);
+      btnKill.classList.toggle('cursor-not-allowed', btnKill.disabled);
+      btnKill.classList.toggle('pointer-events-none', btnKill.disabled);
+    }
+
+    // 4. Update Uptime & Metrics Reset
     const uptimeEl = document.getElementById('stat-uptime-val');
-    if (status === 'offline') {
+    if (cfg.key === 'offline') {
       if (uptimeEl) uptimeEl.innerText = 'Offline';
       const cpuVal = document.getElementById('stat-cpu-val');
       if (cpuVal) cpuVal.innerText = '0.00%';
@@ -173,12 +333,41 @@ class ServerConsole {
       if (memVal) memVal.innerText = '0 MiB';
       const chartMem = document.getElementById('chart-mem-val');
       if (chartMem) chartMem.innerText = '0 MiB';
+      const netInVal = document.getElementById('stat-net-in-val');
+      if (netInVal) netInVal.innerText = '0 KiB';
+      const netOutVal = document.getElementById('stat-net-out-val');
+      if (netOutVal) netOutVal.innerText = '0 KiB';
+      const chartNet = document.getElementById('chart-net-val');
+      if (chartNet) chartNet.innerText = '0 B/s';
+
+      const cpuPctEl = document.getElementById('stat-cpu-pct');
+      if (cpuPctEl) cpuPctEl.innerText = '0.00%';
+      const memPctEl = document.getElementById('stat-mem-pct');
+      if (memPctEl) memPctEl.innerText = '0.00%';
+      const diskPctEl = document.getElementById('stat-disk-pct');
+      if (diskPctEl) diskPctEl.innerText = '0.00%';
+      const netInPctEl = document.getElementById('stat-net-in-pct');
+      if (netInPctEl) netInPctEl.innerText = '0.00%';
+      const netOutPctEl = document.getElementById('stat-net-out-pct');
+      if (netOutPctEl) netOutPctEl.innerText = '0.00%';
+
+      const barCpu = document.getElementById('bar-cpu');
+      if (barCpu) barCpu.style.width = '0%';
+      const barMem = document.getElementById('bar-mem');
+      if (barMem) barMem.style.width = '0%';
+      const barDisk = document.getElementById('bar-disk');
+      if (barDisk) barDisk.style.width = '0%';
+      const barNetIn = document.getElementById('bar-net-in');
+      if (barNetIn) barNetIn.style.width = '0%';
+      const barNetOut = document.getElementById('bar-net-out');
+      if (barNetOut) barNetOut.style.width = '0%';
+
       this.currentUptime = 0;
       if (this.uptimeInterval) {
         clearInterval(this.uptimeInterval);
         this.uptimeInterval = null;
       }
-    } else if (status === 'running') {
+    } else if (cfg.key === 'running') {
       if (!this.uptimeInterval) {
         this.uptimeInterval = setInterval(() => {
           this.currentUptime += 1;
@@ -289,6 +478,10 @@ class ServerConsole {
                   <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
                   <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
                   <span id="terminal-server-title" class="font-mono text-[11px] text-slate-400 ml-2 truncate max-w-[140px] sm:max-w-none">Terminal - ${s.name || 'server'}</span>
+                  <div id="term-status-badge" class="ml-2 px-2.5 py-0.5 rounded text-[11px] font-bold border flex items-center gap-1.5 font-sans transition-all bg-rose-500/15 text-rose-400 border-rose-500/30">
+                    <span id="term-status-dot" class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <span id="term-status-text">🔴 Offline / Stopped</span>
+                  </div>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                   <!-- Auto Fit button -->
@@ -330,82 +523,131 @@ class ServerConsole {
             </div>
           </div>
 
-          <!-- 7 Stat Cards (Col 4) -->
+          <!-- 5 Parsentbar Stat Cards + Address & Uptime (Col 4) -->
           <div class="space-y-2.5 flex flex-col justify-between">
-            <!-- 1. Address -->
-            <div class="nook-stat-card cursor-pointer" onclick="app.copyToClipboard(document.getElementById('stat-addr-val').innerText)" title="Click to copy address">
-              <div class="nook-stat-icon">
-                <i data-lucide="wifi" class="w-4 h-4 text-slate-200"></i>
+            <!-- Top Row: Address & Uptime Tiles -->
+            <div class="grid grid-cols-[1.65fr_1fr] gap-2">
+              <!-- 1. Address -->
+              <div class="nook-stat-card-mini cursor-pointer group" onclick="app.copyToClipboard(document.getElementById('stat-addr-val').getAttribute('data-addr') || document.getElementById('stat-addr-val').innerText)" title="Click to copy address: ${s.ip || '127.0.0.1'}:${s.port || 25565}">
+                <div class="nook-stat-icon-mini nook-glow-mini-addr">
+                  <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between">
+                    <p class="nook-stat-title-mini">Address</p>
+                    <i data-lucide="copy" class="w-2.5 h-2.5 text-slate-500 group-hover:text-cyan-400 transition opacity-0 group-hover:opacity-100 mr-0.5"></i>
+                  </div>
+                  <p id="stat-addr-val" data-addr="${s.ip || '127.0.0.1'}:${s.port || 25565}" class="nook-stat-value-mini font-mono" title="${s.ip || '127.0.0.1'}:${s.port || 25565}">${s.ip || '127.0.0.1'}:${s.port || 25565}</p>
+                </div>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="nook-stat-title">Address</p>
-                <p id="stat-addr-val" class="nook-stat-value">${s.ip || '127.0.0.1'}:${s.port || 25565}</p>
+
+              <!-- 2. Uptime -->
+              <div class="nook-stat-card-mini">
+                <div id="stat-uptime-icon" class="nook-stat-icon-mini nook-glow-mini-uptime">
+                  <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="nook-stat-title-mini">Uptime</p>
+                  <p id="stat-uptime-val" class="nook-stat-value-mini">Offline</p>
+                </div>
               </div>
             </div>
 
-            <!-- 2. Uptime -->
-            <div class="nook-stat-card">
-              <div class="nook-stat-icon">
-                <i data-lucide="clock" class="w-4 h-4 text-slate-200"></i>
+            <!-- 1. CPU Load Card -->
+            <div class="nook-parsent-card">
+              <div class="nook-parsent-icon nook-glow-cpu">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="nook-stat-title">Uptime</p>
-                <p id="stat-uptime-val" class="nook-stat-value">Offline</p>
+                <p class="nook-parsent-title">CPU Load</p>
+                <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                  <div class="nook-parsent-val">
+                    <span id="stat-cpu-val">0.00%</span>
+                    <span id="stat-cpu-max" class="text-slate-500 text-[11px] font-normal font-sans">/ ${maxCpuStr}</span>
+                  </div>
+                  <span id="stat-cpu-pct" class="nook-parsent-pct text-sky-400">0.00%</span>
+                </div>
+                <div class="nook-parsent-track">
+                  <div id="bar-cpu" class="nook-parsent-bar nook-bar-cpu" style="width: 0%;"></div>
+                </div>
               </div>
             </div>
 
-            <!-- 3. CPU Load -->
-            <div class="nook-stat-card">
-              <div class="nook-stat-icon">
-                <i data-lucide="cpu" class="w-4 h-4 text-slate-200"></i>
+            <!-- 2. Memory Card -->
+            <div class="nook-parsent-card">
+              <div class="nook-parsent-icon nook-glow-mem">
+                <i data-lucide="activity" class="w-5 h-5"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="nook-stat-title">CPU Load</p>
-                <p class="nook-stat-value"><span id="stat-cpu-val">0.00%</span> <span id="stat-cpu-max" class="text-slate-500 text-[10px] font-normal">/ ${maxCpuStr}</span></p>
+                <p class="nook-parsent-title">Memory</p>
+                <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                  <div class="nook-parsent-val">
+                    <span id="stat-mem-val">0 MiB</span>
+                    <span id="stat-mem-max" class="text-slate-500 text-[11px] font-normal font-sans">/ ${maxMemStr}</span>
+                  </div>
+                  <span id="stat-mem-pct" class="nook-parsent-pct text-purple-400">0.00%</span>
+                </div>
+                <div class="nook-parsent-track">
+                  <div id="bar-mem" class="nook-parsent-bar nook-bar-mem" style="width: 0%;"></div>
+                </div>
               </div>
             </div>
 
-            <!-- 4. Memory -->
-            <div class="nook-stat-card">
-              <div class="nook-stat-icon">
-                <i data-lucide="activity" class="w-4 h-4 text-slate-200"></i>
+            <!-- 3. Disk Card -->
+            <div class="nook-parsent-card">
+              <div class="nook-parsent-icon nook-glow-disk">
+                <i data-lucide="hard-drive" class="w-5 h-5"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="nook-stat-title">Memory</p>
-                <p class="nook-stat-value"><span id="stat-mem-val">0 MiB</span> <span id="stat-mem-max" class="text-slate-500 text-[10px] font-normal">/ ${maxMemStr}</span></p>
+                <p class="nook-parsent-title">Disk</p>
+                <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                  <div class="nook-parsent-val">
+                    <span id="stat-disk-val">0 MiB</span>
+                    <span id="stat-disk-max" class="text-slate-500 text-[11px] font-normal font-sans">/ ${maxDiskStr}</span>
+                  </div>
+                  <span id="stat-disk-pct" class="nook-parsent-pct text-amber-400">0.00%</span>
+                </div>
+                <div class="nook-parsent-track">
+                  <div id="bar-disk" class="nook-parsent-bar nook-bar-disk" style="width: 0%;"></div>
+                </div>
               </div>
             </div>
 
-            <!-- 5. Disk -->
-            <div class="nook-stat-card">
-              <div class="nook-stat-icon">
-                <i data-lucide="hard-drive" class="w-4 h-4 text-slate-200"></i>
+            <!-- 4. Network (Inbound) Card -->
+            <div class="nook-parsent-card">
+              <div class="nook-parsent-icon nook-glow-netin">
+                <i data-lucide="cloud-download" class="w-5 h-5"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="nook-stat-title">Disk</p>
-                <p class="nook-stat-value"><span id="stat-disk-val">0 MiB</span> <span id="stat-disk-max" class="text-slate-500 text-[10px] font-normal">/ ${maxDiskStr}</span></p>
+                <p class="nook-parsent-title">Network (Inbound)</p>
+                <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                  <div class="nook-parsent-val">
+                    <span id="stat-net-in-val">0 KiB</span>
+                  </div>
+                  <span id="stat-net-in-pct" class="nook-parsent-pct text-emerald-400">0.00%</span>
+                </div>
+                <div class="nook-parsent-track">
+                  <div id="bar-net-in" class="nook-parsent-bar nook-bar-netin" style="width: 0%;"></div>
+                </div>
               </div>
             </div>
 
-            <!-- 6. Network (Inbound) -->
-            <div class="nook-stat-card">
-              <div class="nook-stat-icon">
-                <i data-lucide="cloud-download" class="w-4 h-4 text-slate-200"></i>
+            <!-- 5. Network (Outbound) Card -->
+            <div class="nook-parsent-card">
+              <div class="nook-parsent-icon nook-glow-netout">
+                <i data-lucide="cloud-upload" class="w-5 h-5"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="nook-stat-title">Network (Inbound)</p>
-                <p id="stat-net-in-val" class="nook-stat-value">0 KiB</p>
-              </div>
-            </div>
-
-            <!-- 7. Network (Outbound) -->
-            <div class="nook-stat-card">
-              <div class="nook-stat-icon">
-                <i data-lucide="cloud-upload" class="w-4 h-4 text-slate-200"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="nook-stat-title">Network (Outbound)</p>
-                <p id="stat-net-out-val" class="nook-stat-value">0 KiB</p>
+                <p class="nook-parsent-title">Network (Outbound)</p>
+                <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                  <div class="nook-parsent-val">
+                    <span id="stat-net-out-val">0 KiB</span>
+                  </div>
+                  <span id="stat-net-out-pct" class="nook-parsent-pct text-rose-400">0.00%</span>
+                </div>
+                <div class="nook-parsent-track">
+                  <div id="bar-net-out" class="nook-parsent-bar nook-bar-netout" style="width: 0%;"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -461,6 +703,7 @@ class ServerConsole {
     this.initTerminal();
     this.initCharts();
     this.connectWebSocket();
+    this.updateStatusBadge(this.serverStatus || (this.serverData ? this.serverData.status : 'offline'));
     if (window.lucide) lucide.createIcons();
   }
 
@@ -799,6 +1042,9 @@ class ServerConsole {
           if (msg.stats) this.updateStatsUI(msg.stats);
         } else if (msg.type === 'stats') {
           this.updateStatsUI(msg.stats);
+          if (msg.stats && msg.stats.status && msg.stats.status !== this.serverStatus) {
+            this.updateStatusBadge(msg.stats.status);
+          }
         } else if (msg.type === 'error') {
           app.toast(msg.message, 'error');
         }
@@ -829,11 +1075,20 @@ class ServerConsole {
       }
     }
 
-    // CPU Load
+    // 1. CPU Load
     const isOffline = this.serverStatus === 'offline';
+    const s = this.serverData || {};
+
     const cpu = (!isOffline && typeof stats.cpu === 'number') ? stats.cpu : 0;
+    const cpuLimit = (s.cpu_limit !== undefined && s.cpu_limit !== null && s.cpu_limit > 0) ? parseInt(s.cpu_limit, 10) : 100;
+    const cpuPct = isOffline ? 0 : Math.min(100, Math.max(0, (cpu / cpuLimit) * 100));
+
     const cpuVal = document.getElementById('stat-cpu-val');
     if (cpuVal) cpuVal.innerText = `${cpu.toFixed(2)}%`;
+    const cpuPctEl = document.getElementById('stat-cpu-pct');
+    if (cpuPctEl) cpuPctEl.innerText = `${cpu.toFixed(2)}%`;
+    const barCpu = document.getElementById('bar-cpu');
+    if (barCpu) barCpu.style.width = `${cpuPct.toFixed(1)}%`;
 
     const chartCpu = document.getElementById('chart-cpu-val');
     if (chartCpu) chartCpu.innerText = `${cpu.toFixed(2)}%`;
@@ -844,12 +1099,19 @@ class ServerConsole {
       this.cpuChart.update('none');
     }
 
-    // Memory
-    const mem = typeof stats.memory === 'number' ? stats.memory : 0;
+    // 2. Memory
+    const mem = (!isOffline && typeof stats.memory === 'number') ? stats.memory : 0;
+    const maxMem = (s.memory_mb && s.memory_mb > 0) ? s.memory_mb : 1024;
+    const memPct = isOffline ? 0 : Math.min(100, Math.max(0, (mem / maxMem) * 100));
+
     const memVal = document.getElementById('stat-mem-val');
     if (memVal) {
-      memVal.innerText = mem >= 1024 ? `${(mem / 1024).toFixed(2)} GiB` : `${mem} MiB`;
+      memVal.innerText = mem >= 1024 ? `${(mem / 1024).toFixed(2)} GiB` : `${mem.toFixed(0)} MiB`;
     }
+    const memPctEl = document.getElementById('stat-mem-pct');
+    if (memPctEl) memPctEl.innerText = `${memPct.toFixed(2)}%`;
+    const barMem = document.getElementById('bar-mem');
+    if (barMem) barMem.style.width = `${memPct.toFixed(1)}%`;
 
     const chartMem = document.getElementById('chart-mem-val');
     if (chartMem) chartMem.innerText = `${mem} MiB`;
@@ -860,23 +1122,46 @@ class ServerConsole {
       this.memoryChart.update('none');
     }
 
-    // Disk
-    const disk = typeof stats.disk === 'number' ? stats.disk : 0;
+    // 3. Disk
+    const disk = (!isOffline && typeof stats.disk === 'number') ? stats.disk : 0;
+    const maxDisk = (s.disk_mb && s.disk_mb > 0) ? s.disk_mb : 5120;
+    const diskPct = isOffline ? 0 : Math.min(100, Math.max(0, (disk / maxDisk) * 100));
+
     const diskVal = document.getElementById('stat-disk-val');
     if (diskVal) {
-      diskVal.innerText = disk >= 1024 ? `${(disk / 1024).toFixed(2)} GiB` : `${disk} MiB`;
+      diskVal.innerText = disk >= 1024 ? `${(disk / 1024).toFixed(2)} GiB` : `${disk.toFixed(0)} MiB`;
     }
+    const diskPctEl = document.getElementById('stat-disk-pct');
+    if (diskPctEl) diskPctEl.innerText = `${diskPct.toFixed(2)}%`;
+    const barDisk = document.getElementById('bar-disk');
+    if (barDisk) barDisk.style.width = `${diskPct.toFixed(1)}%`;
 
-    // Network
+    // 4. Network
     if (stats.network) {
-      const rx = stats.network.rx_bytes || 0;
-      const tx = stats.network.tx_bytes || 0;
+      const rx = isOffline ? 0 : (stats.network.rx_bytes || 0);
+      const tx = isOffline ? 0 : (stats.network.tx_bytes || 0);
 
       const inEl = document.getElementById('stat-net-in-val');
       if (inEl) inEl.innerText = this.formatBytes(rx);
 
       const outEl = document.getElementById('stat-net-out-val');
       if (outEl) outEl.innerText = this.formatBytes(tx);
+
+      // Smooth percentage calculation for network cards
+      const netBaseIn = 100 * 1024 * 1024;
+      const netBaseOut = 50 * 1024 * 1024;
+      const netInPct = isOffline ? 0 : Math.min(100, Math.max(0.5, ((rx % netBaseIn) / netBaseIn) * 100));
+      const netOutPct = isOffline ? 0 : Math.min(100, Math.max(0.5, ((tx % netBaseOut) / netBaseOut) * 100));
+
+      const netInPctEl = document.getElementById('stat-net-in-pct');
+      if (netInPctEl) netInPctEl.innerText = `${netInPct.toFixed(2)}%`;
+      const barNetIn = document.getElementById('bar-net-in');
+      if (barNetIn) barNetIn.style.width = `${netInPct.toFixed(1)}%`;
+
+      const netOutPctEl = document.getElementById('stat-net-out-pct');
+      if (netOutPctEl) netOutPctEl.innerText = `${netOutPct.toFixed(2)}%`;
+      const barNetOut = document.getElementById('bar-net-out');
+      if (barNetOut) barNetOut.style.width = `${netOutPct.toFixed(1)}%`;
 
       const inSpeed = this.prevRx !== null ? Math.max(0, rx - this.prevRx) : 2048;
       const outSpeed = this.prevTx !== null ? Math.max(0, tx - this.prevTx) : 1024;
@@ -916,6 +1201,19 @@ class ServerConsole {
       return;
     }
 
+    const previousStatus = this.serverStatus;
+
+    // Instant optimistic UI update for zero lag
+    if (action === 'start') {
+      this.updateStatusBadge('starting');
+    } else if (action === 'restart') {
+      this.updateStatusBadge('restarting');
+    } else if (action === 'stop') {
+      this.updateStatusBadge('stopping');
+    } else if (action === 'kill') {
+      this.updateStatusBadge('offline');
+    }
+
     try {
       app.toast(`Sending ${action.toUpperCase()} signal...`, 'info');
       const data = await app.api(`/api/servers/${serverId}/power`, {
@@ -928,6 +1226,7 @@ class ServerConsole {
         this.loadServerHeader(serverId);
       }
     } catch (err) {
+      this.updateStatusBadge(previousStatus);
       app.toast(err.message, 'error');
     }
   }

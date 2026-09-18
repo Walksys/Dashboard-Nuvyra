@@ -8,6 +8,26 @@ class AdminManager {
     }
   }
 
+  formatServerStatus(rawStatus, isSuspended = false, expBadge = '') {
+    if (isSuspended) {
+      return `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>SUSPENDED</span>${expBadge}</div>`;
+    }
+    const s = String(rawStatus || 'offline').toLowerCase().trim();
+    if (s === 'running' || s === 'online' || s === 'started') {
+      return `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>🟢 ONLINE</span>${expBadge}</div>`;
+    }
+    if (s === 'starting') {
+      return `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>🔵 STARTING</span>${expBadge}</div>`;
+    }
+    if (s === 'restarting') {
+      return `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>🟡 RESTARTING</span>${expBadge}</div>`;
+    }
+    if (s === 'stopping') {
+      return `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-500/20 text-slate-400 border border-slate-500/30"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse"></span>⚫ STOPPING</span>${expBadge}</div>`;
+    }
+    return `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>🔴 OFFLINE</span>${expBadge}</div>`;
+  }
+
   async renderAdminOverview() {
     this.stopOverviewPolling();
     const container = document.getElementById('view-container');
@@ -649,11 +669,7 @@ class AdminManager {
                   }
                 }
 
-                const statusHTML = isSuspended
-                  ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>SUSPENDED</span>${expBadge}</div>`
-                  : (isRunning
-                    ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>RUNNING</span>${expBadge}</div>`
-                    : `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>OFFLINE</span>${expBadge}</div>`);
+                const statusHTML = this.formatServerStatus(s.status, isSuspended, expBadge);
 
                 const fullAddr = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
                 const ramFmt = s.memory_mb >= 1024 ? (s.memory_mb / 1024).toFixed(1) + ' GiB' : (s.memory_mb || 1024) + ' MB';
@@ -853,11 +869,7 @@ class AdminManager {
                         }
                       }
 
-                      const statusHTML = isSuspended
-                        ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>SUSPENDED</span>${expBadge}</div>`
-                        : (isRunning
-                          ? `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>RUNNING</span>${expBadge}</div>`
-                          : `<div class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>OFFLINE</span>${expBadge}</div>`);
+                      const statusHTML = this.formatServerStatus(s.status, isSuspended, expBadge);
 
                       const fullAddr = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
                       const ramFmt = s.memory_mb >= 1024 ? (s.memory_mb / 1024).toFixed(1) + ' GiB' : (s.memory_mb || 1024) + ' MB';
@@ -1331,8 +1343,8 @@ class AdminManager {
   generateServerDesc(type = 'minecraft', engine = 'Paper', ver = '1.21.4') {
     if (type === 'nodejs') return `Ultra-fast Node.js application container with automated process supervisor.`;
     if (type === 'python') return `Low-latency Python application container with automatic runtime environments.`;
-    if (type === 'nokvm' || type === 'lumenvm_nokvm') return `No-KVM Virtual Machine instance (Software Emulation - Runs on any VPS) with zero license requirement.`;
-    if (type === 'lumenvm' || type === 'vm') return `KVM hardware-accelerated Virtual Machine instance (LumenVM) with zero license requirement.`;
+    if (type === 'nokvm' || type === 'lumenvm_nokvm') return `VM - No-KVM Virtual Machine instance (Software Emulation - Runs on any VPS) with zero license requirement.`;
+    if (type === 'lumenvm' || type === 'vm') return `VM - KVM hardware-accelerated Virtual Machine instance with zero license requirement.`;
     return `High-performance ${engine || 'Minecraft'} ${ver || '1.21.4'} server instance with auto-suspension telemetry.`;
   }
 
@@ -1590,9 +1602,14 @@ class AdminManager {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="glass-panel w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl space-y-5">
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <h3 class="text-lg font-black text-white flex items-center gap-2">
-              <i data-lucide="server" class="w-5 h-5 text-cyan-400"></i> Deploy New Server Instance
-            </h3>
+            <div class="flex items-center gap-3 flex-wrap">
+              <h3 class="text-lg font-black text-white flex items-center gap-2">
+                <i data-lucide="server" class="w-5 h-5 text-cyan-400"></i> Deploy New Server Instance
+              </h3>
+              <a href="/deploy.php" target="_blank" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-[10px] font-mono font-bold flex items-center gap-1 transition" title="Open Full Page PHP Deployment Portal">
+                <i data-lucide="external-link" class="w-3 h-3"></i> Full Page PHP
+              </a>
+            </div>
             <button onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
@@ -1653,7 +1670,7 @@ class AdminManager {
                   <input type="radio" name="create_srv_type" value="lumenvm" onchange="admin.onServerTypeChange('lumenvm')" class="accent-amber-400">
                   <i data-lucide="server" class="w-6 h-6 text-amber-400"></i>
                   <span class="text-xs font-bold text-white flex items-center gap-1">
-                    <span>LumenVM (KVM)</span>
+                    <span>VM - KVM</span>
                     <span class="px-1 py-0.2 rounded text-[8px] bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">Fast</span>
                   </span>
                   <span class="text-[10px] text-slate-400 text-center">Hardware Accelerated</span>
@@ -1662,7 +1679,7 @@ class AdminManager {
                   <input type="radio" name="create_srv_type" value="nokvm" onchange="admin.onServerTypeChange('nokvm')" class="accent-blue-400">
                   <i data-lucide="shield-check" class="w-6 h-6 text-blue-400"></i>
                   <span class="text-xs font-bold text-white flex items-center gap-1">
-                    <span>LumenVM (No-KVM)</span>
+                    <span>VM - No-KVM</span>
                     <span class="px-1 py-0.2 rounded text-[8px] bg-blue-500/20 text-blue-300 font-extrabold border border-blue-500/30">Universal</span>
                   </span>
                   <span class="text-[10px] text-slate-400 text-center">Software Emulation (Any VPS)</span>
@@ -1944,7 +1961,7 @@ class AdminManager {
                   </span>
                   <div>
                     <h4 class="text-xs font-bold text-white flex items-center gap-2">
-                      LumenVM Virtual Machine Configuration
+                      VM - KVM / No-KVM Configuration
                       <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                         ✓ No License Required (Unlocked)
                       </span>

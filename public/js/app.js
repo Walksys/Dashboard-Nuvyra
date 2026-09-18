@@ -1000,7 +1000,7 @@ class App {
 
     try {
       const data = await this.api('/api/servers');
-      const servers = data.servers || [];
+      let servers = data.servers || [];
 
       const sServers = document.getElementById('stat-user-servers');
       if (sServers) sServers.innerText = servers.length;
@@ -1039,7 +1039,18 @@ class App {
         grid.innerHTML = servers.slice(0, 6).map(s => this.renderServerCardHTML(s)).join('');
       }
     } catch (e) {
-      console.error(e);
+      console.error('Error rendering user overview:', e);
+      const grid = document.getElementById('overview-servers-grid');
+      if (grid) {
+        grid.innerHTML = `
+          <div class="glass-card p-8 rounded-2xl text-center col-span-full border border-rose-500/20 text-rose-300">
+            <p class="text-xs">Failed to load server instances. Please refresh or try again.</p>
+            <button onclick="app.renderUserOverview()" class="mt-3 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs inline-flex items-center gap-1.5">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Retry
+            </button>
+          </div>
+        `;
+      }
     }
     if (window.lucide) lucide.createIcons();
   }
@@ -1109,7 +1120,18 @@ class App {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.error('Error rendering user servers:', e);
+      const grid = document.getElementById('user-servers-list-grid');
+      if (grid) {
+        grid.innerHTML = `
+          <div class="glass-card p-8 rounded-2xl text-center col-span-full border border-rose-500/20 text-rose-300">
+            <p class="text-xs">Failed to load server instances. Please refresh or try again.</p>
+            <button onclick="app.renderUserServers()" class="mt-3 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs inline-flex items-center gap-1.5">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Retry
+            </button>
+          </div>
+        `;
+      }
     }
     if (window.lucide) lucide.createIcons();
   }
@@ -1117,8 +1139,68 @@ class App {
   handleServerSortChange(newMode) {
     if (window.customServerSort) {
       customServerSort.setSortMode('user', newMode);
-      this.renderUserServersView();
+      this.renderUserServers();
     }
+  }
+
+  renderUserServersView() {
+    return this.renderUserServers();
+  }
+
+  getServerStatusConfig(rawStatus, isSuspended = false) {
+    if (isSuspended) {
+      return {
+        key: 'suspended',
+        label: '🔒 Suspended',
+        badge: `<span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><i data-lucide="lock" class="w-3 h-3"></i> SUSPENDED</span>`,
+        colorClass: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+        dotClass: 'bg-rose-400'
+      };
+    }
+    const s = String(rawStatus || 'offline').toLowerCase().trim();
+    if (s === 'running' || s === 'online' || s === 'started') {
+      return {
+        key: 'running',
+        label: '🟢 Online / Started',
+        badge: `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 🟢 ONLINE</span>`,
+        colorClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+        dotClass: 'bg-emerald-400 animate-pulse'
+      };
+    }
+    if (s === 'starting') {
+      return {
+        key: 'starting',
+        label: '🔵 Starting',
+        badge: `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span> 🔵 STARTING</span>`,
+        colorClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+        dotClass: 'bg-blue-400 animate-ping'
+      };
+    }
+    if (s === 'restarting') {
+      return {
+        key: 'restarting',
+        label: '🟡 Restarting',
+        badge: `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> 🟡 RESTARTING</span>`,
+        colorClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+        dotClass: 'bg-amber-400 animate-pulse'
+      };
+    }
+    if (s === 'stopping') {
+      return {
+        key: 'stopping',
+        label: '⚫ Stopping',
+        badge: `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-500/20 text-slate-400 border border-slate-500/30"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse"></span> ⚫ STOPPING</span>`,
+        colorClass: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+        dotClass: 'bg-slate-400 animate-pulse'
+      };
+    }
+    return {
+      key: 'offline',
+      label: '🔴 Offline / Stopped',
+      badge: `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> 🔴 OFFLINE</span>`,
+      colorClass: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+      dotClass: 'bg-rose-400'
+    };
   }
 
   // HTML Template for Server Card
@@ -1127,17 +1209,16 @@ class App {
       return this.renderPteroxServerCardHTML(s);
     }
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
-    const isRunning = !isSuspended && s.status === 'running';
-    const isStarting = !isSuspended && s.status === 'starting';
+    const statusCfg = this.getServerStatusConfig(s.status, isSuspended);
 
     const typeIcons = {
       minecraft: '🎮 Minecraft',
       nodejs: '⚡ Node.js',
       python: '🐍 Python',
-      lumenvm: '🖥️ LumenVM (VPS)',
-      nokvm: '🛡️ LumenVM (No-KVM)',
-      lumenvm_nokvm: '🛡️ LumenVM (No-KVM)',
-      vm: '🖥️ Virtual Machine'
+      lumenvm: '🖥️ VM - KVM',
+      nokvm: '🛡️ VM - No-KVM',
+      lumenvm_nokvm: '🛡️ VM - No-KVM',
+      vm: '🖥️ VM - KVM'
     };
 
     let expBadge = '';
@@ -1153,14 +1234,7 @@ class App {
       }
     }
 
-    const statusBadge = isSuspended
-      ? `<span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><i data-lucide="lock" class="w-3 h-3"></i> SUSPENDED</span>`
-      : isRunning
-      ? `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-green"></span> RUNNING</span>`
-      : isStarting
-      ? `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-yellow"></span> STARTING</span>`
-      : `<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> OFFLINE</span>`;
-
+    const statusBadge = statusCfg.badge;
     const ipPort = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
 
     return `
@@ -1209,10 +1283,16 @@ class App {
           </button>
           ${isSuspended
             ? `<span class="px-3 py-1 text-[11px] font-bold text-rose-400 bg-rose-950/40 rounded-lg border border-rose-500/20">Locked</span>`
-            : (isRunning
+            : (statusCfg.key === 'running'
               ? `<button onclick="serverConsole.triggerPower(${s.id}, 'restart')" title="Restart" class="w-8 h-8 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 flex items-center justify-center"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
                  <button onclick="serverConsole.triggerPower(${s.id}, 'stop')" title="Stop" class="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 flex items-center justify-center"><i data-lucide="square" class="w-3.5 h-3.5"></i></button>`
-              : `<button onclick="serverConsole.triggerPower(${s.id}, 'start')" title="Start" class="w-8 h-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center"><i data-lucide="play" class="w-3.5 h-3.5"></i></button>`
+              : (statusCfg.key === 'starting' || statusCfg.key === 'restarting'
+                ? `<button onclick="serverConsole.triggerPower(${s.id}, 'stop')" title="Stop" class="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 flex items-center justify-center"><i data-lucide="square" class="w-3.5 h-3.5"></i></button>`
+                : (statusCfg.key === 'stopping'
+                  ? `<button onclick="serverConsole.triggerPower(${s.id}, 'kill')" title="Force Kill" class="w-8 h-8 rounded-lg bg-rose-900/40 hover:bg-rose-900 text-rose-300 border border-rose-500/30 flex items-center justify-center"><i data-lucide="zap-off" class="w-3.5 h-3.5"></i></button>`
+                  : `<button onclick="serverConsole.triggerPower(${s.id}, 'start')" title="Start" class="w-8 h-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center"><i data-lucide="play" class="w-3.5 h-3.5"></i></button>`
+                )
+              )
             )
           }
         </div>
@@ -1223,24 +1303,15 @@ class App {
   // PteroX Server Card HTML Template with Banner & Resource Telemetry
   renderPteroxServerCardHTML(s) {
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
-    const isRunning = !isSuspended && s.status === 'running';
-    const isStarting = !isSuspended && s.status === 'starting';
+    const statusCfg = this.getServerStatusConfig(s.status, isSuspended);
 
     const bannerImg = localStorage.getItem('pterox_server_banner') || '/images/server-banner.jpg';
     const ipPort = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
 
-    let statusText = 'Offline';
-    let statusBadgeColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
-    if (isSuspended) {
-      statusText = 'Suspended';
-      statusBadgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    } else if (isRunning) {
-      statusText = 'Online';
-      statusBadgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-    } else if (isStarting) {
-      statusText = 'Starting';
-      statusBadgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    }
+    let statusText = statusCfg.label;
+    let statusBadgeColor = statusCfg.colorClass;
+
+    const isRunning = !isSuspended && statusCfg.key === 'running';
 
     return `
       <div data-server-id="${s.id}" class="pterox-server-card flex flex-col justify-between group relative">
@@ -1255,7 +1326,7 @@ class App {
               </span>
             </div>
             <span class="flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm ${statusBadgeColor}">
-              <span class="w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : (isStarting ? 'bg-amber-400 animate-ping' : 'bg-rose-400')}"></span>
+              <span class="w-1.5 h-1.5 rounded-full ${statusCfg.dotClass}"></span>
               ${statusText}
             </span>
           </div>
@@ -1305,11 +1376,17 @@ class App {
               <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Manage
             </button>
             ${isSuspended
-              ? `<span class="px-2.5 py-1 text-[10px] font-bold text-amber-400 bg-amber-950/40 rounded-lg border border-amber-500/20">Suspended</span>`
-              : (isRunning
+              ? `<span class="px-2.5 py-1 text-[10px] font-bold text-rose-400 bg-rose-950/40 rounded-lg border border-rose-500/20">Suspended</span>`
+              : (statusCfg.key === 'running'
                 ? `<button onclick="serverConsole.triggerPower(${s.id}, 'restart')" title="Restart Server" class="w-8 h-8 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 flex items-center justify-center transition"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
                    <button onclick="serverConsole.triggerPower(${s.id}, 'stop')" title="Stop Server" class="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 flex items-center justify-center transition"><i data-lucide="square" class="w-3.5 h-3.5"></i></button>`
-                : `<button onclick="serverConsole.triggerPower(${s.id}, 'start')" title="Start Server" class="w-8 h-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center transition"><i data-lucide="play" class="w-3.5 h-3.5"></i></button>`
+                : (statusCfg.key === 'starting' || statusCfg.key === 'restarting'
+                  ? `<button onclick="serverConsole.triggerPower(${s.id}, 'stop')" title="Stop Server" class="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 flex items-center justify-center transition"><i data-lucide="square" class="w-3.5 h-3.5"></i></button>`
+                  : (statusCfg.key === 'stopping'
+                    ? `<button onclick="serverConsole.triggerPower(${s.id}, 'kill')" title="Force Kill" class="w-8 h-8 rounded-lg bg-rose-900/40 hover:bg-rose-900 text-rose-300 border border-rose-500/30 flex items-center justify-center transition"><i data-lucide="zap-off" class="w-3.5 h-3.5"></i></button>`
+                    : `<button onclick="serverConsole.triggerPower(${s.id}, 'start')" title="Start Server" class="w-8 h-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center transition"><i data-lucide="play" class="w-3.5 h-3.5"></i></button>`
+                  )
+                )
               )
             }
           </div>
