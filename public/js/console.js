@@ -2358,7 +2358,8 @@ class ServerConsole {
             </div>
           </div>
 
-          <!-- Card 5: DELETE SERVER (Bottom Full Width) -->
+          ${(app.user && app.user.role === 'admin') ? `
+          <!-- Card 5: DELETE SERVER (Bottom Full Width - Admin Only) -->
           <div class="col-span-full glass-panel p-6 rounded-3xl border border-rose-500/20 bg-rose-950/10 space-y-3 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -2374,6 +2375,24 @@ class ServerConsole {
               </button>
             </div>
           </div>
+          ` : `
+          <!-- Card 5: DELETE SERVER (Locked - Normal Users Cannot Delete) -->
+          <div class="col-span-full glass-panel p-6 rounded-3xl border border-white/5 bg-slate-900/40 space-y-3 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i> Delete Server Instance
+                </h4>
+                <p class="text-xs text-slate-400 mt-1">
+                  Only administrators have permission to delete server instances. Normal users cannot delete servers.
+                </p>
+              </div>
+              <div class="px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 text-slate-400 border border-white/10 flex items-center gap-1.5 shrink-0 select-none">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i> Admin Only
+              </div>
+            </div>
+          </div>
+          `}
 
         </div>
       </div>
@@ -2439,15 +2458,19 @@ class ServerConsole {
   }
 
   async handleDeleteServer() {
+    if (!app.user || app.user.role !== 'admin') {
+      app.toast('Permission denied: Only administrators can delete servers. Normal users cannot delete servers.', 'error');
+      return;
+    }
     if (!confirm('DANGER: Are you absolutely sure you want to delete this server? This action CANNOT be undone!')) return;
     try {
       const data = await app.api(`/api/servers/${this.serverId}`, { method: 'DELETE' });
       if (data.success) {
-        app.toast('Server deleted.', 'info');
+        app.toast('Server deleted successfully.', 'info');
         app.navigate('user-servers');
       }
     } catch (err) {
-      app.toast(err.message, 'error');
+      app.toast(err.message || 'Failed to delete server.', 'error');
     }
   }
 
