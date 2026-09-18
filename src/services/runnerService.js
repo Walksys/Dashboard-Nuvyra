@@ -220,6 +220,9 @@ class RunnerService {
     if (!fs.existsSync(serverDir)) {
       fs.mkdirSync(serverDir, { recursive: true });
     }
+    try {
+      fs.chmodSync(serverDir, 0o777);
+    } catch (e) {}
 
     if (!this.activeProcesses.has(sId)) {
       this.activeProcesses.set(sId, {
@@ -302,7 +305,8 @@ class RunnerService {
     }
 
     // Ensure Minecraft configuration (port binding, query port, eula) are synchronized
-    const isMinecraft = server.server_type === 'minecraft' || fs.existsSync(path.join(serverDir, 'server.jar')) || fs.existsSync(path.join(serverDir, 'server.properties'));
+    const isVmType = ['lumenvm', 'vm', 'nokvm', 'lumenvm_nokvm'].includes(server.server_type);
+    const isMinecraft = !isVmType && (server.server_type === 'minecraft' || (!['nodejs', 'python'].includes(server.server_type) && (fs.existsSync(path.join(serverDir, 'server.jar')) || fs.existsSync(path.join(serverDir, 'server.properties')))));
     if (isMinecraft) {
       const targetPort = parseInt(server.port, 10) || 25565;
       this.syncMinecraftProperties(serverDir, targetPort);
@@ -360,6 +364,7 @@ class RunnerService {
           PORT: `${server.port || 3000}`,
           SERVER_PORT: `${server.port || 25565}`,
           SERVER_MEMORY: `${server.memory_mb || 1024}`,
+          SERVER_DISK: `${server.disk_mb || 10240}`,
           SERVER_JARFILE: jarFile,
           MINECRAFT_VERSION: mcVersion
         },

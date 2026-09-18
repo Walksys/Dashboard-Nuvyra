@@ -61,6 +61,11 @@ function serializeProperties(properties) {
 router.get('/', authenticate, requireServerAccess('files.read'), async (req, res) => {
   try {
     const serverId = req.params.serverId;
+    const server = await query.get('SELECT server_type FROM servers WHERE id = ?', [serverId]);
+    if (server && ['lumenvm', 'vm', 'nokvm', 'lumenvm_nokvm', 'nodejs', 'python'].includes(server.server_type)) {
+      return res.status(400).json({ success: false, error: 'Server properties configuration is only available for Minecraft servers.' });
+    }
+
     const serverDir = path.join(config.SERVERS_DIR, `server${serverId}`);
     const propsPath = path.join(serverDir, 'server.properties');
 
