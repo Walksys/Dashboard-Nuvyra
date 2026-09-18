@@ -1,10 +1,10 @@
 <!-- ============================================================================== -->
-<!--                     🎮 MPANEL v2.5.0 - NEXT-GEN GAME & APP PANEL               -->
+<!--                     🎮 MPANEL v2.5.2 - NEXT-GEN GAME & APP PANEL               -->
 <!-- ============================================================================== -->
 
 <p align="center">
   <a href="https://nobitahost.in">
-    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20MPANEL%20v2.5.0&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Mpanel Header Banner" />
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20MPANEL%20v2.5.2&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Mpanel Header Banner" />
   </a>
 </p>
 
@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-18.0%2B-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" /></a>
-  <a href="https://github.com/nobita329/Mpanel/releases/tag/v2.5.0"><img src="https://img.shields.io/badge/Release-v2.5.0-8A2BE2?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
+  <a href="https://github.com/nobita329/Mpanel/releases/tag/v2.5.2"><img src="https://img.shields.io/badge/Release-v2.5.2-8A2BE2?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
   <a href="https://nobitahost.in"><img src="https://img.shields.io/badge/Website-nobitahost.in-007ACC?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" /></a>
   <a href="#-system-updates--live-terminal-engine"><img src="https://img.shields.io/badge/Auto--Updater-Live%20Terminal-00C7B7?style=for-the-badge&logo=terminal&logoColor=white" alt="Auto Updater" /></a>
   <a href="#-theme--customization-engine"><img src="https://img.shields.io/badge/Theme-Full%20Black%20OLED-111525?style=for-the-badge&logo=styled-components&logoColor=white" alt="Theme" /></a>
@@ -25,7 +25,7 @@
 
 <p align="center">
   <a href="#-quick-start"><b>🚀 Quick Start</b></a> •
-  <a href="#-what-is-new-in-v250"><b>✨ What's New</b></a> •
+  <a href="#-what-is-new-in-v252"><b>✨ What's New</b></a> •
   <a href="#-core-features--capabilities"><b>🧩 Features</b></a> •
   <a href="#-theme--customization-engine"><b>🎨 Themes</b></a> •
   <a href="#-architecture--port-matrix"><b>🔒 Ports</b></a> •
@@ -76,6 +76,59 @@ graph TD
 | **Panel & Daemon API** | `3003` | HTTP / WS | Bearer JWT | REST & WS API for external bots, billing & WHMCS |
 | **Embedded SFTP Server** | `3004` | SFTP | SSH2 RSA/ECDSA | Built-in high-speed file transfer (`sftp://host:3004`) |
 | **Dedicated MariaDB Engine**| `27017`| TCP | Native Auth | Relational database server for Minecraft plugins & app databases |
+
+---
+
+## ✨ What is New in v2.5.2
+
+### 1. 🟢 Real-Time 5-State Server Lifecycle Engine
+- **5 High-Accuracy Real-Time Statuses**:
+  - 🟢 **Online / Started**: Server process running, ports active, telemetry streaming.
+  - 🔴 **Offline / Stopped**: Process terminated, zero resource consumption.
+  - 🟡 **Restarting**: Graceful reload sequence in progress.
+  - 🔵 **Starting**: Process booting, initializing JVM/Node/Python runtime.
+  - ⚫ **Stopping**: Graceful shutdown and file lock flushing in progress.
+- **Optimistic Power Control & Status Synchronization**: Immediate UI badge update and button state locking upon clicking **Start**, **Stop**, **Restart**, or **Kill** to eliminate latency perception and prevent duplicated socket requests.
+- **Dual-Source Status Resolution**: Combines real-time Docker container inspection with active process metrics for 100% accurate status reporting.
+
+### 2. 📊 Glowing Telemetry Cards & Horizontal Parsentbars
+- **Horizontal Smooth Percent Progress Bars (`.parsentbar`)**: High-contrast visual capacity bars showing real-time utilization beneath every metric.
+- **Individual Glow Accents**:
+  - ⚡ **CPU**: Cyan accent (`#06b6d4`) with percentage load indicator.
+  - 🧠 **Memory**: Purple accent (`#a855f7`) with live dual readout (e.g., `512 MB / 2048 MB`).
+  - 💾 **Disk**: Amber accent (`#f59e0b`) with capacity tracking.
+  - 📥 **Inbound Network**: Emerald accent (`#10b981`) showing real-time download bandwidth.
+  - 📤 **Outbound Network**: Rose accent (`#f43f5e`) showing real-time upload bandwidth.
+- **Dual Metric Readout**: Displays both percentage progress bar and raw human-readable numbers (MB, GB, KB/s) side-by-side.
+
+### 3. 🧭 Optimized Address & State-Reactive Uptime Grid
+- **Adaptive `1.65fr : 1fr` Responsive Split**: Balanced layout prevents IP address, port, and subdomain truncation on standard and wide monitors.
+- **1-Click Address Copy**: Integrated `data-addr` click-to-copy with instant visual copied checkmark feedback.
+- **Reactive Uptime Pill**: Vibrantly pulses emerald when the server is online; seamlessly transitions to a muted slate pill when offline or stopped.
+
+### 4. 🛡️ Admin-Only Server Deletion Security Hardening
+- **Strict Backend Route Protection**: `DELETE /api/servers/:id` strictly validates `req.user.role === 'admin'`, returning `403 Forbidden` if a standard user attempts deletion.
+- **Zero Accidental Deletions**: Standard users cannot delete instances.
+- **Console Settings Tab Lockout**: The red "Delete Server" button in the Console Danger Zone is automatically hidden for regular users and replaced with an **"Admin Only"** locked badge.
+
+### 5. 💻 Modernized `menu.sh` Management Interface
+- **Official ASCII Banner**: Striking cyberpunk ASCII art header upon launching `./menu.sh`:
+  ```
+  ███╗   ███╗██████╗  █████╗ ███╗   ██╗███████╗██╗     
+  ████╗ ████║██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     
+  ██╔████╔██║██████╔╝███████║██╔██╗ ██║█████╗  ██║     
+  ██║╚██╔╝██║██╔═══╝ ██╔══██║██║╚██╗██║██╔══╝  ██║     
+  ██║ ╚═╝ ██║██║     ██║  ██║██║ ╚████║███████╗███████╗
+  ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝
+  ```
+- **Live System Telemetry Dashboard**: Real-time display of Public IP, Local Network IP, Active Port Matrix (`3001`, `3003`, `3004`, `27017`), and PM2 Daemon status (`ONLINE` / `STOPPED`).
+- **Structured Modular Menus**: Main Menu, PM2 Process Suite, and Database Management menus with intuitive numeric selection.
+
+### 6. 🌐 Standalone Server Instance Deployment Portal (`deploy.php`)
+- **Dedicated Deployment Portal**: Modern web interface (`deploy.php` & `public/deploy.php`) for selecting server configurations, runtime types, hardware specs, and billing cycles with instant provisioning.
+
+### 7. 🖥️ VM - KVM / No-KVM Virtualization Architecture
+- Clean branding upgrade replacing legacy LumenVM with transparent **VM - KVM** (hardware-assisted kernel virtualization) and **No-KVM** (lightweight isolated containerization) presets across the server wizard and management console.
 
 ---
 
@@ -214,6 +267,7 @@ bash menu.sh
 | `./menu.sh update` | 1-Click Auto Update (Git pull, DB migrations, dependencies & PM2 restart) |
 | `./menu.sh usercreate` | Create new administrator or standard customer user |
 | `./menu.sh pm2` | PM2 Process Management menu (Start, Stop, Restart, Logs, Autostart) |
+| `./menu.sh db` | Database Suite (MariaDB/MySQL Docker engine & Migrations) |
 | `./menu.sh status` | Check port listening status (`3001`, `3003`, `3004`, `27017`) and database |
 | `./menu.sh playit` | Install native Playit.gg zero-port tunnel CLI |
 | `./menu.sh uninstall`| Safely remove or clean Mpanel deployment |
@@ -251,6 +305,7 @@ npm run pm2:logs
 │   └── backups/             # Server snapshot .zip archives
 ├── public/
 │   ├── index.html           # Main SPA HTML structure
+│   ├── deploy.php           # Public server deployment portal
 │   ├── css/
 │   │   └── style.css        # Multi-theme palettes & glassmorphic styling
 │   └── js/
@@ -286,6 +341,8 @@ npm run pm2:logs
 │   │   └── sftpServer.js    # Embedded SSH2 SFTP Server on port 3004
 │   └── websocket/
 │       └── consoleWs.js     # Real-time WebSocket terminal & update streams
+├── deploy.php               # Standalone server instance deployment portal
+├── menu.sh                  # Interactive CLI management script & ASCII dashboard
 └── ecosystem.config.js      # PM2 clustering configuration
 ```
 

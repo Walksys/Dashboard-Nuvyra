@@ -12,7 +12,11 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
+LIGHT_CYAN='\033[1;36m'
+LIGHT_GREEN='\033[1;32m'
+LIGHT_BLUE='\033[1;34m'
 WHITE='\033[1;37m'
+GRAY='\033[0;90m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
@@ -79,14 +83,40 @@ show_banner() {
     clear
     local host_ip
     host_ip=$(get_server_ip)
-    echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${WHITE}            🎮  MPANEL - NODE.JS MANAGEMENT SUITE             ${CYAN}║${NC}"
-    echo -e "${CYAN}╠══════════════════════════════════════════════════════════════╣${NC}"
-    echo -e "${CYAN}║${NC}  • Web Panel UI:    ${GREEN}http://${host_ip}:3001${NC}"
-    echo -e "${CYAN}║${NC}  • Daemon/API Port: ${GREEN}http://${host_ip}:3003${NC}"
-    echo -e "${CYAN}║${NC}  • SFTP Port:       ${GREEN}sftp://${host_ip}:3004${NC}"
-    echo -e "${CYAN}║${NC}  • Database:        ${GREEN}MariaDB / MySQL (Docker)${NC}"
-    echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
+
+    local version="v2.5.2"
+    if [ -f "$MPANEL_DIR/package.json" ]; then
+        local pkg_v
+        pkg_v=$(grep -m1 '"version"' "$MPANEL_DIR/package.json" 2>/dev/null | awk -F '"' '{print $4}')
+        if [ -n "$pkg_v" ]; then
+            version="v${pkg_v}"
+        fi
+    fi
+
+    # Check PM2 Daemon status
+    local pm2_status="${RED}● Stopped${NC}"
+    if command -v pm2 &>/dev/null; then
+        if pm2 list 2>/dev/null | grep -q "mpanel.*online"; then
+            pm2_status="${LIGHT_GREEN}● Online (PM2)${NC}"
+        fi
+    fi
+
+    echo -e "${LIGHT_CYAN}${BOLD}"
+    echo "  ███╗   ███╗██████╗  █████╗ ███╗   ██╗███████╗██╗     "
+    echo "  ████╗ ████║██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     "
+    echo "  ██╔████╔██║██████╔╝███████║██╔██╗ ██║█████╗  ██║     "
+    echo "  ██║╚██╔╝██║██╔═══╝ ██╔══██║██║╚██╗██║██╔══╝  ██║     "
+    echo "  ██║ ╚═╝ ██║██║     ██║  ██║██║ ╚████║███████╗███████╗"
+    echo "  ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝"
+    echo -e "${NC}"
+    echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${WHITE}${BOLD}🎮 MPANEL ${version}${NC} ${GRAY}•${NC} ${CYAN}Next-Gen Game & App Management Suite${NC}"
+    echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${GRAY}│${NC} ${WHITE}Web Panel UI:${NC}    ${LIGHT_GREEN}http://${host_ip}:3001${NC}"
+    echo -e "  ${GRAY}│${NC} ${WHITE}Daemon API:${NC}      ${LIGHT_GREEN}http://${host_ip}:3003${NC}"
+    echo -e "  ${GRAY}│${NC} ${WHITE}SFTP Server:${NC}     ${LIGHT_GREEN}sftp://${host_ip}:3004${NC}"
+    echo -e "  ${GRAY}│${NC} ${WHITE}Daemon Status:${NC}   ${pm2_status}"
+    echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
 }
 
@@ -433,19 +463,30 @@ pm2_menu() {
 
     while true; do
         clear
-        echo -e "${PURPLE}╔══════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${PURPLE}║${WHITE}                 ⚡ PM2 PROCESS MANAGER                       ${PURPLE}║${NC}"
-        echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${LIGHT_CYAN}${BOLD}"
+        echo "  ███╗   ███╗██████╗  █████╗ ███╗   ██╗███████╗██╗     "
+        echo "  ████╗ ████║██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     "
+        echo "  ██╔████╔██║██████╔╝███████║██╔██╗ ██║█████╗  ██║     "
+        echo "  ██║╚██╔╝██║██╔═══╝ ██╔══██║██║╚██╗██║██╔══╝  ██║     "
+        echo "  ██║ ╚═╝ ██║██║     ██║  ██║██║ ╚████║███████╗███████╗"
+        echo "  ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝"
+        echo -e "${NC}"
+        echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "  ${WHITE}${BOLD}⚡ PM2 PROCESS MANAGER${NC} ${GRAY}•${NC} ${CYAN}Background Service Control${NC}"
+        echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
-        echo -e "  ${CYAN}[1]${NC} Start Mpanel in Background (PM2)"
-        echo -e "  ${CYAN}[2]${NC} Stop Mpanel (PM2)"
-        echo -e "  ${CYAN}[3]${NC} Restart Mpanel (PM2)"
-        echo -e "  ${CYAN}[4]${NC} View PM2 Status"
-        echo -e "  ${CYAN}[5]${NC} View Live Logs (pm2 logs)"
-        echo -e "  ${CYAN}[6]${NC} Enable Autostart on Server Boot (pm2 startup & save)"
-        echo -e "  ${CYAN}[0]${NC} Back to Main Menu"
+        echo -e "  ${LIGHT_CYAN}╭── Process Controls ─────────────────────────────────────────${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[1]${NC} ${WHITE}▶️   Start Mpanel in Background (PM2)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[2]${NC} ${WHITE}⏹️   Stop Mpanel (PM2)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[3]${NC} ${WHITE}🔄  Restart Mpanel (PM2)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[4]${NC} ${WHITE}📊  View PM2 Status & Metrics${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[5]${NC} ${WHITE}📜  View Live Logs (pm2 logs)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[6]${NC} ${WHITE}🚀  Enable Autostart on Server Boot (pm2 startup & save)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[0]${NC} ${WHITE}↩️   Back to Main Menu${NC}"
+        echo -e "  ${LIGHT_CYAN}╰─────────────────────────────────────────────────────────────${NC}"
         echo ""
-        read -p "Select an option [0-6]: " pm2_opt
+        echo -e -n "  ${LIGHT_CYAN}❯${NC} ${WHITE}Select an option [0-6]:${NC} "
+        read -r pm2_opt
 
         case $pm2_opt in
             1)
@@ -767,20 +808,31 @@ db_menu() {
 
     while true; do
         clear
-        echo -e "${PURPLE}╔══════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${PURPLE}║${WHITE}           🗄️  DATABASE MANAGER (MariaDB / MySQL)             ${PURPLE}║${NC}"
-        echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${LIGHT_CYAN}${BOLD}"
+        echo "  ███╗   ███╗██████╗  █████╗ ███╗   ██╗███████╗██╗     "
+        echo "  ████╗ ████║██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     "
+        echo "  ██╔████╔██║██████╔╝███████║██╔██╗ ██║█████╗  ██║     "
+        echo "  ██║╚██╔╝██║██╔═══╝ ██╔══██║██║╚██╗██║██╔══╝  ██║     "
+        echo "  ██║ ╚═╝ ██║██║     ██║  ██║██║ ╚████║███████╗███████╗"
+        echo "  ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝"
+        echo -e "${NC}"
+        echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "  ${WHITE}${BOLD}🗄️  DATABASE MANAGER${NC} ${GRAY}•${NC} ${CYAN}MariaDB / MySQL Docker Containers${NC}"
+        echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
-        echo -e "  ${CYAN}[1]${NC} 🚀 Run / Start MariaDB Docker Container (Port 27017) [Default]"
-        echo -e "  ${CYAN}[2]${NC} 🐬 Run / Start MySQL 8.0 Docker Container (Port 27016)"
-        echo -e "  ${CYAN}[3]${NC} 🔄 Run Database Migrations (npm run migrate)"
-        echo -e "  ${CYAN}[4]${NC} 📊 Check Database Status & Connection"
-        echo -e "  ${CYAN}[5]${NC} 📜 View Database Container Logs"
-        echo -e "  ${CYAN}[6]${NC} ⏹️  Stop Database Containers"
-        echo -e "  ${CYAN}[7]${NC} 🔁 Restart Database Containers"
-        echo -e "  ${CYAN}[0]${NC} ↩️  Back to Main Menu"
+        echo -e "  ${LIGHT_CYAN}╭── Database Controls ────────────────────────────────────────${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[1]${NC} ${WHITE}🚀  Start MariaDB Docker (Port 27017) [Recommended]${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[2]${NC} ${WHITE}🐬  Start MySQL 8.0 Docker (Port 27016)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[3]${NC} ${WHITE}🔄  Run Database Migrations (npm run migrate)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[4]${NC} ${WHITE}📊  Check Database Status & Connection${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[5]${NC} ${WHITE}📜  View Database Container Logs${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[6]${NC} ${WHITE}⏹️   Stop Database Containers${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[7]${NC} ${WHITE}🔁  Restart Database Containers${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[0]${NC} ${WHITE}↩️   Back to Main Menu${NC}"
+        echo -e "  ${LIGHT_CYAN}╰─────────────────────────────────────────────────────────────${NC}"
         echo ""
-        read -p "Select an option [0-7]: " db_opt
+        echo -e -n "  ${LIGHT_CYAN}❯${NC} ${WHITE}Select an option [0-7]:${NC} "
+        read -r db_opt
 
         case $db_opt in
             1) start_mariadb_container ;;
@@ -974,18 +1026,23 @@ main_menu() {
     INTERACTIVE_MENU=true
     while true; do
         show_banner
-        echo -e "  ${CYAN}[1]${NC} 🚀 Auto Install & Setup (Full Automated Setup & Start)"
-        echo -e "  ${CYAN}[2]${NC} 👤 Create User / Admin (createuser)"
-        echo -e "  ${CYAN}[3]${NC} ⚡ PM2 Process Manager (Start/Stop/Restart/Logs)"
-        echo -e "  ${CYAN}[4]${NC} 🗄️  Database Manager (MariaDB / MySQL Docker & Migrations)"
-        echo -e "  ${CYAN}[5]${NC} 🔄 Auto Update Mpanel (Git pull, DB migrate & PM2 restart)"
-        echo -e "  ${CYAN}[6]${NC} 🐞 Start in Foreground (Debug Mode)"
-        echo -e "  ${CYAN}[7]${NC} 📊 Check System & Port Status"
-        echo -e "  ${CYAN}[8]${NC} 🌐 Install Playit.gg System Tunnel (playit CLI)"
-        echo -e "  ${CYAN}[9]${NC} 🗑️  Uninstall Mpanel"
-        echo -e "  ${CYAN}[0]${NC} 🚪 Exit"
+        echo -e "  ${LIGHT_CYAN}╭── ${WHITE}${BOLD}Core Management${NC}${LIGHT_CYAN} ─────────────────────────────────────────${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[1]${NC} ${WHITE}🚀  Auto Install & Setup${NC}     ${GRAY}• Full automated install & setup${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[2]${NC} ${WHITE}👤  Create User / Admin${NC}      ${GRAY}• Add admin or sub-user account${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[3]${NC} ${WHITE}⚡  PM2 Process Manager${NC}      ${GRAY}• Start / Stop / Restart / Logs${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[4]${NC} ${WHITE}🗄️   Database Manager${NC}         ${GRAY}• MariaDB / MySQL Docker & SQL${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[5]${NC} ${WHITE}🔄  Auto Update Mpanel${NC}       ${GRAY}• Git pull, DB sync & restart${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}"
+        echo -e "  ${LIGHT_CYAN}├── ${WHITE}${BOLD}Tools & Diagnostics${NC}${LIGHT_CYAN} ─────────────────────────────────────${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[6]${NC} ${WHITE}🐞  Start in Foreground${NC}      ${GRAY}• Live console debugging mode${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[7]${NC} ${WHITE}📊  System & Port Status${NC}     ${GRAY}• Health checks & diagnostics${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[8]${NC} ${WHITE}🌐  Playit.gg Tunnel CLI${NC}     ${GRAY}• Zero-portforwarding agent${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[9]${NC} ${WHITE}🗑️   Uninstall Mpanel${NC}         ${GRAY}• Remove panel & databases${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[0]${NC} ${WHITE}🚪  Exit Console${NC}             ${GRAY}• Quit management menu${NC}"
+        echo -e "  ${LIGHT_CYAN}╰─────────────────────────────────────────────────────────────${NC}"
         echo ""
-        read -p "Please select an option [0-9]: " choice
+        echo -e -n "  ${LIGHT_CYAN}❯${NC} ${WHITE}Select an option [0-9]:${NC} "
+        read -r choice
 
         case $choice in
             1) auto_install_mpanel ;;
@@ -998,11 +1055,13 @@ main_menu() {
             8) install_playit_cli ;;
             9) uninstall_mpanel ;;
             0)
-                echo -e "${GREEN}Goodbye!${NC}"
+                echo ""
+                echo -e "  ${GREEN}👋 Goodbye from Mpanel!${NC}"
+                echo ""
                 exit 0
                 ;;
             *)
-                echo -e "${RED}Invalid selection. Please choose 0-9.${NC}"
+                echo -e "  ${RED}❌ Invalid selection. Please choose [0-9].${NC}"
                 sleep 1
                 ;;
         esac
