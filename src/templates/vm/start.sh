@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Ensure container working directory is fully accessible
+chmod 777 /home/container 2>/dev/null || true
+
 
 
 validate_int() {
@@ -350,6 +353,7 @@ if [ ! -f "$DISK_IMAGE" ]; then
         echo "INFO: Provisioning disk from bundled cloud image"
         cp "$BASE_IMAGE" "$DISK_IMAGE" \
             || { echo "ERROR: Failed to copy base cloud image" >&2; exit 1; }
+        chmod 666 "$DISK_IMAGE" 2>/dev/null || true
         base_image_id > "$BASE_ID_FILE"
     else
         qemu-img create -f qcow2 "$DISK_IMAGE" "${VM_DISK_GB}G" \

@@ -64,6 +64,9 @@ class DockerService {
     if (!fs.existsSync(serverDir)) {
       fs.mkdirSync(serverDir, { recursive: true });
     }
+    try {
+      fs.chmodSync(serverDir, 0o777);
+    } catch (e) {}
 
     const containerName = `mpanel-server-${server.id}-${server.uuid.substring(0, 8)}`;
     
@@ -95,7 +98,12 @@ class DockerService {
     const hostBinds = [`${serverDir}:/home/container:rw`];
 
     // Environment variables
-    let envArray = ['TERM=xterm-256color', `SERVER_PORT=${port || 25565}`, `SERVER_MEMORY=${server.memory_mb || 1024}`];
+    let envArray = [
+      'TERM=xterm-256color',
+      `SERVER_PORT=${port || 25565}`,
+      `SERVER_MEMORY=${server.memory_mb || 1024}`,
+      `SERVER_DISK=${server.disk_mb || 10240}`
+    ];
     let parsedEnv = {};
     try {
       parsedEnv = typeof server.env_vars === 'string' ? JSON.parse(server.env_vars || '{}') : (server.env_vars || {});
@@ -157,11 +165,12 @@ class DockerService {
     const cmdParts = ['/bin/sh', '-c', finalCmd];
 
     if (isVmServer) {
-      envArray = envArray.filter(e => !e.startsWith('KVM=') && !e.startsWith('NOKVM=') && !e.startsWith('NO_KVM=') && !e.startsWith('LICENSE='));
+      envArray = envArray.filter(e => !e.startsWith('KVM=') && !e.startsWith('NOKVM=') && !e.startsWith('NO_KVM=') && !e.startsWith('LICENSE=') && !e.startsWith('SERVER_DISK='));
       envArray.push('LICENSE=UNLOCKED_NO_LICENSE_NEEDED');
       envArray.push(`KVM=${effectiveKvm}`);
       envArray.push(`NOKVM=${isKvmOff ? '1' : '0'}`);
       envArray.push(`NO_KVM=${isKvmOff ? '1' : '0'}`);
+      envArray.push(`SERVER_DISK=${server.disk_mb || 10240}`);
       if (!parsedEnv.SERVER_PORT) envArray.push(`SERVER_PORT=${port || 2222}`);
       if (!parsedEnv.VM_RAM_MB) envArray.push(`VM_RAM_MB=${Math.round((server.memory_mb || 2048) * 0.8)}`);
       if (!parsedEnv.VM_DISK_GB) envArray.push(`VM_DISK_GB=${Math.round((server.disk_mb || 10240) / 1024 * 0.8) || 10}`);
@@ -171,6 +180,7 @@ class DockerService {
     const container = await this.docker.createContainer({
       name: containerName,
       Image: server.docker_image,
+      User: '0:0',
       WorkingDir: '/home/container',
       Cmd: cmdParts,
       Env: envArray,
