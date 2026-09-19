@@ -16,7 +16,6 @@
 
 <p align="center">
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-18.0%2B-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" /></a>
-  <a href="https://github.com/nobita329/Mpanel/releases/tag/v2.5.2"><img src="https://img.shields.io/badge/Release-v2.5.2-8A2BE2?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
   <a href="https://nobitahost.in"><img src="https://img.shields.io/badge/Website-nobitahost.in-007ACC?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" /></a>
   <a href="#-system-updates--live-terminal-engine"><img src="https://img.shields.io/badge/Auto--Updater-Live%20Terminal-00C7B7?style=for-the-badge&logo=terminal&logoColor=white" alt="Auto Updater" /></a>
   <a href="#-theme--customization-engine"><img src="https://img.shields.io/badge/Theme-Full%20Black%20OLED-111525?style=for-the-badge&logo=styled-components&logoColor=white" alt="Theme" /></a>
@@ -30,7 +29,6 @@
   <a href="#-theme--customization-engine"><b>🎨 Themes</b></a> •
   <a href="#-architecture--port-matrix"><b>🔒 Ports</b></a> •
   <a href="#-directory-structure"><b>📁 Structure</b></a> •
-  <a href="https://nobitahost.in"><b>🌐 Cloud Hosting</b></a>
 </p>
 
 ---
