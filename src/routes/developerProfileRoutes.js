@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const DEVELOPER_ID = '924366651443527710';
+const DEVELOPER_ID = '1476587556962308177';
 const DISCORD_EPOCH = 1420070400000n;
 
 // In-memory cache
