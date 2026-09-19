@@ -1,10 +1,10 @@
 /**
  * Nuvyra Discord Live Profile Detector & Real-time Presence Engine
- * Developer ID: 924366651443527710 (Walksys / walksys.dev)
+ * Developer ID: 1476587556962308177 (Walksys / walksys.dev)
  * Website: https://walksyshost.in/
  */
 (function() {
-  const DEVELOPER_ID = '924366651443527710';
+  const DEVELOPER_ID = '1476587556962308177';
   const DISCORD_EPOCH = 1420070400000n;
 
   function calculateSnowflake(id) {
