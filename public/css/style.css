@@ -2010,10 +2010,10 @@ html.theme-arix .device-select-card.active {
 }
 
 /* ==============================================================================
-   🔒 PERMANENT NON-REMOVABLE DEVELOPER WATERMARK (NOBITA / NOBITAHOST.IN)
+   🔒 PERMANENT NON-REMOVABLE DEVELOPER WATERMARK (walksys / walksysHOST.IN)
    ============================================================================== */
 #sidebar-permanent-watermark,
-#mpanel-global-footer-watermark {
+#nuvyra-global-footer-watermark {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;

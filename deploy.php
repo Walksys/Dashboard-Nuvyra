@@ -1,24 +1,24 @@
 <?php
 /**
- * Mpanel - Standalone Full-Page Server Deployment Application
+ * Nuvyra - Standalone Full-Page Server Deployment Application
  * File: deploy.php
  * 
  * Provides a dedicated, full-page interface for deploying game servers,
  * Node.js applications, Python bots, PHP projects, and LumenVM VPS instances.
- * Connects directly to Mpanel's REST API.
+ * Connects directly to Nuvyra's REST API.
  */
 
 session_start();
 
 // --- Configuration & Default Settings ---
-$defaultMpanelUrl = getenv('MPANEL_URL') ?: 'http://localhost:3003';
-$defaultApiKey = getenv('MPANEL_API_KEY') ?: '';
+$defaultNuvyraUrl = getenv('Nuvyra_URL') ?: 'http://localhost:3003';
+$defaultApiKey = getenv('Nuvyra_API_KEY') ?: '';
 
-if (!isset($_SESSION['mpanel_url'])) {
-    $_SESSION['mpanel_url'] = $defaultMpanelUrl;
+if (!isset($_SESSION['nuvyra_url'])) {
+    $_SESSION['nuvyra_url'] = $defaultNuvyraUrl;
 }
-if (!isset($_SESSION['mpanel_token']) && $defaultApiKey) {
-    $_SESSION['mpanel_token'] = $defaultApiKey;
+if (!isset($_SESSION['nuvyra_token']) && $defaultApiKey) {
+    $_SESSION['nuvyra_token'] = $defaultApiKey;
 }
 
 // Generate CSRF Token
@@ -26,10 +26,10 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-// Helper: Make cURL Request to Mpanel API
-function callMpanelApi($endpoint, $method = 'GET', $data = null, $token = null, $baseUrl = null) {
+// Helper: Make cURL Request to Nuvyra API
+function callNuvyraApi($endpoint, $method = 'GET', $data = null, $token = null, $baseUrl = null) {
     if (!$baseUrl) {
-        $baseUrl = $_SESSION['mpanel_url'] ?? 'http://localhost:3003';
+        $baseUrl = $_SESSION['nuvyra_url'] ?? 'http://localhost:3003';
     }
     $url = rtrim($baseUrl, '/') . '/' . ltrim($endpoint, '/');
     
@@ -77,43 +77,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         $error = 'Invalid security token (CSRF). Please refresh and try again.';
     } elseif ($_POST['action'] === 'set_config') {
-        $url = trim($_POST['mpanel_url'] ?? '');
-        $token = trim($_POST['mpanel_token'] ?? '');
-        if ($url) $_SESSION['mpanel_url'] = rtrim($url, '/');
-        if ($token) $_SESSION['mpanel_token'] = $token;
+        $url = trim($_POST['nuvyra_url'] ?? '');
+        $token = trim($_POST['nuvyra_token'] ?? '');
+        if ($url) $_SESSION['nuvyra_url'] = rtrim($url, '/');
+        if ($token) $_SESSION['nuvyra_token'] = $token;
         
         // Test connection
-        $test = callMpanelApi('/api/admin/settings/public', 'GET', null, null, $_SESSION['mpanel_url']);
+        $test = callNuvyraApi('/api/admin/settings/public', 'GET', null, null, $_SESSION['nuvyra_url']);
         if (isset($test['success']) && $test['success']) {
-            $notice = 'Successfully connected to Mpanel: ' . htmlspecialchars($test['settings']['panel_name'] ?? 'Mpanel');
+            $notice = 'Successfully connected to Nuvyra: ' . htmlspecialchars($test['settings']['panel_name'] ?? 'Nuvyra');
         } else {
-            $error = 'Connection test failed: ' . htmlspecialchars($test['error'] ?? 'Could not connect to Mpanel at ' . $url);
+            $error = 'Connection test failed: ' . htmlspecialchars($test['error'] ?? 'Could not connect to Nuvyra at ' . $url);
         }
     } elseif ($_POST['action'] === 'login') {
         $username = trim($_POST['username'] ?? '');
         $password = trim($_POST['password'] ?? '');
-        $url = trim($_POST['mpanel_url'] ?? $_SESSION['mpanel_url']);
-        if ($url) $_SESSION['mpanel_url'] = rtrim($url, '/');
+        $url = trim($_POST['nuvyra_url'] ?? $_SESSION['nuvyra_url']);
+        if ($url) $_SESSION['nuvyra_url'] = rtrim($url, '/');
         
-        $loginRes = callMpanelApi('/api/auth/login', 'POST', [
+        $loginRes = callNuvyraApi('/api/auth/login', 'POST', [
             'username' => $username,
             'password' => $password
-        ], null, $_SESSION['mpanel_url']);
+        ], null, $_SESSION['nuvyra_url']);
         
         if (!empty($loginRes['success']) && !empty($loginRes['token'])) {
-            $_SESSION['mpanel_token'] = $loginRes['token'];
-            $_SESSION['mpanel_user'] = $loginRes['user'] ?? null;
+            $_SESSION['nuvyra_token'] = $loginRes['token'];
+            $_SESSION['nuvyra_user'] = $loginRes['user'] ?? null;
             $notice = 'Signed in successfully as ' . htmlspecialchars($loginRes['user']['username'] ?? 'Admin');
         } else {
             $error = 'Sign in failed: ' . htmlspecialchars($loginRes['error'] ?? 'Invalid credentials.');
         }
     } elseif ($_POST['action'] === 'logout') {
-        unset($_SESSION['mpanel_token']);
-        unset($_SESSION['mpanel_user']);
-        $notice = 'Disconnected from Mpanel session.';
+        unset($_SESSION['nuvyra_token']);
+        unset($_SESSION['nuvyra_user']);
+        $notice = 'Disconnected from Nuvyra session.';
     } elseif ($_POST['action'] === 'deploy_server') {
         // --- Process Server Deployment ---
-        $authToken = $_SESSION['mpanel_token'] ?? null;
+        $authToken = $_SESSION['nuvyra_token'] ?? null;
         if (!$authToken) {
             $error = 'Authentication token is required to deploy a server.';
         } else {
@@ -181,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 'mc_jar_version' => $mcJarVersion ?: null
             ];
             
-            $res = callMpanelApi('/api/servers', 'POST', $payload, $authToken);
+            $res = callNuvyraApi('/api/servers', 'POST', $payload, $authToken);
             if (!empty($res['success'])) {
                 $createdServer = [
                     'id' => $res['serverId'] ?? null,
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     'memory_mb' => $memoryMb,
                     'disk_mb' => $diskMb,
                     'cpu_limit' => $cpuLimit,
-                    'console_url' => rtrim($_SESSION['mpanel_url'], '/') . '/#server-manage/' . ($res['serverId'] ?? '') . '/console'
+                    'console_url' => rtrim($_SESSION['nuvyra_url'], '/') . '/#server-manage/' . ($res['serverId'] ?? '') . '/console'
                 ];
                 $notice = 'Server instance deployed successfully!';
             } else {
@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // Fetch Remote Data (Users, Nodes, Allocations) if token exists
-$authToken = $_SESSION['mpanel_token'] ?? null;
+$authToken = $_SESSION['nuvyra_token'] ?? null;
 $usersList = [];
 $nodesList = [];
 $freeAllocations = [];
@@ -210,25 +210,25 @@ $publicSettings = [];
 
 if ($authToken) {
     // 1. Fetch public settings
-    $settingsRes = callMpanelApi('/api/admin/settings/public');
+    $settingsRes = callNuvyraApi('/api/admin/settings/public');
     if (!empty($settingsRes['settings'])) {
         $publicSettings = $settingsRes['settings'];
     }
     
     // 2. Fetch users list
-    $uRes = callMpanelApi('/api/admin/users', 'GET', null, $authToken);
+    $uRes = callNuvyraApi('/api/admin/users', 'GET', null, $authToken);
     if (!empty($uRes['users'])) {
         $usersList = $uRes['users'];
     }
     
     // 3. Fetch nodes & allocations
-    $nRes = callMpanelApi('/api/admin/nodes', 'GET', null, $authToken);
+    $nRes = callNuvyraApi('/api/admin/nodes', 'GET', null, $authToken);
     if (!empty($nRes['nodes'])) {
         $nodesList = $nRes['nodes'];
     }
     
     // 4. Fetch network allocations
-    $netRes = callMpanelApi('/api/admin/network', 'GET', null, $authToken);
+    $netRes = callNuvyraApi('/api/admin/network', 'GET', null, $authToken);
     if (!empty($netRes['allocations'])) {
         $freeAllocations = array_filter($netRes['allocations'], function($a) {
             return empty($a['assigned']) || $a['assigned'] == 0;
@@ -236,7 +236,7 @@ if ($authToken) {
     }
 }
 
-$panelName = $publicSettings['panel_name'] ?? 'Mpanel';
+$panelName = $publicSettings['panel_name'] ?? 'Nuvyra';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="dark">
@@ -343,7 +343,7 @@ $panelName = $publicSettings['panel_name'] ?? 'Mpanel';
       <?php if ($authToken): ?>
         <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Connected (<?= htmlspecialchars($_SESSION['mpanel_url']) ?>)</span>
+          <span>Connected (<?= htmlspecialchars($_SESSION['nuvyra_url']) ?>)</span>
         </div>
         <form method="POST" class="inline">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
@@ -357,7 +357,7 @@ $panelName = $publicSettings['panel_name'] ?? 'Mpanel';
           <i data-lucide="key" class="w-3.5 h-3.5"></i> Connect / Authenticate
         </button>
       <?php endif; ?>
-      <a href="<?= htmlspecialchars($_SESSION['mpanel_url']) ?>" target="_blank" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition flex items-center gap-1.5">
+      <a href="<?= htmlspecialchars($_SESSION['nuvyra_url']) ?>" target="_blank" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition flex items-center gap-1.5">
         <i data-lucide="external-link" class="w-3.5 h-3.5 text-cyan-400"></i> Open Panel
       </a>
     </div>
@@ -419,7 +419,7 @@ $panelName = $publicSettings['panel_name'] ?? 'Mpanel';
 
         <div class="flex items-center gap-3 pt-2">
           <a href="<?= htmlspecialchars($createdServer['console_url']) ?>" target="_blank" class="btn-cyber px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg">
-            <i data-lucide="terminal" class="w-4 h-4"></i> Open Server Console in Mpanel
+            <i data-lucide="terminal" class="w-4 h-4"></i> Open Server Console in Nuvyra
           </a>
           <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 transition">
             + Deploy Another Server
@@ -778,7 +778,7 @@ $panelName = $publicSettings['panel_name'] ?? 'Mpanel';
     <div class="glass-card w-full max-w-md p-6 sm:p-7 rounded-3xl border border-cyan-500/30 shadow-2xl space-y-5">
       <div class="flex items-center justify-between border-b border-white/10 pb-3">
         <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i> Connect to Mpanel Engine
+          <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i> Connect to Nuvyra Engine
         </h3>
         <?php if ($authToken): ?>
           <button onclick="document.getElementById('connection-modal').classList.add('hidden')" class="text-slate-400 hover:text-white">
@@ -793,8 +793,8 @@ $panelName = $publicSettings['panel_name'] ?? 'Mpanel';
         <input type="hidden" name="action" value="login">
         
         <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Mpanel Base URL</label>
-          <input type="url" name="mpanel_url" value="<?= htmlspecialchars($_SESSION['mpanel_url']) ?>" required placeholder="http://localhost:3003" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono">
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Nuvyra Base URL</label>
+          <input type="url" name="nuvyra_url" value="<?= htmlspecialchars($_SESSION['nuvyra_url']) ?>" required placeholder="http://localhost:3003" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono">
         </div>
 
         <div>
@@ -808,7 +808,7 @@ $panelName = $publicSettings['panel_name'] ?? 'Mpanel';
         </div>
 
         <button type="submit" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
-          <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Sign In to Mpanel
+          <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Sign In to Nuvyra
         </button>
       </form>
 
@@ -821,11 +821,11 @@ $panelName = $publicSettings['panel_name'] ?? 'Mpanel';
       <form method="POST" class="space-y-3.5">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
         <input type="hidden" name="action" value="set_config">
-        <input type="hidden" name="mpanel_url" value="<?= htmlspecialchars($_SESSION['mpanel_url']) ?>">
+        <input type="hidden" name="nuvyra_url" value="<?= htmlspecialchars($_SESSION['nuvyra_url']) ?>">
         
         <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Mpanel API Key (Token)</label>
-          <input type="password" name="mpanel_token" placeholder="mpk_xxxxxxxx or JWT Token" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono">
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Nuvyra API Key (Token)</label>
+          <input type="password" name="nuvyra_token" placeholder="mpk_xxxxxxxx or JWT Token" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-mono">
         </div>
 
         <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 transition flex items-center justify-center gap-2">

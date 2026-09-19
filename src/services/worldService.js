@@ -32,7 +32,7 @@ class WorldService {
         icon: '🏝️',
         bannerColor: 'from-amber-500/20 to-emerald-500/20',
         description: 'The iconic L-shaped floating island with an oak tree and a starter chest. Survive, bridge, and conquer the void.',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/skyblock.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/skyblock.zip',
         isCurated: true
       },
       {
@@ -47,7 +47,7 @@ class WorldService {
         icon: '📦',
         bannerColor: 'from-purple-500/20 to-pink-500/20',
         description: 'Start on a single infinite block in the sky. Mine it repeatedly to unlock 10 distinct progression phases from Plains to End!',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/oneblock.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/oneblock.zip',
         isCurated: true
       },
       {
@@ -56,7 +56,7 @@ class WorldService {
         category: 'Building / Utility',
         tag: 'Void World',
         genre: 'utility',
-        author: 'Mpanel Studio',
+        author: 'Nuvyra Studio',
         version: 'All Versions',
         sizeFormatted: '350 KB',
         icon: '🌌',
@@ -77,7 +77,7 @@ class WorldService {
         icon: '🏃',
         bannerColor: 'from-cyan-500/20 to-blue-600/20',
         description: 'A colossal spiral tower reaching the skybox, featuring multi-biome themes, checkpoints, and parkour challenges.',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/parkour.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/parkour.zip',
         isCurated: true
       },
       {
@@ -92,7 +92,7 @@ class WorldService {
         icon: '⚔️',
         bannerColor: 'from-rose-500/20 to-amber-500/20',
         description: 'Balanced 8-island floating bedwars map complete with diamond/emerald generators and central combat dome.',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/bedwars.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/bedwars.zip',
         isCurated: true
       },
       {
@@ -107,7 +107,7 @@ class WorldService {
         icon: '🏰',
         bannerColor: 'from-emerald-500/20 to-teal-500/20',
         description: 'A grand medieval fortress with fortified walls, market stalls, portal plaza, and harbor dock for multiplayer SMP servers.',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/medieval.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/medieval.zip',
         isCurated: true
       },
       {
@@ -116,7 +116,7 @@ class WorldService {
         category: 'Creative Sandbox',
         tag: 'Creative',
         genre: 'utility',
-        author: 'Mpanel Studio',
+        author: 'Nuvyra Studio',
         version: 'All Versions',
         sizeFormatted: '400 KB',
         icon: '🟩',
@@ -137,7 +137,7 @@ class WorldService {
         icon: '🕳️',
         bannerColor: 'from-indigo-500/20 to-blue-500/20',
         description: 'Free-fall from the skybox dodging obstacles into water landing pads. Includes 8 distinct levels of extreme dropper puzzles.',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/dropper.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/dropper.zip',
         isCurated: true
       },
       {
@@ -152,7 +152,7 @@ class WorldService {
         icon: '🏢',
         bannerColor: 'from-fuchsia-500/20 to-rose-500/20',
         description: 'High-tech neon prison spawn with A-to-Z mine tunnels, rank-up areas, NPC shops, and crate showcase.',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/prison.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/prison.zip',
         isCurated: true
       },
       {
@@ -167,7 +167,7 @@ class WorldService {
         icon: '🏜️',
         bannerColor: 'from-orange-500/20 to-amber-600/20',
         description: 'Custom sculpted desert mesa canyons with buried temples, oasis trading villages, and ancient dungeon labyrinths.',
-        downloadUrl: 'https://raw.githubusercontent.com/nobita329/minecraft-templates/main/maps/canyons.zip',
+        downloadUrl: 'https://raw.githubusercontent.com/walksys/minecraft-templates/main/maps/canyons.zip',
         isCurated: true
       }
     ];
@@ -845,7 +845,7 @@ class WorldService {
       } catch (err) {
         // Fallback: If external download fails, setup clean structured world with template notes
         fs.mkdirSync(path.join(targetDir, 'datapacks'), { recursive: true });
-        fs.writeFileSync(path.join(targetDir, 'world_template.txt'), `Mpanel World Template: ${map.title}\nCategory: ${map.category}\nInstalled: ${new Date().toISOString()}`);
+        fs.writeFileSync(path.join(targetDir, 'world_template.txt'), `Nuvyra World Template: ${map.title}\nCategory: ${map.category}\nInstalled: ${new Date().toISOString()}`);
       }
 
       if (setActive) {
@@ -892,7 +892,7 @@ class WorldService {
       responseType: 'stream',
       timeout: 60000,
       headers: {
-        'User-Agent': 'Mpanel-World-Installer/1.0.0'
+        'User-Agent': 'Nuvyra-World-Installer/1.0.0'
       }
     });
 

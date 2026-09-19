@@ -1,4 +1,4 @@
-// Mpanel Minecraft World Manager Module
+// Nuvyra Minecraft World Manager Module
 class WorldManagerController {
   constructor() {
     this.currentServerId = null;

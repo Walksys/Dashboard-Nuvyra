@@ -149,7 +149,7 @@ class SFTPServer {
             };
 
             sftp.on('REALPATH', (reqid, p) => {
-              sftp.name(reqid, [{ filename: '/', longname: 'drwxr-xr-x 1 mpanel mpanel 4096 Jan 1 00:00 /', attrs: {} }]);
+              sftp.name(reqid, [{ filename: '/', longname: 'drwxr-xr-x 1 nuvyra nuvyra 4096 Jan 1 00:00 /', attrs: {} }]);
             });
 
             sftp.on('STAT', (reqid, p) => {
@@ -191,7 +191,7 @@ class SFTPServer {
                   const stat = fs.statSync(full);
                   list.push({
                     filename: f,
-                    longname: `${stat.isDirectory() ? 'd' : '-'}rw-r--r-- 1 mpanel mpanel ${stat.size} ${stat.mtime.toDateString()} ${f}`,
+                    longname: `${stat.isDirectory() ? 'd' : '-'}rw-r--r-- 1 nuvyra nuvyra ${stat.size} ${stat.mtime.toDateString()} ${f}`,
                     attrs: stat
                   });
                 } catch (e) {}

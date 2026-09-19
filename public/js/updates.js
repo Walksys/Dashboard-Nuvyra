@@ -1,7 +1,7 @@
 /**
- * Mpanel - System Updates & Auto-Detection Engine
+ * Nuvyra - System Updates & Auto-Detection Engine
  * Real-time GitHub Releases Tracker & Live Update Terminal
- * Source: https://github.com/nobita329/Mpanel/releases
+ * Source: https://github.com/walksys/Nuvyra/releases
  */
 
 class UpdatesManager {
@@ -37,7 +37,7 @@ class UpdatesManager {
               <i data-lucide="arrow-up-circle" class="w-7 h-7 text-cyan-400"></i> System Updates & Version Control
             </h2>
             <p class="text-xs text-slate-400">
-              Auto-detecting releases from <a href="https://github.com/nobita329/Mpanel/releases" target="_blank" class="text-cyan-400 hover:underline font-mono">github.com/nobita329/Mpanel/releases</a> with live streaming terminal
+              Auto-detecting releases from <a href="https://github.com/walksys/Nuvyra/releases" target="_blank" class="text-cyan-400 hover:underline font-mono">github.com/walksys/Nuvyra/releases</a> with live streaming terminal
             </p>
           </div>
 
@@ -46,7 +46,7 @@ class UpdatesManager {
               <i data-lucide="refresh-cw" class="w-4 h-4 text-cyan-400" id="icon-check-updates"></i>
               <span>Check for Updates</span>
             </button>
-            <a href="https://github.com/nobita329/Mpanel/releases" target="_blank" class="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 flex items-center gap-1.5 transition">
+            <a href="https://github.com/walksys/Nuvyra/releases" target="_blank" class="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 flex items-center gap-1.5 transition">
               <i data-lucide="external-link" class="w-4 h-4"></i>
               <span>GitHub Releases</span>
             </a>
@@ -92,12 +92,12 @@ class UpdatesManager {
             <div>
               <h3 id="card-latest-ver" class="text-3xl font-black text-cyan-400 font-mono">v2.4.0</h3>
               <p class="text-[11px] text-slate-400 mt-1 truncate" id="card-latest-title">
-                Mpanel Release
+                Nuvyra Release
               </p>
             </div>
             <div class="text-[10px] text-slate-500 font-mono border-t border-white/5 pt-2 flex justify-between">
               <span id="card-latest-date">Published: --</span>
-              <span id="card-latest-author">By: nobita329</span>
+              <span id="card-latest-author">By: walksys</span>
             </div>
           </div>
 
@@ -137,7 +137,7 @@ class UpdatesManager {
               </div>
               <span class="text-xs font-mono font-bold text-slate-300 flex items-center gap-2">
                 <i data-lucide="terminal" class="w-4 h-4 text-cyan-400"></i>
-                <span>bash - root@mpanel:~/Mpanel (Live Update Terminal)</span>
+                <span>bash - root@nuvyra:~/Nuvyra (Live Update Terminal)</span>
               </span>
             </div>
 
@@ -253,9 +253,9 @@ class UpdatesManager {
                 <i data-lucide="history" class="w-5 h-5 text-amber-400"></i>
                 <span>Release History</span>
               </h3>
-              <p class="text-xs text-slate-400">Past version releases and changelogs for Mpanel</p>
+              <p class="text-xs text-slate-400">Past version releases and changelogs for Nuvyra</p>
             </div>
-            <span class="text-xs font-mono text-slate-400">nobita329/Mpanel</span>
+            <span class="text-xs font-mono text-slate-400">walksys/Nuvyra</span>
           </div>
 
           <div id="releases-history-list" class="space-y-2">
@@ -328,7 +328,7 @@ class UpdatesManager {
       });
 
       // Write welcome banner in terminal
-      this.term.writeln('\x1b[1;36m=== Mpanel System Update Terminal Initialized ===\x1b[0m');
+      this.term.writeln('\x1b[1;36m=== Nuvyra System Update Terminal Initialized ===\x1b[0m');
       this.term.writeln('\x1b[90mReady to stream live system updates, migrations, and process reloads.\x1b[0m\r\n');
 
     } else {
@@ -336,7 +336,7 @@ class UpdatesManager {
       const fallback = document.getElementById('update-terminal-fallback');
       if (fallback) {
         fallback.classList.remove('hidden');
-        fallback.textContent = '=== Mpanel System Update Terminal (Fallback Mode) ===\nReady.\n';
+        fallback.textContent = '=== Nuvyra System Update Terminal (Fallback Mode) ===\nReady.\n';
       }
     }
   }
@@ -392,7 +392,7 @@ class UpdatesManager {
       this.ws = null;
     }
 
-    const token = localStorage.getItem('mpanel_token');
+    const token = localStorage.getItem('nuvyra_token');
     if (!token) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -633,7 +633,7 @@ class UpdatesManager {
 
     if (headTitle) headTitle.innerText = rel.name || rel.tag_name;
     if (headSub && rel.published_at) {
-      headSub.innerText = `Published by ${rel.author || 'nobita329'} on ${new Date(rel.published_at).toLocaleString()}`;
+      headSub.innerText = `Published by ${rel.author || 'walksys'} on ${new Date(rel.published_at).toLocaleString()}`;
     }
     if (tagPill) tagPill.innerText = rel.tag_name;
 
@@ -772,7 +772,7 @@ class UpdatesManager {
           </div>
 
           <div class="space-y-3 text-xs text-slate-300">
-            <p>You are about to run the automated Mpanel system update pipeline.</p>
+            <p>You are about to run the automated Nuvyra system update pipeline.</p>
             <div class="p-3 rounded-xl bg-slate-950/80 border border-white/5 space-y-1.5 font-mono text-[11px]">
               <div class="text-slate-400 font-bold uppercase tracking-wider mb-1">Pipeline Stages:</div>
               <div class="flex items-center gap-2 text-emerald-400"><i data-lucide="check" class="w-3.5 h-3.5"></i> 1. Git pull from repository (main)</div>

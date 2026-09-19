@@ -18,10 +18,10 @@ data/*.sqlite-shm
 !data/.gitkeep
 
 # Sandboxed Server Directories & Backups
-mpanel/servers/*
-mpanel/backups/*
-!mpanel/servers/.gitkeep
-!mpanel/backups/.gitkeep
+nuvyra/servers/*
+nuvyra/backups/*
+!nuvyra/servers/.gitkeep
+!nuvyra/backups/.gitkeep
 
 # Uploaded dynamic user assets (keep defaults)
 public/uploads/*

@@ -40,13 +40,13 @@ async function main() {
     }
   };
 
-  log('⚡ Initializing Mpanel Automated Setup...');
+  log('⚡ Initializing Nuvyra Automated Setup...');
 
   // 1. Ensure required runtime directories exist
   const dirs = [
     path.join(rootDir, 'data'),
-    path.join(rootDir, 'mpanel/servers'),
-    path.join(rootDir, 'mpanel/backups'),
+    path.join(rootDir, 'nuvyra/servers'),
+    path.join(rootDir, 'nuvyra/backups'),
     path.join(rootDir, 'public/uploads/branding'),
     path.join(rootDir, 'public/assets')
   ];
@@ -63,7 +63,7 @@ async function main() {
   let envCreated = false;
   if (!fs.existsSync(envPath)) {
     const jwtSecret = crypto.randomBytes(32).toString('hex');
-    const envContent = `# Mpanel Configuration Environment
+    const envContent = `# Nuvyra Configuration Environment
 NODE_ENV=production
 PORT_WEB=3001
 PORT_API=3003
@@ -101,7 +101,7 @@ DB_NAME=panel
   if (options.adminUser && options.adminPass) {
     const username = options.adminUser.trim();
     const password = options.adminPass.trim();
-    const email = options.adminEmail ? options.adminEmail.trim() : `${username}@mpanel.local`;
+    const email = options.adminEmail ? options.adminEmail.trim() : `${username}@nuvyra.local`;
     const passwordHash = await bcrypt.hash(password, 10);
     const uuid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 
@@ -147,14 +147,14 @@ DB_NAME=panel
       admin: adminDetails
     }));
   } else {
-    log('✅ Mpanel automated setup completed successfully!');
+    log('✅ Nuvyra automated setup completed successfully!');
   }
 
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error('❌ Mpanel setup error:', err);
+  console.error('❌ Nuvyra setup error:', err);
   process.exit(1);
 });
 

@@ -2,12 +2,12 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('⚡ Building Mpanel...');
+console.log('⚡ Building Nuvyra...');
 
 const dirs = [
   path.join(__dirname, '../data'),
-  path.join(__dirname, '../mpanel/servers'),
-  path.join(__dirname, '../mpanel/backups'),
+  path.join(__dirname, '../nuvyra/servers'),
+  path.join(__dirname, '../nuvyra/backups'),
   path.join(__dirname, '../public/uploads/branding'),
   path.join(__dirname, '../public/assets')
 ];
@@ -19,5 +19,5 @@ for (const dir of dirs) {
   }
 }
 
-console.log('✅ Mpanel build and directory check complete! Ready for PM2 / production.');
+console.log('✅ Nuvyra build and directory check complete! Ready for PM2 / production.');
 

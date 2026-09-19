@@ -1,4 +1,4 @@
-// Mpanel Supported Docker Images & Templates
+// Nuvyra Supported Docker Images & Templates
 module.exports = {
   minecraft: [
     { label: "Java 25", value: "ghcr.io/pterodactyl/yolks:java_25", defaultCmd: "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}} nogui", jarFile: "server.jar" },

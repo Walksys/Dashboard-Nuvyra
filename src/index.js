@@ -42,7 +42,7 @@ const developerProfileRoutes = require('./routes/developerProfileRoutes');
 
 
 async function bootstrap() {
-  console.log('🚀 Initializing Mpanel Core Engine...');
+  console.log('🚀 Initializing Nuvyra Core Engine...');
 
   // Initialize DB & Seed
   await initDatabase();
@@ -127,7 +127,7 @@ async function bootstrap() {
 
   console.log(`
 ╔══════════════════════════════════════════════════════╗
-║               🎮 MPANEL READY TO USE                 ║
+║               🎮 Nuvyra READY TO USE                 ║
 ╠══════════════════════════════════════════════════════╣
 ║  • Web Panel UI:    http://localhost:${config.PORT_WEB}            ║
 ║  • Daemon/API Port: http://localhost:${config.PORT_API}            ║
