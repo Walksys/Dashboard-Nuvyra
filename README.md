@@ -81,6 +81,10 @@ graph TD
 
 ## ✨ What is New in v2.5.2
 
+<p align="center">
+  <img src="public/assets/console-preview.png" alt="Mpanel v2.5.2 Console & Live Parsentbar Telemetry Preview" style="border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.25); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);" width="100%" />
+</p>
+
 ### 1. 🟢 Real-Time 5-State Server Lifecycle Engine
 - **5 High-Accuracy Real-Time Statuses**:
   - 🟢 **Online / Started**: Server process running, ports active, telemetry streaming.
