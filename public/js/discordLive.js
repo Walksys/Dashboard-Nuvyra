@@ -40,17 +40,17 @@
         id: this.userId,
         username: 'walksys.dev',
         global_name: 'walksys',
-        avatar_url: '/images/walksys-discord.png',
-        banner_color: '#5865F2',
+        avatar_url: 'https://welder.qzz.io/assets/owner-BxizlJ-J.jpg',
+        banner_color: '#050303',
         banner_url: null,
-        status: 'online', // 'online' | 'idle' | 'dnd' | 'offline'
+        status: 'dnd', // 'online' | 'idle' | 'dnd' | 'offline'
         activities: [],
         spotify: null,
         custom_status: 'hii I am a game devoloper / bot devoloper',
         lanyard_monitored: false,
         created_at: createdDate.toISOString(),
         formatted_created_at: createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        website: 'https://walksyshost.in/',
+        website: 'https://walksys.qzz.io',
         discord_url: `https://discord.com/users/${this.userId}`,
         mention: `<@${this.userId}>`
       };
