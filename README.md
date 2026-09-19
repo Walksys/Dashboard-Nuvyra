@@ -365,22 +365,6 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 - **Password**: `admin`
 - **Login URL**: `http://localhost:3001`
 
----
-
-## 👨‍💻 Creator & Developer
-
-<p align="center">
-  <a href="https://discord.com/users/924366651443527710" target="_blank">
-    <img src="public/images/walksys-discord.png" alt="Walksys Discord Profile" width="280px" style="border-radius: 16px; box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);" />
-  </a>
-</p>
-
-<p align="center">
-  <b>Developed &amp; Engineered by Walksys (<code>walksys.dev</code>)</b><br/>
-  💬 Discord: <a href="https://discord.com/users/924366651443527710" target="_blank"><code>walksys.dev</code> (ID: <code>924366651443527710</code>)</a> • Mention: <code>&lt;@924366651443527710&gt;</code><br/>
-  ⚡ Live Presence: <b>Real-time Discord Gateway &amp; Lanyard Live Sync</b><br/>
-  🌐 Official Website: <a href="https://walksyshost.in/" target="_blank"><b>https://walksyshost.in/</b></a>
-</p>
 
 ---
 
