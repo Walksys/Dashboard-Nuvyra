@@ -18,7 +18,7 @@ class SettingsManager {
       bg: '',
       bgType: 'image',
       themeMode: 'dark',
-      activeTheme: localStorage.getItem('mpanel_active_theme') || 'arix',
+      activeTheme: localStorage.getItem('nuvyra_active_theme') || 'arix',
       panelSoundsEnabled: localStorage.getItem('panelSounds') !== 'false',
       arixPrimaryColor: '#4A35CF',
       liquidxPrimaryColor: '#e0841b',
@@ -28,7 +28,7 @@ class SettingsManager {
 
   loadFavorites() {
     try {
-      const saved = localStorage.getItem('mpanel_fav_wallpapers');
+      const saved = localStorage.getItem('nuvyra_fav_wallpapers');
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
@@ -37,7 +37,7 @@ class SettingsManager {
 
   saveFavorites() {
     try {
-      localStorage.setItem('mpanel_fav_wallpapers', JSON.stringify(this.favorites));
+      localStorage.setItem('nuvyra_fav_wallpapers', JSON.stringify(this.favorites));
     } catch (e) {
       console.warn('Could not save favorites to localStorage', e);
     }
@@ -778,11 +778,11 @@ class SettingsManager {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-300 mb-1">Panel Name</label>
-                  <input type="text" id="set-panel-name" oninput="settingsManager.previewPanelName(this.value)" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Mpanel">
+                  <input type="text" id="set-panel-name" oninput="settingsManager.previewPanelName(this.value)" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Nuvyra">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-300 mb-1">Favicon Title Name</label>
-                  <input type="text" id="set-favicon-name" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Mpanel Server Management">
+                  <input type="text" id="set-favicon-name" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Nuvyra Server Management">
                 </div>
               </div>
 
@@ -885,10 +885,10 @@ class SettingsManager {
               <div id="preview-sample-card" class="glass-card p-5 rounded-2xl border border-white/15 space-y-4">
                 <div class="flex items-center gap-3">
                   <div id="preview-logo-box" class="w-10 h-10 rounded-xl bg-slate-900/80 p-1 border border-cyan-500/40 flex items-center justify-center">
-                    <img id="preview-logo-img" src="/assets/mpanel-logo.svg" alt="Preview Logo" class="w-full h-full object-contain">
+                    <img id="preview-logo-img" src="/assets/nuvyra-logo.svg" alt="Preview Logo" class="w-full h-full object-contain">
                   </div>
                   <div>
-                    <h4 id="preview-panel-title" class="text-sm font-bold text-white">Mpanel</h4>
+                    <h4 id="preview-panel-title" class="text-sm font-bold text-white">Nuvyra</h4>
                     <p class="text-[10px] text-slate-400">Glassmorphism UI Engine</p>
                   </div>
                 </div>
@@ -999,8 +999,8 @@ class SettingsManager {
       const data = await app.api('/api/admin/settings');
       const s = data.settings || {};
 
-      document.getElementById('set-panel-name').value = s.panel_name || 'Mpanel';
-      document.getElementById('set-favicon-name').value = s.favicon_name || 'Mpanel';
+      document.getElementById('set-panel-name').value = s.panel_name || 'Nuvyra';
+      document.getElementById('set-favicon-name').value = s.favicon_name || 'Nuvyra';
       document.getElementById('set-panel-logo').value = s.panel_logo || '';
       document.getElementById('set-favicon-logo').value = s.favicon_logo || '';
 
@@ -1110,7 +1110,7 @@ class SettingsManager {
   }
 
   updateDeviceModeUI() {
-    const mode = (window.app && app.deviceMode) || localStorage.getItem('mpanel_device_mode') || 'auto';
+    const mode = (window.app && app.deviceMode) || localStorage.getItem('nuvyra_device_mode') || 'auto';
     const detected = (window.app && typeof app.getDetectedProfile === 'function') ? app.getDetectedProfile() : 'pc';
 
     const badge = document.getElementById('settings-device-badge');
@@ -1174,7 +1174,7 @@ class SettingsManager {
 
   selectTheme(themeName) {
     this.currentTheme.activeTheme = themeName;
-    localStorage.setItem('mpanel_active_theme', themeName);
+    localStorage.setItem('nuvyra_active_theme', themeName);
     this.updateThemeSelectionUI();
     app.applyBrandingAndTheme({
       active_theme: themeName,
@@ -1906,9 +1906,9 @@ class SettingsManager {
 
   previewPanelName(name) {
     const el = document.getElementById('preview-panel-title');
-    if (el) el.innerText = name || 'Mpanel';
+    if (el) el.innerText = name || 'Nuvyra';
     const headerTitle = document.getElementById('header-panel-name');
-    if (headerTitle) headerTitle.innerText = name || 'Mpanel';
+    if (headerTitle) headerTitle.innerText = name || 'Nuvyra';
   }
 
   previewLogo(url) {
@@ -1986,8 +1986,8 @@ class SettingsManager {
 
   async saveSettings(isSilent = false) {
     const payload = {
-      panel_name: document.getElementById('set-panel-name')?.value.trim() || 'Mpanel',
-      favicon_name: document.getElementById('set-favicon-name')?.value.trim() || 'Mpanel',
+      panel_name: document.getElementById('set-panel-name')?.value.trim() || 'Nuvyra',
+      favicon_name: document.getElementById('set-favicon-name')?.value.trim() || 'Nuvyra',
       panel_logo: document.getElementById('set-panel-logo')?.value.trim() || '',
       favicon_logo: document.getElementById('set-favicon-logo')?.value.trim() || '',
       panel_bg: this.currentTheme.bg || '',

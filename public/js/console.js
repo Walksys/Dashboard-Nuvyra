@@ -715,7 +715,7 @@ class ServerConsole {
     const termContainer = document.getElementById('terminal-container');
     if (!termContainer) return;
 
-    const savedFontSize = parseInt(localStorage.getItem('mpanel_term_fontsize') || '12', 10);
+    const savedFontSize = parseInt(localStorage.getItem('nuvyra_term_fontsize') || '12', 10);
 
     this.term = new Terminal({
       theme: {
@@ -781,7 +781,7 @@ class ServerConsole {
       }
     }
     if (save) {
-      localStorage.setItem('mpanel_term_fontsize', s.toString());
+      localStorage.setItem('nuvyra_term_fontsize', s.toString());
     }
     const select = document.getElementById('term-font-select');
     if (select) {
@@ -795,7 +795,7 @@ class ServerConsole {
   }
 
   changeTerminalFontSize(delta) {
-    const current = parseInt(localStorage.getItem('mpanel_term_fontsize') || (this.term ? this.term.options.fontSize : 12), 10) || 12;
+    const current = parseInt(localStorage.getItem('nuvyra_term_fontsize') || (this.term ? this.term.options.fontSize : 12), 10) || 12;
     const next = Math.min(28, Math.max(9, current + delta));
     this.setTerminalFontSize(next, true);
     app.showToast(`Font size: ${next}px`, 'info');
@@ -803,7 +803,7 @@ class ServerConsole {
 
   onFontSizeSelect(val) {
     if (val === 'custom') {
-      const current = localStorage.getItem('mpanel_term_fontsize') || '12';
+      const current = localStorage.getItem('nuvyra_term_fontsize') || '12';
       const customVal = prompt('Enter custom terminal font size (9 - 28 px):', current);
       if (customVal) {
         const num = parseInt(customVal, 10);
@@ -1026,7 +1026,7 @@ class ServerConsole {
 
     this.ws.onopen = () => {
       if (this.term) {
-        this.term.writeln('\x1b[32m[Mpanel]\x1b[0m Connected to server live stream.');
+        this.term.writeln('\x1b[32m[Nuvyra]\x1b[0m Connected to server live stream.');
       }
     };
 
@@ -1055,7 +1055,7 @@ class ServerConsole {
 
     this.ws.onclose = () => {
       if (this.term) {
-        this.term.writeln('\r\n\x1b[33m[Mpanel]\x1b[0m Disconnected from server stream.');
+        this.term.writeln('\r\n\x1b[33m[Nuvyra]\x1b[0m Disconnected from server stream.');
       }
     };
   }
@@ -1592,7 +1592,7 @@ class ServerConsole {
       const isNokvm = s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' || envVars.NOKVM === '1';
       if (envVars.KVM === undefined) envVars.KVM = isNokvm ? 'off' : 'on';
       if (envVars.NOKVM === undefined) envVars.NOKVM = isNokvm ? '1' : '0';
-      if (envVars.OS_HOSTNAME === undefined) envVars.OS_HOSTNAME = 'mpanel-vm';
+      if (envVars.OS_HOSTNAME === undefined) envVars.OS_HOSTNAME = 'nuvyra-vm';
       if (envVars.OS_PASSWORD === undefined) envVars.OS_PASSWORD = 'root';
       if (envVars.DISPLAY_MODE === undefined) envVars.DISPLAY_MODE = 'ssh';
       if (envVars.VM_RAM_MB === undefined) envVars.VM_RAM_MB = String(s.memory_mb || 2048);

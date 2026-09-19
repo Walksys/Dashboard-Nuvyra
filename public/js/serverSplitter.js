@@ -1,6 +1,6 @@
 /**
- * Mpanel - Server Splitter Module
- * Ported from serversplitter.blueprint (v1.1.4 by 0x7d8 / nobita329)
+ * Nuvyra - Server Splitter Module
+ * Ported from serversplitter.blueprint (v1.1.4 by 0x7d8 / walksys)
  * Allows splitting master server resources (RAM, CPU, Disk) into independent sub-servers.
  */
 

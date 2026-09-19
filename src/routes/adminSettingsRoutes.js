@@ -141,9 +141,9 @@ router.post('/reset', authenticate, requireAdmin, async (req, res) => {
       transparency_bar: String(dt.transparency ?? 18),
       blur_bar: String(dt.blur ?? 16),
       theme_mode: 'dark',
-      panel_name: config.DEFAULT_PANEL_NAME || 'Mpanel',
-      favicon_name: config.DEFAULT_PANEL_NAME || 'Mpanel',
-      panel_logo: dt.logo || '/assets/mpanel-logo.svg',
+      panel_name: config.DEFAULT_PANEL_NAME || 'Nuvyra',
+      favicon_name: config.DEFAULT_PANEL_NAME || 'Nuvyra',
+      panel_logo: dt.logo || '/assets/nuvyra-logo.svg',
       favicon_logo: dt.favicon || '/assets/favicon.svg'
     };
 

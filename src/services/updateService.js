@@ -7,8 +7,8 @@ const { logActivity } = require('./activityService');
 
 class UpdateService {
   constructor() {
-    this.repoOwner = 'nobita329';
-    this.repoName = 'Mpanel';
+    this.repoOwner = 'walksys';
+    this.repoName = 'Nuvyra';
     this.githubApiUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/releases`;
     this.githubReleasesUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases`;
     this.rootPath = path.resolve(__dirname, '../../');
@@ -87,7 +87,7 @@ class UpdateService {
     try {
       const res = await axios.get(this.githubApiUrl, {
         headers: {
-          'User-Agent': 'Mpanel-Update-Detector/2.4.0',
+          'User-Agent': 'Nuvyra-Update-Detector/2.4.0',
           'Accept': 'application/vnd.github.v3+json'
         },
         timeout: 8000
@@ -136,7 +136,7 @@ class UpdateService {
           published_at: latestRelease.published_at,
           html_url: latestRelease.html_url,
           body: latestRelease.body || 'No release notes provided for this version.',
-          author: latestRelease.author ? latestRelease.author.login : 'nobita329',
+          author: latestRelease.author ? latestRelease.author.login : 'walksys',
           author_avatar: latestRelease.author ? latestRelease.author.avatar_url : null,
           assets: (latestRelease.assets || []).map(a => ({
             name: a.name,
@@ -163,7 +163,7 @@ class UpdateService {
       return payload;
 
     } catch (err) {
-      console.warn('Could not fetch GitHub releases for Mpanel:', err.message);
+      console.warn('Could not fetch GitHub releases for Nuvyra:', err.message);
       // Return fallback cached or current state
       const fallback = {
         success: false,
@@ -279,14 +279,14 @@ class UpdateService {
     this.broadcast({ type: 'start', mode: options.mode || 'full' });
 
     this.log(`\x1b[1;35m╔══════════════════════════════════════════════════════════════╗\x1b[0m`);
-    this.log(`\x1b[1;35m║         🚀 MPANEL AUTOMATED SYSTEM UPDATE PIPELINE           ║\x1b[0m`);
+    this.log(`\x1b[1;35m║         🚀 Nuvyra AUTOMATED SYSTEM UPDATE PIPELINE           ║\x1b[0m`);
     this.log(`\x1b[1;35m╚══════════════════════════════════════════════════════════════╝\x1b[0m`);
     this.log(`\x1b[90mStarted at: ${new Date().toLocaleString()} | Root: ${this.rootPath}\x1b[0m\n`);
 
     try {
       // Step 1: Pre-flight Verification
       await this.runCommandAsync(
-        'node -v && npm -v && pwd && pm2 list | grep mpanel || echo "PM2 Ready"',
+        'node -v && npm -v && pwd && pm2 list | grep nuvyra || echo "PM2 Ready"',
         1,
         'Verifying System & Environment'
       );
@@ -326,11 +326,11 @@ class UpdateService {
       );
 
       // Step 5: PM2 Process Reload
-      this.setStep(5, 6, 'Restarting Mpanel Service');
+      this.setStep(5, 6, 'Restarting Nuvyra Service');
       this.log(`\x1b[36m▶ [Step 5/6] Reloading PM2 Cluster & Processes...\x1b[0m`);
       try {
         await this.runCommandAsync(
-          'pm2 restart mpanel --update-env && pm2 save || echo "Restarted"',
+          'pm2 restart nuvyra --update-env && pm2 save || echo "Restarted"',
           5,
           'Reloading PM2 Cluster'
         );
@@ -341,7 +341,7 @@ class UpdateService {
       // Step 6: Post-Update Verification
       this.setStep(6, 6, 'Finalizing & Verifying Health');
       this.log(`\x1b[36m▶ [Step 6/6] Finalizing System Health Check...\x1b[0m`);
-      this.log(`\x1b[1;32m🎉 Mpanel has been successfully updated to the latest release!\x1b[0m`);
+      this.log(`\x1b[1;32m🎉 Nuvyra has been successfully updated to the latest release!\x1b[0m`);
       this.log(`\x1b[32m✔ Web UI, API Daemon, and SFTP Engine are operational.\x1b[0m\n`);
 
       this.cache.data = null; // Clear cache so new version is detected immediately
@@ -386,7 +386,7 @@ class UpdateService {
     try {
       await this.runCommandAsync('npm install --no-audit --fund=false', 1, 'Updating Node Modules');
       await this.runCommandAsync('node bin/setup.js --skip-admin', 2, 'Running Database Migrations');
-      await this.runCommandAsync('pm2 restart mpanel --update-env', 3, 'Restarting Application Cluster');
+      await this.runCommandAsync('pm2 restart nuvyra --update-env', 3, 'Restarting Application Cluster');
 
       this.log(`\x1b[1;32m✔ Sync process completed successfully!\x1b[0m\n`);
       this.isUpdating = false;

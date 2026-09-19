@@ -1,7 +1,7 @@
 /**
- * Mpanel Discord Live Profile Detector & Real-time Presence Engine
- * Developer ID: 924366651443527710 (Nobita / nobita.dev)
- * Website: https://nobitahost.in/
+ * Nuvyra Discord Live Profile Detector & Real-time Presence Engine
+ * Developer ID: 924366651443527710 (Walksys / walksys.dev)
+ * Website: https://walksyshost.in/
  */
 (function() {
   const DEVELOPER_ID = '924366651443527710';
@@ -38,9 +38,9 @@
       const createdDate = calculateSnowflake(this.userId);
       this.state = {
         id: this.userId,
-        username: 'nobita.dev',
-        global_name: 'nobita',
-        avatar_url: '/images/nobita-discord.png',
+        username: 'walksys.dev',
+        global_name: 'walksys',
+        avatar_url: '/images/walksys-discord.png',
         banner_color: '#5865F2',
         banner_url: null,
         status: 'online', // 'online' | 'idle' | 'dnd' | 'offline'
@@ -50,7 +50,7 @@
         lanyard_monitored: false,
         created_at: createdDate.toISOString(),
         formatted_created_at: createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        website: 'https://nobitahost.in/',
+        website: 'https://walksyshost.in/',
         discord_url: `https://discord.com/users/${this.userId}`,
         mention: `<@${this.userId}>`
       };
@@ -59,7 +59,7 @@
     }
 
     async init() {
-      // 1. Initial local fetch from Mpanel server API
+      // 1. Initial local fetch from Nuvyra server API
       await this.fetchServerProfile();
 
       // 2. Connect to Lanyard WebSocket for instant real-time pushes
@@ -251,7 +251,7 @@
 
       // 1. Sidebar Watermark
       const sbAvatar = document.getElementById('sidebar-dev-avatar');
-      if (sbAvatar && this.state.avatar_url && this.state.avatar_url !== '/images/nobita-discord.png') {
+      if (sbAvatar && this.state.avatar_url && this.state.avatar_url !== '/images/walksys-discord.png') {
         sbAvatar.src = this.state.avatar_url;
         sbAvatar.className = 'w-full h-full object-cover rounded-full';
       }
@@ -261,9 +261,9 @@
         sbStatusDot.title = `Discord: ${cfg.label}`;
       }
       const sbName = document.getElementById('sidebar-dev-name');
-      if (sbName) sbName.textContent = this.state.global_name || 'Nobita';
+      if (sbName) sbName.textContent = this.state.global_name || 'Walksys';
       const sbHandle = document.getElementById('sidebar-dev-handle');
-      if (sbHandle) sbHandle.textContent = this.state.username || 'nobita.dev';
+      if (sbHandle) sbHandle.textContent = this.state.username || 'walksys.dev';
 
       // 2. Global Footer Watermark
       const ftStatusDot = document.getElementById('footer-dev-status-dot');
@@ -272,7 +272,7 @@
         ftStatusDot.title = `Discord: ${cfg.label}`;
       }
       const ftName = document.getElementById('footer-dev-name');
-      if (ftName) ftName.textContent = this.state.global_name || 'Nobita';
+      if (ftName) ftName.textContent = this.state.global_name || 'Walksys';
 
       // 3. Update Modal if currently open
       const liveModalContent = document.getElementById('discord-live-card-body');
@@ -302,7 +302,7 @@
       if (mode === 'popout') {
         container.innerHTML = `
           <div class="relative w-full bg-[#111214] flex justify-center items-center overflow-hidden animate-fade-in">
-            <img src="/images/nobita-discord.png" class="w-full h-auto object-contain select-none" alt="Nobita Discord Profile">
+            <img src="/images/walksys-discord.png" class="w-full h-auto object-contain select-none" alt="Walksys Discord Profile">
           </div>
         `;
       } else {
@@ -317,7 +317,7 @@
 
     renderCardInner() {
       const cfg = this.getStatusConfig(this.state.status);
-      const isCustomAvatar = this.state.avatar_url && this.state.avatar_url !== '/images/nobita-discord.png';
+      const isCustomAvatar = this.state.avatar_url && this.state.avatar_url !== '/images/walksys-discord.png';
       
       // Check Spotify
       const spotify = this.state.spotify;
@@ -394,10 +394,10 @@
               <div class="relative inline-block">
                 <div class="w-20 h-20 rounded-full overflow-hidden ring-4 ring-[#111214] bg-[#1e1f22] shadow-2xl relative">
                   ${isCustomAvatar ? `
-                    <img src="${this.state.avatar_url}" class="w-full h-full object-cover" alt="Nobita Avatar">
+                    <img src="${this.state.avatar_url}" class="w-full h-full object-cover" alt="Walksys Avatar">
                   ` : `
                     <div class="w-full h-full relative overflow-hidden bg-slate-900">
-                      <img src="/images/nobita-discord.png" class="w-[190px] max-w-none absolute -top-5 -left-5 select-none" alt="Nobita">
+                      <img src="/images/walksys-discord.png" class="w-[190px] max-w-none absolute -top-5 -left-5 select-none" alt="Walksys">
                     </div>
                   `}
                 </div>
@@ -418,11 +418,11 @@
             <!-- Profile Names & Pronouns -->
             <div class="mt-2.5 space-y-0.5">
               <div class="flex items-center gap-2">
-                <h3 class="text-lg font-bold text-white tracking-tight">${escapeHtml(this.state.global_name || 'Nobita')}</h3>
+                <h3 class="text-lg font-bold text-white tracking-tight">${escapeHtml(this.state.global_name || 'Walksys')}</h3>
                 <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">DEV</span>
               </div>
               <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                <span>@${escapeHtml(this.state.username || 'nobita.dev')}</span>
+                <span>@${escapeHtml(this.state.username || 'walksys.dev')}</span>
                 <span class="text-slate-600">&bull;</span>
                 <span class="text-slate-500">he/him</span>
               </div>
@@ -443,10 +443,10 @@
               <h4 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-mono">About Me</h4>
               <div class="text-xs text-slate-300 space-y-1 font-sans leading-relaxed">
                 <p>hii I am a game devoloper / bot devoloper</p>
-                <p class="text-indigo-400 font-medium">join for - <a href="https://nobitahost.in/" target="_blank" class="underline hover:text-indigo-300">nobitahost.in</a></p>
+                <p class="text-indigo-400 font-medium">join for - <a href="https://walksyshost.in/" target="_blank" class="underline hover:text-indigo-300">walksyshost.in</a></p>
                 <p class="text-cyan-400 font-semibold flex items-center gap-1.5">
                   <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i>
-                  founder of nobitahost.in
+                  founder of walksyshost.in
                 </p>
               </div>
             </div>

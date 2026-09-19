@@ -1,22 +1,22 @@
 <!-- ============================================================================== -->
-<!--                     🎮 MPANEL v2.5.2 - NEXT-GEN GAME & APP PANEL               -->
+<!--                     🎮 Nuvyra v2.5.2 - NEXT-GEN GAME & APP PANEL               -->
 <!-- ============================================================================== -->
 
 <p align="center">
-  <a href="https://nobitahost.in">
-    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20MPANEL%20v2.5.2&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Mpanel Header Banner" />
+  <a href="https://walksyshost.in">
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20Nuvyra%20v2.5.2&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Nuvyra Header Banner" />
   </a>
 </p>
 
 <p align="center">
-  <a href="https://nobitahost.in">
+  <a href="https://walksyshost.in">
     <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=22D3EE&center=true&vCenter=true&random=false&width=750&lines=⚡+Modern+Node.js+Alternative+to+Pterodactyl;🚀+Real-Time+xterm.js+Console+%26+Live+Meters;🔄+Automated+GitHub+Releases+Detector+%26+Live+Update+Terminal;🎮+Minecraft+Player+Manager+%26+Universal+Addon+Marketplace;🔒+Embedded+SFTP+(Port+3004)+%26+MariaDB+(Port+27017);🎨+Multi-Theme+Personalization%3A+Full+Black+OLED%2C+PteroX+V2%2C+LiquidX" alt="Typing Animation" />
   </a>
 </p>
 
 <p align="center">
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-18.0%2B-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" /></a>
-  <a href="https://nobitahost.in"><img src="https://img.shields.io/badge/Website-nobitahost.in-007ACC?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" /></a>
+  <a href="https://walksyshost.in"><img src="https://img.shields.io/badge/Website-walksyshost.in-007ACC?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" /></a>
   <a href="#-system-updates--live-terminal-engine"><img src="https://img.shields.io/badge/Auto--Updater-Live%20Terminal-00C7B7?style=for-the-badge&logo=terminal&logoColor=white" alt="Auto Updater" /></a>
   <a href="#-theme--customization-engine"><img src="https://img.shields.io/badge/Theme-Full%20Black%20OLED-111525?style=for-the-badge&logo=styled-components&logoColor=white" alt="Theme" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F7DF1E?style=for-the-badge&logo=open-source-initiative&logoColor=black" alt="License" /></a>
@@ -36,7 +36,7 @@
 ## 📸 3D Live Showcase
 
 <p align="center">
-  <img src="public/assets/console-preview.png" alt="Mpanel Server Console & Live Telemetry Dashboard" style="border-radius: 16px; box-shadow: 0 0 45px rgba(34, 211, 238, 0.3), 0 20px 40px rgba(0, 0, 0, 0.85); border: 2px solid rgba(34, 211, 238, 0.25);" width="100%" />
+  <img src="public/assets/console-preview.png" alt="Nuvyra Server Console & Live Telemetry Dashboard" style="border-radius: 16px; box-shadow: 0 0 45px rgba(34, 211, 238, 0.3), 0 20px 40px rgba(0, 0, 0, 0.85); border: 2px solid rgba(34, 211, 238, 0.25);" width="100%" />
 </p>
 
 ---
@@ -45,7 +45,7 @@
 
 ```mermaid
 graph TD
-    Client["🌐 Client Browser (Admins & Users)"] -->|Port 3001: Web UI & xterm.js WebSocket| Gateway["🚀 Mpanel Engine (Port 3001)"]
+    Client["🌐 Client Browser (Admins & Users)"] -->|Port 3001: Web UI & xterm.js WebSocket| Gateway["🚀 Nuvyra Engine (Port 3001)"]
     External["⚡ External Integrations / Discord Bots"] -->|Port 3003: REST & WS API| GatewayAPI["🔌 Daemon API (Port 3003)"]
     FTPClient["📁 FileZilla / WinSCP / Cyberduck"] -->|Port 3004: SSH SFTP| SFTP["🛡️ Embedded SFTP Server (Port 3004)"]
 
@@ -80,7 +80,7 @@ graph TD
 ## ✨ What is New in v2.5.2
 
 <p align="center">
-  <img src="public/assets/console-preview.png" alt="Mpanel v2.5.2 Console & Live Parsentbar Telemetry Preview" style="border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.25); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);" width="100%" />
+  <img src="public/assets/console-preview.png" alt="Nuvyra v2.5.2 Console & Live Parsentbar Telemetry Preview" style="border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.25); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);" width="100%" />
 </p>
 
 ### 1. 🟢 Real-Time 5-State Server Lifecycle Engine
@@ -137,7 +137,7 @@ graph TD
 ## ✨ What is New in v2.5.0
 
 ### 1. 🔄 System Updates & Auto-Detection Engine
-- **GitHub Releases Auto-Detection**: Real-time checking against [nobita329/Mpanel/releases](https://github.com/nobita329/Mpanel/releases) with semver comparison.
+- **GitHub Releases Auto-Detection**: Real-time checking against [walksys/Nuvyra/releases](https://github.com/walksys/Nuvyra/releases) with semver comparison.
 - **Dedicated Updates Dashboard (`#admin-updates`)**:
   - Displays Installed Version vs Latest Release tag.
   - Formatted Markdown Changelog reader and Release History accordion.
@@ -149,7 +149,7 @@ graph TD
   - Action buttons: "Start System Update (Full Auto)", "Sync Dependencies & Schema", "Check Git Status".
 - **Global System Overview Integration (`#admin-overview`)**:
   - Titlebar Version Pill (`v2.5.0`) & dynamic Update Status Pill (`Up-to-Date` or `Update Available`).
-  - High-visibility **Mpanel Release & Update Status Banner** with 1-click update actions.
+  - High-visibility **Nuvyra Release & Update Status Banner** with 1-click update actions.
   - Sidebar navigation notification badge (`UPDATE`).
 
 ### 2. 🎓 Interactive Auto Tutorials Engine (No Static Pages)
@@ -171,7 +171,7 @@ graph TD
 - **Theme Palette & Layouts**: Deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 
 ### 4. 🛠️ McTools Blueprint Extension Suite
-- **Integrated Extension**: Directly ported from [`nobita329/Nobita-Cloud (mctools.blueprint)`](https://github.com/nobita329/Nobita-Cloud/blob/main/thame/Extension/mctools.blueprint).
+- **Integrated Extension**: Directly ported from [`walksys/Walksys-Cloud (mctools.blueprint)`](https://github.com/Walksys/Nuvyra-Cloud/blob/main/thame/Extension/mctools.blueprint).
 - **Live MOTD & Colored Text Builder**: Real-time Minecraft colored text builder (Sign, Book, Chat, MOTD) with live dark preview box and instant copy in Legacy (`&`), Section (`§`), Tellraw/JSON, and MiniMessage.
 - **Color Palette & Swatches**: Official 16 Minecraft colors with hex codes, RGB picker, and Bungee hex formatting (`&x&r&r&g&g&b&b`).
 - **SmallCaps & Unicode Decorative Fonts**: Real-time styler for SmallCaps, BigCaps, Bubble, Fraktur, FullWidth, Script, and Tiny fonts.
@@ -248,7 +248,7 @@ graph TD
 Run the full automated installer directly from the web or locally:
 ```bash
 # Instant One-Liner from GitHub
-bash <(curl -sSL https://raw.githubusercontent.com/nobita329/Mpanel/main/menu.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/walksys/Nuvyra/main/menu.sh)
 
 # Or locally
 ./menu.sh auto -y
@@ -272,13 +272,13 @@ bash menu.sh
 | `./menu.sh db` | Database Suite (MariaDB/MySQL Docker engine & Migrations) |
 | `./menu.sh status` | Check port listening status (`3001`, `3003`, `3004`, `27017`) and database |
 | `./menu.sh playit` | Install native Playit.gg zero-port tunnel CLI |
-| `./menu.sh uninstall`| Safely remove or clean Mpanel deployment |
+| `./menu.sh uninstall`| Safely remove or clean Nuvyra deployment |
 
 ### 3. 🛠️ Manual CLI Setup
 ```bash
 # 1. Clone the repository
-git clone https://github.com/nobita329/Mpanel.git
-cd Mpanel
+git clone https://github.com/walksys/Nuvyra.git
+cd Nuvyra
 
 # 2. Install dependencies
 npm install
@@ -302,7 +302,7 @@ npm run pm2:logs
 │   ├── createuser.js        # Interactive CLI user creation script
 │   ├── migrate.js           # Database migration runner
 │   └── build.js             # Directory verification & preparation script
-├── mpanel/
+├── nuvyra/
 │   ├── servers/             # Sandboxed server directories (server1, server2, ...)
 │   └── backups/             # Server snapshot .zip archives
 ├── public/
@@ -356,7 +356,7 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 - **Host**: `localhost` (or server IP)
 - **Port**: `3004`
 - **Username**: `<username>.<server_id>` (e.g. `admin.1` for Server #1)
-- **Password**: Your Mpanel account password
+- **Password**: Your Nuvyra account password
 
 ---
 
@@ -371,25 +371,25 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 
 <p align="center">
   <a href="https://discord.com/users/924366651443527710" target="_blank">
-    <img src="public/images/nobita-discord.png" alt="Nobita Discord Profile" width="280px" style="border-radius: 16px; box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);" />
+    <img src="public/images/walksys-discord.png" alt="Walksys Discord Profile" width="280px" style="border-radius: 16px; box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);" />
   </a>
 </p>
 
 <p align="center">
-  <b>Developed &amp; Engineered by Nobita (<code>nobita.dev</code>)</b><br/>
-  💬 Discord: <a href="https://discord.com/users/924366651443527710" target="_blank"><code>nobita.dev</code> (ID: <code>924366651443527710</code>)</a> • Mention: <code>&lt;@924366651443527710&gt;</code><br/>
+  <b>Developed &amp; Engineered by Walksys (<code>walksys.dev</code>)</b><br/>
+  💬 Discord: <a href="https://discord.com/users/924366651443527710" target="_blank"><code>walksys.dev</code> (ID: <code>924366651443527710</code>)</a> • Mention: <code>&lt;@924366651443527710&gt;</code><br/>
   ⚡ Live Presence: <b>Real-time Discord Gateway &amp; Lanyard Live Sync</b><br/>
-  🌐 Official Website: <a href="https://nobitahost.in/" target="_blank"><b>https://nobitahost.in/</b></a>
+  🌐 Official Website: <a href="https://walksyshost.in/" target="_blank"><b>https://walksyshost.in/</b></a>
 </p>
 
 ---
 
 <p align="center">
-  <a href="https://nobitahost.in">
+  <a href="https://walksyshost.in">
     <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=21,16,11,6,2&height=120&section=footer" width="100%" alt="Footer Wave" />
   </a>
 </p>
 
 <p align="center">
-  <b>Mpanel</b> &copy; 2026 • Designed &amp; Engineered with ❤️ by <a href="https://nobitahost.in"><b>Nobita</b> (nobitahost.in)</a> • Licensed under the <a href="LICENSE">MIT License</a>
+  <b>Nuvyra</b> &copy; 2026 • Designed &amp; Engineered with ❤️ by <a href="https://walksyshost.in"><b>Walksys</b> (walksyshost.in)</a> • Licensed under the <a href="LICENSE">MIT License</a>
 </p>

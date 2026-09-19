@@ -1,7 +1,7 @@
 {
-  "name": "mpanel",
+  "name": "nuvyra",
   "version": "2.5.2",
-  "description": "Mpanel - High-Performance Game & Application Server Web Management Panel in Node.js",
+  "description": "Nuvyra - High-Performance Game & Application Server Web Management Panel in Node.js",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -13,12 +13,12 @@
     "createuser": "node bin/createuser.js",
     "menu": "bash menu.sh",
     "pm2:start": "pm2 start ecosystem.config.js",
-    "pm2:stop": "pm2 stop mpanel",
-    "pm2:restart": "pm2 restart mpanel",
-    "pm2:logs": "pm2 logs mpanel"
+    "pm2:stop": "pm2 stop nuvyra",
+    "pm2:restart": "pm2 restart nuvyra",
+    "pm2:logs": "pm2 logs nuvyra"
   },
   "keywords": [
-    "mpanel",
+    "nuvyra",
     "game-server",
     "minecraft",
     "nodejs",
@@ -27,7 +27,7 @@
     "sftp",
     "panel"
   ],
-  "author": "Mpanel Team",
+  "author": "Nuvyra Team",
   "license": "MIT",
   "dependencies": {
     "archiver": "^7.0.1",

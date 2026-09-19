@@ -1,6 +1,6 @@
 /**
- * Mpanel - Universal Config Editor Engine
- * Ported from configeditor.blueprint (UndercoverNL / nobita329)
+ * Nuvyra - Universal Config Editor Engine
+ * Ported from configeditor.blueprint (UndercoverNL / walksys)
  * Supports visual and raw editing of server.properties, YAML, JSON, CFG, and custom config files.
  */
 
@@ -544,7 +544,7 @@ class UniversalConfigEditor {
   }
 
   createEmptyFile(filePath) {
-    this.rawContent = `# ${filePath} created via Mpanel Config Editor\n`;
+    this.rawContent = `# ${filePath} created via Nuvyra Config Editor\n`;
     if (this.currentFileType === 'json') this.rawContent = '{\n}\n';
     this.parsedItems = this.parseProperties(this.rawContent);
     this.renderActiveMode();

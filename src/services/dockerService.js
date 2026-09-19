@@ -68,7 +68,7 @@ class DockerService {
       fs.chmodSync(serverDir, 0o777);
     } catch (e) {}
 
-    const containerName = `mpanel-server-${server.id}-${server.uuid.substring(0, 8)}`;
+    const containerName = `nuvyra-server-${server.id}-${server.uuid.substring(0, 8)}`;
     
     // Check if container already exists
     try {
@@ -206,7 +206,7 @@ class DockerService {
   async removeContainer(serverId, uuid) {
     if (!this.isAvailable || !this.docker) return;
     try {
-      const containerName = `mpanel-server-${serverId}-${(uuid || '').substring(0, 8)}`;
+      const containerName = `nuvyra-server-${serverId}-${(uuid || '').substring(0, 8)}`;
       const container = this.docker.getContainer(containerName);
       try {
         await container.stop({ t: 2 });

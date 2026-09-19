@@ -1,13 +1,13 @@
 /**
- * Custom Server Sort Extension for Mpanel
+ * Custom Server Sort Extension for Nuvyra
  * Ported from customserversort.blueprint (v1.0.3 by kiip)
  * Enables smooth drag-and-drop server reordering and multi-criteria sorting.
  */
 class CustomServerSort {
   constructor() {
     this.sortModes = {
-      user: localStorage.getItem('mpanel_user_sort_mode') || 'custom',
-      admin: localStorage.getItem('mpanel_admin_sort_mode') || 'custom'
+      user: localStorage.getItem('nuvyra_user_sort_mode') || 'custom',
+      admin: localStorage.getItem('nuvyra_admin_sort_mode') || 'custom'
     };
     this.reorderMode = {
       user: false,
@@ -74,11 +74,11 @@ class CustomServerSort {
   }
 
   getStorageKey(context = 'user') {
-    return context === 'admin' ? 'mpanel_admin_server_order' : 'mpanel_user_server_order';
+    return context === 'admin' ? 'nuvyra_admin_server_order' : 'nuvyra_user_server_order';
   }
 
   getSortModeKey(context = 'user') {
-    return context === 'admin' ? 'mpanel_admin_sort_mode' : 'mpanel_user_sort_mode';
+    return context === 'admin' ? 'nuvyra_admin_sort_mode' : 'nuvyra_user_sort_mode';
   }
 
   getSavedOrder(context = 'user') {

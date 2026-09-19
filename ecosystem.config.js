@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'mpanel',
+      name: 'nuvyra',
       script: 'src/index.js',
       instances: 1,
       autorestart: true,

@@ -155,7 +155,7 @@ router.post('/register', async (req, res) => {
 router.post('/2fa/setup', authenticate, async (req, res) => {
   try {
     const secret = speakeasy.generateSecret({
-      name: `Mpanel (${req.user.username})`,
+      name: `Nuvyra (${req.user.username})`,
       length: 20
     });
 

@@ -41,26 +41,26 @@ jobs:
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Package Mpanel Tarball & Zip
+      - name: Package Nuvyra Tarball & Zip
         run: |
           VERSION="${{ steps.get_version.outputs.VERSION }}"
           mkdir -p dist
-          tar --exclude='./dist' --exclude='./.git' --exclude='./.github' -czf "dist/mpanel-${VERSION}.tar.gz" .
-          zip -r "dist/mpanel-${VERSION}.zip" . -x "./dist/*" "./.git/*" "./.github/*"
+          tar --exclude='./dist' --exclude='./.git' --exclude='./.github' -czf "dist/nuvyra-${VERSION}.tar.gz" .
+          zip -r "dist/nuvyra-${VERSION}.zip" . -x "./dist/*" "./.git/*" "./.github/*"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Mpanel ${{ steps.get_version.outputs.VERSION }}
+          name: Nuvyra ${{ steps.get_version.outputs.VERSION }}
           tag_name: ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
           files: |
-            dist/mpanel-${{ steps.get_version.outputs.VERSION }}.tar.gz
-            dist/mpanel-${{ steps.get_version.outputs.VERSION }}.zip
+            dist/nuvyra-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            dist/nuvyra-${{ steps.get_version.outputs.VERSION }}.zip
           generate_release_notes: true
           body: |
-            ## 🎮 Mpanel - Full Node.js Game & App Management Web Panel
+            ## 🎮 Nuvyra - Full Node.js Game & App Management Web Panel
 
             ### 🚀 Port Architecture
             - **Web UI & Console WebSocket**: Port `3001`

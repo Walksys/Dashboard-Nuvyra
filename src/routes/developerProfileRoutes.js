@@ -33,20 +33,20 @@ async function fetchDeveloperProfile() {
 
   const baseProfile = {
     id: DEVELOPER_ID,
-    username: 'nobita.dev',
-    global_name: 'nobita',
+    username: 'walksys.dev',
+    global_name: 'walksys',
     pronouns: 'he/him',
     avatar: null,
-    avatar_url: '/images/nobita-discord.png',
+    avatar_url: '/images/walksys-discord.png',
     banner: null,
     banner_url: null,
     banner_color: '#5865F2',
     accent_color: 5793266,
     status: 'online',
-    about_me: 'hii I am a game devoloper / bot devoloper\njoin for - nobitahost.in\nnobitahost.in\nfounder of nobitahost.in',
+    about_me: 'hii I am a game devoloper / bot devoloper\njoin for - walksyshost.in\nwalksyshost.in\nfounder of walksyshost.in',
     created_at: createdDate.toISOString(),
     formatted_created_at: formattedDate,
-    website: 'https://nobitahost.in/',
+    website: 'https://walksyshost.in/',
     discord_url: `https://discord.com/users/${DEVELOPER_ID}`,
     mention: `<@${DEVELOPER_ID}>`,
     lanyard_monitored: false,
@@ -58,7 +58,7 @@ async function fetchDeveloperProfile() {
   // 1. Try Lanyard API
   try {
     const lanyardRes = await fetch(`https://api.lanyard.rest/v1/users/${DEVELOPER_ID}`, {
-      headers: { 'User-Agent': 'Mpanel-Live-Profile/1.0' },
+      headers: { 'User-Agent': 'Nuvyra-Live-Profile/1.0' },
       signal: AbortSignal.timeout(3000)
     });
     if (lanyardRes.ok) {
@@ -101,7 +101,7 @@ async function fetchDeveloperProfile() {
       const discordRes = await fetch(`https://discord.com/api/v10/users/${DEVELOPER_ID}`, {
         headers: {
           Authorization: `Bot ${botToken}`,
-          'User-Agent': 'Mpanel-Live-Profile/1.0'
+          'User-Agent': 'Nuvyra-Live-Profile/1.0'
         },
         signal: AbortSignal.timeout(3000)
       });

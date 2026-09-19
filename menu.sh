@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-#                      🎮 MPANEL MANAGEMENT SCRIPT (menu.sh)
+#                      🎮 Nuvyra MANAGEMENT SCRIPT (menu.sh)
 #     Supports: Auto Install, Auto Setup, Auto Update, PM2, User Creator
 # ==============================================================================
 
@@ -21,8 +21,8 @@ BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 # Determine current directory
-MPANEL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$MPANEL_DIR" || exit 1
+Nuvyra_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$Nuvyra_DIR" || exit 1
 
 INTERACTIVE_MENU=false
 
@@ -85,9 +85,9 @@ show_banner() {
     host_ip=$(get_server_ip)
 
     local version="v2.5.2"
-    if [ -f "$MPANEL_DIR/package.json" ]; then
+    if [ -f "$Nuvyra_DIR/package.json" ]; then
         local pkg_v
-        pkg_v=$(grep -m1 '"version"' "$MPANEL_DIR/package.json" 2>/dev/null | awk -F '"' '{print $4}')
+        pkg_v=$(grep -m1 '"version"' "$Nuvyra_DIR/package.json" 2>/dev/null | awk -F '"' '{print $4}')
         if [ -n "$pkg_v" ]; then
             version="v${pkg_v}"
         fi
@@ -96,7 +96,7 @@ show_banner() {
     # Check PM2 Daemon status
     local pm2_status="${RED}● Stopped${NC}"
     if command -v pm2 &>/dev/null; then
-        if pm2 list 2>/dev/null | grep -q "mpanel.*online"; then
+        if pm2 list 2>/dev/null | grep -q "nuvyra.*online"; then
             pm2_status="${LIGHT_GREEN}● Online (PM2)${NC}"
         fi
     fi
@@ -110,7 +110,7 @@ show_banner() {
     echo "  ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝"
     echo -e "${NC}"
     echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "  ${WHITE}${BOLD}🎮 MPANEL ${version}${NC} ${GRAY}•${NC} ${CYAN}Next-Gen Game & App Management Suite${NC}"
+    echo -e "  ${WHITE}${BOLD}🎮 Nuvyra ${version}${NC} ${GRAY}•${NC} ${CYAN}Next-Gen Game & App Management Suite${NC}"
     echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "  ${GRAY}│${NC} ${WHITE}Web Panel UI:${NC}    ${LIGHT_GREEN}http://${host_ip}:3001${NC}"
     echo -e "  ${GRAY}│${NC} ${WHITE}Daemon API:${NC}      ${LIGHT_GREEN}http://${host_ip}:3003${NC}"
@@ -123,7 +123,7 @@ show_banner() {
 # ==============================================================================
 # 1. AUTO INSTALL + AUTO SETUP
 # ==============================================================================
-auto_install_mpanel() {
+auto_install_nuvyra() {
     local unattended=false
     local admin_user=""
     local admin_pass=""
@@ -158,7 +158,7 @@ auto_install_mpanel() {
     done
 
     echo -e "${CYAN}======================================================${NC}"
-    echo -e "${WHITE}      🚀 Mpanel Automated Installation & Setup        ${NC}"
+    echo -e "${WHITE}      🚀 Nuvyra Automated Installation & Setup        ${NC}"
     echo -e "${CYAN}======================================================${NC}"
     echo ""
 
@@ -276,24 +276,24 @@ auto_install_mpanel() {
         case "$admin_choice" in
             2)
                 read -p "Enter Administrator Username: " admin_user
-                read -p "Enter Administrator Email [default: ${admin_user}@mpanel.local]: " admin_email
+                read -p "Enter Administrator Email [default: ${admin_user}@nuvyra.local]: " admin_email
                 read -s -p "Enter Administrator Password: " admin_pass
                 echo ""
                 if [ -z "$admin_email" ]; then
-                    admin_email="${admin_user}@mpanel.local"
+                    admin_email="${admin_user}@nuvyra.local"
                 fi
                 custom_creds=true
                 ;;
             3)
                 admin_user="admin"
-                admin_email="admin@mpanel.local"
+                admin_email="admin@nuvyra.local"
                 admin_pass=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12)
                 custom_creds=true
                 ;;
             *)
                 admin_user="admin"
                 admin_pass="admin"
-                admin_email="admin@mpanel.local"
+                admin_email="admin@nuvyra.local"
                 custom_creds=true
                 ;;
         esac
@@ -315,8 +315,8 @@ auto_install_mpanel() {
 
     # --- Step 6: PM2 Launch & System Boot Autostart ---
     echo ""
-    echo -e "${BLUE}[6/6]${NC} ⚡ Starting Mpanel via PM2 & configuring boot autostart..."
-    if pm2 list 2>/dev/null | grep -q "mpanel"; then
+    echo -e "${BLUE}[6/6]${NC} ⚡ Starting Nuvyra via PM2 & configuring boot autostart..."
+    if pm2 list 2>/dev/null | grep -q "nuvyra"; then
         pm2 restart ecosystem.config.js
     else
         pm2 start ecosystem.config.js
@@ -336,9 +336,9 @@ auto_install_mpanel() {
     # Check Firewall (UFW / Firewalld)
     if command -v ufw &>/dev/null; then
         if $SUDO ufw status 2>/dev/null | grep -q "Status: active"; then
-            $SUDO ufw allow 3001/tcp comment 'Mpanel Web UI' &>/dev/null || true
-            $SUDO ufw allow 3003/tcp comment 'Mpanel Daemon API' &>/dev/null || true
-            $SUDO ufw allow 3004/tcp comment 'Mpanel SFTP Server' &>/dev/null || true
+            $SUDO ufw allow 3001/tcp comment 'Nuvyra Web UI' &>/dev/null || true
+            $SUDO ufw allow 3003/tcp comment 'Nuvyra Daemon API' &>/dev/null || true
+            $SUDO ufw allow 3004/tcp comment 'Nuvyra SFTP Server' &>/dev/null || true
             echo -e "${GREEN}✅ Configured UFW firewall rules for ports 3001, 3003, 3004.${NC}"
         fi
     fi
@@ -351,7 +351,7 @@ auto_install_mpanel() {
 
     echo ""
     echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║${WHITE}          🎉  MPANEL AUTO INSTALL & SETUP COMPLETE!           ${GREEN}║${NC}"
+    echo -e "${GREEN}║${WHITE}          🎉  Nuvyra AUTO INSTALL & SETUP COMPLETE!           ${GREEN}║${NC}"
     echo -e "${GREEN}╠══════════════════════════════════════════════════════════════╣${NC}"
     echo -e "${GREEN}║${NC}  🌐 Web Panel URL:    ${CYAN}http://${host_ip}:3001${NC}"
     echo -e "${GREEN}║${NC}  ⚙️  Daemon/API Port:  ${CYAN}http://${host_ip}:3003${NC}"
@@ -366,17 +366,17 @@ auto_install_mpanel() {
     echo -e "${GREEN}║                                                              ║${NC}"
     echo -e "${GREEN}║${WHITE}  Helpful Management Commands:                                 ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}  • Management Menu: ${CYAN}./menu.sh${NC}                                 ${GREEN}║${NC}"
-    echo -e "${GREEN}║${NC}  • Live Logs:       ${CYAN}pm2 logs mpanel${NC}                           ${GREEN}║${NC}"
-    echo -e "${GREEN}║${NC}  • Restart Server:  ${CYAN}pm2 restart mpanel${NC}                        ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}  • Live Logs:       ${CYAN}pm2 logs nuvyra${NC}                           ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}  • Restart Server:  ${CYAN}pm2 restart nuvyra${NC}                        ${GREEN}║${NC}"
     echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
     wait_prompt
 }
 
-# Alias install_mpanel to auto_install_mpanel
-install_mpanel() {
-    auto_install_mpanel "$@"
+# Alias install_nuvyra to auto_install_nuvyra
+install_nuvyra() {
+    auto_install_nuvyra "$@"
 }
 
 # ==============================================================================
@@ -384,7 +384,7 @@ install_mpanel() {
 # ==============================================================================
 create_user() {
     echo -e "${CYAN}======================================================${NC}"
-    echo -e "${WHITE}             👤 Create Mpanel User                   ${NC}"
+    echo -e "${WHITE}             👤 Create Nuvyra User                   ${NC}"
     echo -e "${CYAN}======================================================${NC}"
     echo ""
     node bin/createuser.js "$@"
@@ -393,11 +393,11 @@ create_user() {
 }
 
 # ==============================================================================
-# 3. UPDATE MPANEL (Auto Update)
+# 3. UPDATE Nuvyra (Auto Update)
 # ==============================================================================
-update_mpanel() {
+update_nuvyra() {
     echo -e "${CYAN}======================================================${NC}"
-    echo -e "${WHITE}             🔄 Updating Mpanel (Auto Update)         ${NC}"
+    echo -e "${WHITE}             🔄 Updating Nuvyra (Auto Update)         ${NC}"
     echo -e "${CYAN}======================================================${NC}"
     echo ""
 
@@ -421,9 +421,9 @@ update_mpanel() {
 
     # Check and restart PM2
     echo ""
-    if command -v pm2 &>/dev/null && pm2 list 2>/dev/null | grep -q "mpanel"; then
-        echo -e "${CYAN}🔄 Restarting Mpanel in PM2...${NC}"
-        pm2 restart mpanel
+    if command -v pm2 &>/dev/null && pm2 list 2>/dev/null | grep -q "nuvyra"; then
+        echo -e "${CYAN}🔄 Restarting Nuvyra in PM2...${NC}"
+        pm2 restart nuvyra
         pm2 save
         echo -e "${GREEN}✅ PM2 process restarted successfully.${NC}"
     else
@@ -432,7 +432,7 @@ update_mpanel() {
 
     echo ""
     echo -e "${GREEN}======================================================${NC}"
-    echo -e "${GREEN}  🎉 Mpanel has been updated successfully!             ${NC}"
+    echo -e "${GREEN}  🎉 Nuvyra has been updated successfully!             ${NC}"
     echo -e "${GREEN}======================================================${NC}"
     echo ""
 
@@ -448,13 +448,13 @@ pm2_menu() {
         pm2 start ecosystem.config.js && pm2 save
         return
     elif [ "$1" == "stop" ]; then
-        pm2 stop mpanel && pm2 save
+        pm2 stop nuvyra && pm2 save
         return
     elif [ "$1" == "restart" ]; then
-        pm2 restart mpanel
+        pm2 restart nuvyra
         return
     elif [ "$1" == "logs" ]; then
-        pm2 logs mpanel
+        pm2 logs nuvyra
         return
     elif [ "$1" == "status" ]; then
         pm2 status
@@ -476,9 +476,9 @@ pm2_menu() {
         echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
         echo -e "  ${LIGHT_CYAN}╭── Process Controls ─────────────────────────────────────────${NC}"
-        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[1]${NC} ${WHITE}▶️   Start Mpanel in Background (PM2)${NC}"
-        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[2]${NC} ${WHITE}⏹️   Stop Mpanel (PM2)${NC}"
-        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[3]${NC} ${WHITE}🔄  Restart Mpanel (PM2)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[1]${NC} ${WHITE}▶️   Start Nuvyra in Background (PM2)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[2]${NC} ${WHITE}⏹️   Stop Nuvyra (PM2)${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[3]${NC} ${WHITE}🔄  Restart Nuvyra (PM2)${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[4]${NC} ${WHITE}📊  View PM2 Status & Metrics${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[5]${NC} ${WHITE}📜  View Live Logs (pm2 logs)${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[6]${NC} ${WHITE}🚀  Enable Autostart on Server Boot (pm2 startup & save)${NC}"
@@ -490,20 +490,20 @@ pm2_menu() {
 
         case $pm2_opt in
             1)
-                echo -e "${CYAN}Starting Mpanel via PM2...${NC}"
+                echo -e "${CYAN}Starting Nuvyra via PM2...${NC}"
                 pm2 start ecosystem.config.js
                 pm2 save
                 read -n 1 -s -r -p "Press any key to continue..."
                 ;;
             2)
-                echo -e "${YELLOW}Stopping Mpanel...${NC}"
-                pm2 stop mpanel
+                echo -e "${YELLOW}Stopping Nuvyra...${NC}"
+                pm2 stop nuvyra
                 pm2 save
                 read -n 1 -s -r -p "Press any key to continue..."
                 ;;
             3)
-                echo -e "${CYAN}Restarting Mpanel...${NC}"
-                pm2 restart mpanel
+                echo -e "${CYAN}Restarting Nuvyra...${NC}"
+                pm2 restart nuvyra
                 read -n 1 -s -r -p "Press any key to continue..."
                 ;;
             4)
@@ -513,7 +513,7 @@ pm2_menu() {
                 ;;
             5)
                 echo -e "${CYAN}Opening PM2 Logs (Press Ctrl+C to return)...${NC}"
-                pm2 logs mpanel
+                pm2 logs nuvyra
                 ;;
             6)
                 echo -e "${CYAN}Configuring system startup...${NC}"
@@ -612,9 +612,9 @@ start_mariadb_container() {
     echo -e "${CYAN}🔄 Running schema migrations...${NC}"
     npm run migrate
 
-    if pm2 list 2>/dev/null | grep -q "mpanel"; then
-        echo -e "${CYAN}🔄 Restarting Mpanel in PM2 to apply DB configuration...${NC}"
-        pm2 restart mpanel --update-env
+    if pm2 list 2>/dev/null | grep -q "nuvyra"; then
+        echo -e "${CYAN}🔄 Restarting Nuvyra in PM2 to apply DB configuration...${NC}"
+        pm2 restart nuvyra --update-env
     fi
 
     wait_prompt
@@ -669,9 +669,9 @@ start_mysql_container() {
     echo -e "${CYAN}🔄 Running schema migrations...${NC}"
     npm run migrate
 
-    if pm2 list 2>/dev/null | grep -q "mpanel"; then
-        echo -e "${CYAN}🔄 Restarting Mpanel in PM2 to apply DB configuration...${NC}"
-        pm2 restart mpanel --update-env
+    if pm2 list 2>/dev/null | grep -q "nuvyra"; then
+        echo -e "${CYAN}🔄 Restarting Nuvyra in PM2 to apply DB configuration...${NC}"
+        pm2 restart nuvyra --update-env
     fi
 
     wait_prompt
@@ -855,7 +855,7 @@ db_menu() {
 # 6. START IN FOREGROUND (Debug Mode)
 # ==============================================================================
 start_foreground() {
-    echo -e "${CYAN}Starting Mpanel in foreground (Press Ctrl+C to stop)...${NC}"
+    echo -e "${CYAN}Starting Nuvyra in foreground (Press Ctrl+C to stop)...${NC}"
     node src/index.js
 }
 
@@ -864,14 +864,14 @@ start_foreground() {
 # ==============================================================================
 status_check() {
     echo -e "${CYAN}======================================================${NC}"
-    echo -e "${WHITE}             📊 Mpanel Service Status                 ${NC}"
+    echo -e "${WHITE}             📊 Nuvyra Service Status                 ${NC}"
     echo -e "${CYAN}======================================================${NC}"
     echo ""
 
     local host_ip
     host_ip=$(get_server_ip)
     echo -e "Server Host IP: ${GREEN}${host_ip}${NC}"
-    echo -e "Directory:      ${GREEN}$MPANEL_DIR${NC}"
+    echo -e "Directory:      ${GREEN}$Nuvyra_DIR${NC}"
     
     # Check Ports
     echo ""
@@ -934,34 +934,34 @@ status_check() {
 }
 
 # ==============================================================================
-# 7. UNINSTALL MPANEL
+# 7. UNINSTALL Nuvyra
 # ==============================================================================
-uninstall_mpanel() {
+uninstall_nuvyra() {
     echo -e "${RED}======================================================${NC}"
-    echo -e "${RED}⚠️  DANGER: UNINSTALL MPANEL                           ${NC}"
+    echo -e "${RED}⚠️  DANGER: UNINSTALL Nuvyra                           ${NC}"
     echo -e "${RED}======================================================${NC}"
     echo ""
-    echo -e "${YELLOW}This action can stop PM2 services and remove Mpanel files.${NC}"
-    read -p "Are you absolutely sure you want to uninstall Mpanel? (type 'YES' to confirm): " confirm_uninstall
+    echo -e "${YELLOW}This action can stop PM2 services and remove Nuvyra files.${NC}"
+    read -p "Are you absolutely sure you want to uninstall Nuvyra? (type 'YES' to confirm): " confirm_uninstall
 
     if [ "$confirm_uninstall" == "YES" ]; then
         echo -e "${YELLOW}Stopping PM2 processes...${NC}"
         if command -v pm2 &> /dev/null; then
-            pm2 delete mpanel 2>/dev/null
+            pm2 delete nuvyra 2>/dev/null
             pm2 save 2>/dev/null
         fi
 
         read -p "Do you want to delete server files and database too? (y/n): " delete_data
         if [[ "$delete_data" =~ ^[Yy]$ ]]; then
             echo -e "${RED}Removing data and server files...${NC}"
-            rm -rf data mpanel node_modules
+            rm -rf data nuvyra node_modules
         else
             echo -e "${CYAN}Preserving data and server files. Removing node_modules only...${NC}"
             rm -rf node_modules
         fi
 
         echo ""
-        echo -e "${GREEN}✅ Mpanel has been uninstalled.${NC}"
+        echo -e "${GREEN}✅ Nuvyra has been uninstalled.${NC}"
     else
         echo -e "${GREEN}Uninstall cancelled.${NC}"
     fi
@@ -1031,13 +1031,13 @@ main_menu() {
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[2]${NC} ${WHITE}👤  Create User / Admin${NC}      ${GRAY}• Add admin or sub-user account${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[3]${NC} ${WHITE}⚡  PM2 Process Manager${NC}      ${GRAY}• Start / Stop / Restart / Logs${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[4]${NC} ${WHITE}🗄️   Database Manager${NC}         ${GRAY}• MariaDB / MySQL Docker & SQL${NC}"
-        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[5]${NC} ${WHITE}🔄  Auto Update Mpanel${NC}       ${GRAY}• Git pull, DB sync & restart${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[5]${NC} ${WHITE}🔄  Auto Update Nuvyra${NC}       ${GRAY}• Git pull, DB sync & restart${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}"
         echo -e "  ${LIGHT_CYAN}├── ${WHITE}${BOLD}Tools & Diagnostics${NC}${LIGHT_CYAN} ─────────────────────────────────────${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[6]${NC} ${WHITE}🐞  Start in Foreground${NC}      ${GRAY}• Live console debugging mode${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[7]${NC} ${WHITE}📊  System & Port Status${NC}     ${GRAY}• Health checks & diagnostics${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[8]${NC} ${WHITE}🌐  Playit.gg Tunnel CLI${NC}     ${GRAY}• Zero-portforwarding agent${NC}"
-        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[9]${NC} ${WHITE}🗑️   Uninstall Mpanel${NC}         ${GRAY}• Remove panel & databases${NC}"
+        echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[9]${NC} ${WHITE}🗑️   Uninstall Nuvyra${NC}         ${GRAY}• Remove panel & databases${NC}"
         echo -e "  ${LIGHT_CYAN}│${NC}  ${CYAN}[0]${NC} ${WHITE}🚪  Exit Console${NC}             ${GRAY}• Quit management menu${NC}"
         echo -e "  ${LIGHT_CYAN}╰─────────────────────────────────────────────────────────────${NC}"
         echo ""
@@ -1045,18 +1045,18 @@ main_menu() {
         read -r choice
 
         case $choice in
-            1) auto_install_mpanel ;;
+            1) auto_install_nuvyra ;;
             2) create_user ;;
             3) pm2_menu ;;
             4) db_menu ;;
-            5) update_mpanel ;;
+            5) update_nuvyra ;;
             6) start_foreground ;;
             7) status_check ;;
             8) install_playit_cli ;;
-            9) uninstall_mpanel ;;
+            9) uninstall_nuvyra ;;
             0)
                 echo ""
-                echo -e "  ${GREEN}👋 Goodbye from Mpanel!${NC}"
+                echo -e "  ${GREEN}👋 Goodbye from Nuvyra!${NC}"
                 echo ""
                 exit 0
                 ;;
@@ -1076,10 +1076,10 @@ shift || true
 
 case "$CMD" in
     install|setup|auto|auto-install)
-        auto_install_mpanel "$@"
+        auto_install_nuvyra "$@"
         ;;
     update|auto-update)
-        update_mpanel "$@"
+        update_nuvyra "$@"
         ;;
     usercreate|usercrate|createuser)
         create_user "$@"
@@ -1106,7 +1106,7 @@ case "$CMD" in
         install_playit_cli "$@"
         ;;
     uninstall)
-        uninstall_mpanel "$@"
+        uninstall_nuvyra "$@"
         ;;
     *)
         main_menu
