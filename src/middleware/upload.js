@@ -46,8 +46,40 @@ const uploadServerFile = multer({
   limits: { fileSize: 500 * 1024 * 1024 } // 500MB
 });
 
-module.exports = {
-  uploadBranding,
-  uploadServerFile
+const userMediaStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(config.UPLOADS_DIR, 'user-media');
+    fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '').toLowerCase().replace(/[^a-z0-9.]/g, '');
+    cb(null, `${req.user?.id || 'user'}-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+  }
+});
+
+const imageOnlyFilter = (req, file, cb) => {
+  if (!/^image\/(png|jpe?g|gif|webp|avif)$/i.test(file.mimetype || '')) {
+    return cb(new Error('Only PNG, JPG, GIF, WEBP, and AVIF images are allowed.'));
+  }
+  cb(null, true);
 };
 
+const uploadUserAvatar = multer({
+  storage: userMediaStorage,
+  fileFilter: imageOnlyFilter,
+  limits: { fileSize: 8 * 1024 * 1024 }
+});
+
+const uploadSupportAttachment = multer({
+  storage: userMediaStorage,
+  fileFilter: imageOnlyFilter,
+  limits: { fileSize: 15 * 1024 * 1024 }
+});
+
+module.exports = {
+  uploadBranding,
+  uploadServerFile,
+  uploadUserAvatar,
+  uploadSupportAttachment
+};

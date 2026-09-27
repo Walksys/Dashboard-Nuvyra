@@ -101,6 +101,11 @@
         <i data-lucide="settings" class="w-4 h-4"></i>
       </button>
 
+      <!-- Private Staff Chat -->
+      <button onclick="app.navigate(app.user?.role === 'admin' ? 'admin-support' : 'support-chat')" title="Staff Chat" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-300 hover:text-cyan-300 hover:bg-cyan-500/10 transition">
+        <i data-lucide="message-circle" class="w-4 h-4"></i>
+      </button>
+
       <!-- Panel Auto Size / Device Layout Switcher -->
       <div id="header-device-mode-container" class="relative">
         <button id="header-device-btn" onclick="app.toggleDeviceModeDropdown(event)" title="Screen Layout: Auto Size (Phone / Tablet / PC)" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition">
@@ -269,6 +274,12 @@
               </div>
               <span>Profile & 2FA</span>
             </a>
+            <a href="#support" onclick="app.navigate('support-chat')" id="nav-user-support" class="nook-nav-item">
+              <div class="nook-icon-box">
+                <i data-lucide="message-circle" class="w-5 h-5"></i>
+              </div>
+              <span>Staff Chat</span>
+            </a>
             <a href="#activity" onclick="app.navigate('user-activity')" id="nav-user-activity" class="nook-nav-item">
               <div class="nook-icon-box">
                 <i data-lucide="activity" class="w-5 h-5"></i>
@@ -319,6 +330,12 @@
               Basic Administration
             </p>
             <nav class="space-y-1">
+              <a href="#admin-support" onclick="app.navigate('admin-support')" id="nav-admin-support" class="nook-nav-item">
+                <div class="nook-icon-box">
+                  <i data-lucide="messages-square" class="w-5 h-5"></i>
+                </div>
+                <span>Staff Chat</span>
+              </a>
               <a href="#admin-overview" onclick="app.navigate('admin-overview')" id="nav-admin-overview" class="nook-nav-item">
                 <div class="nook-icon-box">
                   <i data-lucide="gauge" class="w-5 h-5"></i>
@@ -525,6 +542,7 @@
   <script src="/js/autoBackups.js?v=1.0.0"></script>
   <script src="/js/updates.js?v=2.4.0"></script>
   <script src="/js/admin.js?v=3.5.4"></script>
+  <script src="/js/support.js?v=1.0.0"></script>
 
   <script>
     // Initialize icons on DOM load

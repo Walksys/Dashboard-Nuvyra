@@ -39,6 +39,7 @@ const autoBackupService = require('./services/autoBackupService');
 const socialLoginRoutes = require('./routes/socialLoginRoutes');
 const adminUpdateRoutes = require('./routes/adminUpdateRoutes');
 const developerProfileRoutes = require('./routes/developerProfileRoutes');
+const supportRoutes = require('./routes/supportRoutes');
 
 
 async function bootstrap() {
@@ -100,6 +101,7 @@ async function bootstrap() {
   app.use('/api/servers/:serverId/marketplace', marketplaceRoutes);
   app.use('/api/public', developerProfileRoutes);
   app.use('/api/developer', developerProfileRoutes);
+  app.use('/api', supportRoutes);
 
   // Fallback to index.html for SPA routing
   app.get('*', (req, res) => {
@@ -144,4 +146,3 @@ bootstrap().catch((err) => {
   console.error('Fatal initialization error:', err);
   process.exit(1);
 });
-

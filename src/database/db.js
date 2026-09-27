@@ -402,6 +402,39 @@ async function initDatabase() {
   try {
     await pool.query('ALTER TABLE users ADD COLUMN server_order TEXT DEFAULT NULL');
   } catch (e) {}
+  // Staff Chat schema: one private support conversation per user.
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS support_conversations (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'open',
+        last_message_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_support_conversation_user (user_id),
+        INDEX idx_support_conversations_last (last_message_at),
+        CONSTRAINT fk_support_conversation_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+      CREATE TABLE IF NOT EXISTS support_messages (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        conversation_id INT NOT NULL,
+        sender_id INT NOT NULL,
+        sender_type VARCHAR(10) NOT NULL,
+        body TEXT,
+        attachment_url VARCHAR(500),
+        attachment_name VARCHAR(255),
+        attachment_mime VARCHAR(120),
+        attachment_size BIGINT DEFAULT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_support_messages_conversation (conversation_id, id),
+        CONSTRAINT fk_support_message_conversation FOREIGN KEY (conversation_id) REFERENCES support_conversations(id) ON DELETE CASCADE,
+        CONSTRAINT fk_support_message_sender FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+  } catch (e) {
+    console.warn('Support chat schema migration warning:', e.message);
+  }
 
   console.log('✅ MariaDB Schema initialized successfully.');
 }

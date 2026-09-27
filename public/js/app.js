@@ -859,6 +859,8 @@ class App {
       // Admin route handling
       if (hash === 'admin-overview') {
         await admin.renderAdminOverview();
+      } else if (hash === 'admin-support') {
+        await supportChat.renderAdmin();
       } else if (hash === 'admin-updates') {
         admin.renderUpdatesView();
       } else if (hash === 'admin-settings') {
@@ -899,6 +901,8 @@ class App {
       // Route handling
       if (hash === 'overview' || hash === 'user-overview') {
         await this.renderUserOverview();
+      } else if (hash === 'support-chat' || hash === 'support') {
+        await supportChat.renderUser();
       } else if (hash === 'servers' || hash === 'user-servers') {
         await this.renderUserServers();
       } else if (hash === 'marketplace') {
@@ -1579,6 +1583,10 @@ class App {
                 <i data-lucide="edit-3" class="w-4 h-4 text-cyan-400"></i> Update Profile Credentials
               </h3>
               <form onsubmit="auth.handleProfileUpdate(event)" class="space-y-4">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  ${u.avatar ? `<img src="${this.escapeHtml(u.avatar)}" class="w-14 h-14 rounded-full object-cover border border-cyan-400/40" alt="Profile">` : `<div class="w-14 h-14 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center text-xl font-black">${this.escapeHtml((u.username || 'U')[0].toUpperCase())}</div>`}
+                  <div class="min-w-0 flex-1"><label class="block text-xs font-semibold text-slate-200 mb-1">Profile Picture</label><input type="file" id="prof-avatar-file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" class="w-full text-[11px] text-slate-400" onchange="auth.uploadAvatar(event)"><p class="text-[10px] text-slate-500 mt-1">PNG, JPG, GIF, WEBP or AVIF · max 8 MB. Google profile images are kept automatically until you replace them.</p></div>
+                </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-300 mb-1">Username</label>
                   <input type="text" id="prof-username" value="${this.escapeHtml(u.username || '')}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" required>

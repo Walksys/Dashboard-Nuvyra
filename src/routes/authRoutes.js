@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('crypto').randomUUID ? { v4: require('crypto').ra
 const config = require('../config/config');
 const { query } = require('../database/db');
 const { authenticate } = require('../middleware/auth');
+const { uploadUserAvatar } = require('../middleware/upload');
 const { logActivity } = require('../services/activityService');
 
 // Login
@@ -267,6 +268,19 @@ router.put('/profile', authenticate, async (req, res) => {
   }
 });
 
+// Upload a profile image (works for password and Google/social accounts).
+router.post('/profile/avatar', authenticate, uploadUserAvatar.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, error: 'Please choose an image.' });
+    const avatar = `/uploads/user-media/${req.file.filename}`;
+    await query.run('UPDATE users SET avatar = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [avatar, req.user.id]);
+    const updated = await query.get('SELECT id, uuid, username, email, role, two_factor_enabled, avatar FROM users WHERE id = ?', [req.user.id]);
+    res.json({ success: true, user: updated, avatar });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to upload profile image.' });
+  }
+});
+
 // Get User Custom Server Order (Custom Server Sort extension)
 router.get('/server-order', authenticate, async (req, res) => {
   try {
@@ -305,4 +319,3 @@ router.put('/server-order', authenticate, async (req, res) => {
 });
 
 module.exports = router;
-

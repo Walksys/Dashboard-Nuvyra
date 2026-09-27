@@ -322,6 +322,23 @@ class AuthController {
     }
   }
 
+  async uploadAvatar(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append('avatar', file);
+    try {
+      const data = await app.api('/api/auth/profile/avatar', { method: 'POST', body: form });
+      app.user = data.user;
+      app.updateAuthUI(data.user);
+      app.toast('Profile picture updated successfully.', 'success');
+      await app.renderUserProfile();
+    } catch (err) {
+      event.target.value = '';
+      app.toast(err.message || 'Profile picture upload failed.', 'error');
+    }
+  }
+
   async start2FASetup() {
     try {
       const data = await app.api('/api/auth/2fa/setup', { method: 'POST' });
@@ -421,4 +438,3 @@ class AuthController {
 }
 
 window.auth = new AuthController();
-
