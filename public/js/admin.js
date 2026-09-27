@@ -2360,10 +2360,16 @@ class AdminManager {
     const nodeImages = [
       { label: 'Nodejs 25 (ghcr.io/ptero-eggs/yolks:nodejs_25)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_25' },
       { label: 'Nodejs 24 (ghcr.io/ptero-eggs/yolks:nodejs_24)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_24' },
+      { label: 'Nodejs 23 (ghcr.io/ptero-eggs/yolks:nodejs_23)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_23' },
       { label: 'Nodejs 22 (ghcr.io/ptero-eggs/yolks:nodejs_22)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_22' },
+      { label: 'Nodejs 21 (ghcr.io/ptero-eggs/yolks:nodejs_21)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_21' },
       { label: 'Nodejs 20 (ghcr.io/ptero-eggs/yolks:nodejs_20)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_20' },
+      { label: 'Nodejs 19 (ghcr.io/ptero-eggs/yolks:nodejs_19)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_19' },
       { label: 'Nodejs 18 (ghcr.io/ptero-eggs/yolks:nodejs_18)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_18' },
-      { label: 'Nodejs 16 (ghcr.io/ptero-eggs/yolks:nodejs_16)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_16' }
+      { label: 'Nodejs 17 (ghcr.io/ptero-eggs/yolks:nodejs_17)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_17' },
+      { label: 'Nodejs 16 (ghcr.io/ptero-eggs/yolks:nodejs_16)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_16' },
+      { label: 'Nodejs 14 (ghcr.io/ptero-eggs/yolks:nodejs_14)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_14' },
+      { label: 'Nodejs 12 (ghcr.io/ptero-eggs/yolks:nodejs_12)', value: 'ghcr.io/ptero-eggs/yolks:nodejs_12' }
     ];
 
     const pyImages = [
@@ -2371,7 +2377,9 @@ class AdminManager {
       { label: 'Python 3.12 (ghcr.io/ptero-eggs/yolks:python_3.12)', value: 'ghcr.io/ptero-eggs/yolks:python_3.12' },
       { label: 'Python 3.11 (ghcr.io/ptero-eggs/yolks:python_3.11)', value: 'ghcr.io/ptero-eggs/yolks:python_3.11' },
       { label: 'Python 3.10 (ghcr.io/ptero-eggs/yolks:python_3.10)', value: 'ghcr.io/ptero-eggs/yolks:python_3.10' },
+      { label: 'Python 3.9 (ghcr.io/ptero-eggs/yolks:python_3.9)', value: 'ghcr.io/ptero-eggs/yolks:python_3.9' },
       { label: 'Python 3.8 (ghcr.io/ptero-eggs/yolks:python_3.8)', value: 'ghcr.io/ptero-eggs/yolks:python_3.8' },
+      { label: 'Python 3.7 (ghcr.io/ptero-eggs/yolks:python_3.7)', value: 'ghcr.io/ptero-eggs/yolks:python_3.7' },
       { label: 'Python 2.7 (ghcr.io/ptero-eggs/yolks:python_2.7)', value: 'ghcr.io/ptero-eggs/yolks:python_2.7' }
     ];
 
@@ -5896,4 +5904,3 @@ class AdminManager {
 }
 
 window.admin = new AdminManager();
-
