@@ -40,7 +40,7 @@
         id: this.userId,
         username: 'walksys.dev',
         global_name: 'walksys',
-        avatar_url: 'https://welder.qzz.io/assets/owner-BxizlJ-J.jpg',
+        avatar_url: 'https://i.ibb.co/Ndsk9qRN/owner-Bxizl-J-J-1.jpg',
         banner_color: '#050303',
         banner_url: null,
         status: 'dnd', // 'online' | 'idle' | 'dnd' | 'offline'
