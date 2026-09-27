@@ -1586,14 +1586,17 @@ class ServerConsole {
       if (envVars.MINECRAFT_VERSION === undefined) envVars.MINECRAFT_VERSION = 'latest';
       if (envVars.SERVER_JARFILE === undefined) envVars.SERVER_JARFILE = 'server.jar';
       if (envVars.BUILD_NUMBER === undefined) envVars.BUILD_NUMBER = 'latest';
+      if (envVars.MINECRAFT_SOURCE_URL === undefined) envVars.MINECRAFT_SOURCE_URL = '';
     } else if (isNode) {
       if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'index.js';
       if (envVars.ADDITIONAL_PACKAGES === undefined) envVars.ADDITIONAL_PACKAGES = '';
       if (envVars.UNINSTALL_PACKAGES === undefined) envVars.UNINSTALL_PACKAGES = '';
+      if (envVars.GIT_REPO_ADDRESS === undefined) envVars.GIT_REPO_ADDRESS = '';
     } else if (isPython) {
       if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'app.py';
       if (envVars.REQUIREMENTS_FILE === undefined) envVars.REQUIREMENTS_FILE = 'requirements.txt';
       if (envVars.UNINSTALL_PACKAGES === undefined) envVars.UNINSTALL_PACKAGES = '';
+      if (envVars.GIT_REPO_ADDRESS === undefined) envVars.GIT_REPO_ADDRESS = '';
     } else if (isVm) {
       const isNokvm = s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' || envVars.NOKVM === '1';
       if (envVars.KVM === undefined) envVars.KVM = isNokvm ? 'off' : 'on';
@@ -1709,9 +1712,17 @@ class ServerConsole {
         label: 'BUILD NUMBER',
         desc: 'The build number for the paper release. Leave at latest to always get the latest version. Invalid versions will default to latest.'
       },
+      MINECRAFT_SOURCE_URL: {
+        label: 'SERVER DOWNLOAD URL',
+        desc: 'Optional direct URL for a Minecraft server file or archive. It downloads and extracts only when the server folder is empty.'
+      },
       MAIN_FILE: {
         label: 'MAIN FILE',
         desc: 'The application entrypoint script file executed at server startup.'
+      },
+      GIT_REPO_ADDRESS: {
+        label: 'GIT REPO ADDRESS',
+        desc: 'Optional public Git repository URL. It is cloned into the empty server folder on first start for Node.js or Python.'
       },
       ADDITIONAL_PACKAGES: {
         label: 'ADDITIONAL PACKAGES',
@@ -1753,10 +1764,10 @@ class ServerConsole {
 
     // Priority order
     const orderedKeys = isMinecraft
-      ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER']
+      ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER', 'MINECRAFT_SOURCE_URL']
       : (isVm
         ? ['KVM', 'DISPLAY_MODE', 'OS_HOSTNAME', 'OS_PASSWORD', 'VM_RAM_MB', 'VM_DISK_GB']
-        : (isNode ? ['MAIN_FILE', 'ADDITIONAL_PACKAGES', 'UNINSTALL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'UNINSTALL_PACKAGES']));
+        : (isNode ? ['MAIN_FILE', 'GIT_REPO_ADDRESS', 'ADDITIONAL_PACKAGES', 'UNINSTALL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'GIT_REPO_ADDRESS', 'UNINSTALL_PACKAGES']));
 
     // Build variables cards HTML matching screenshot
     let variablesCardsHtml = '';
