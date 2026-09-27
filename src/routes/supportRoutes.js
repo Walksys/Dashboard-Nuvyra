@@ -3,20 +3,29 @@ const router = express.Router();
 const { query } = require('../database/db');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { uploadSupportAttachment } = require('../middleware/upload');
+const { detectLanguage, generateReply, unavailableMessage } = require('../services/supportAiService');
 
 async function getOrCreateConversation(userId) {
   let conversation = await query.get(
-    'SELECT id, user_id, status, last_message_at, created_at, updated_at FROM support_conversations WHERE user_id = ?',
+    'SELECT id, user_id, status, support_mode, language, last_message_at, created_at, updated_at FROM support_conversations WHERE user_id = ?',
     [userId]
   );
   if (!conversation) {
-    const result = await query.run('INSERT INTO support_conversations (user_id) VALUES (?)', [userId]);
+    const result = await query.run("INSERT INTO support_conversations (user_id, support_mode, language) VALUES (?, 'pending', 'en')", [userId]);
     conversation = await query.get(
-      'SELECT id, user_id, status, last_message_at, created_at, updated_at FROM support_conversations WHERE id = ?',
+      'SELECT id, user_id, status, support_mode, language, last_message_at, created_at, updated_at FROM support_conversations WHERE id = ?',
       [result.lastID]
     );
   }
   return conversation;
+}
+
+async function addAiMessage(conversation, body) {
+  await query.run(`
+    INSERT INTO support_messages (conversation_id, sender_id, sender_type, body)
+    VALUES (?, ?, 'ai', ?)
+  `, [conversation.id, conversation.user_id, body]);
+  await query.run("UPDATE support_conversations SET last_message_at = CURRENT_TIMESTAMP WHERE id = ?", [conversation.id]);
 }
 
 function canAccess(conversation, user) {
@@ -59,10 +68,42 @@ router.get('/support/conversation', authenticate, async (req, res) => {
   }
 });
 
+router.post('/support/conversation/mode', authenticate, async (req, res) => {
+  try {
+    const mode = ['ai', 'human'].includes(req.body.mode) ? req.body.mode : null;
+    if (!mode) return res.status(400).json({ success: false, error: 'Choose AI Support or Human Support.' });
+    const conversation = await getOrCreateConversation(req.user.id);
+    await query.run("UPDATE support_conversations SET support_mode = ?, status = 'open' WHERE id = ?", [mode, conversation.id]);
+    res.json({ success: true, conversation: await getOrCreateConversation(req.user.id) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Could not save support mode.' });
+  }
+});
+
 router.post('/support/conversation/messages', authenticate, uploadSupportAttachment.single('attachment'), async (req, res) => {
   try {
     const conversation = await getOrCreateConversation(req.user.id);
-    const messages = await addMessage(conversation, req.user, req.file, req.body.body);
+    const text = String(req.body.body || '').trim();
+    if (conversation.support_mode === 'pending') return res.status(400).json({ success: false, error: 'Choose AI Support or Human Support first.' });
+    if (conversation.support_mode === 'ai' && req.file) return res.status(400).json({ success: false, error: 'AI Support currently accepts text messages only. Transfer to Staff to send an image.' });
+    const firstUserMessage = !(await query.get("SELECT id FROM support_messages WHERE conversation_id = ? AND sender_type = 'user' LIMIT 1", [conversation.id]));
+    if (firstUserMessage && text) {
+      conversation.language = detectLanguage(text);
+      await query.run('UPDATE support_conversations SET language = ? WHERE id = ?', [conversation.language, conversation.id]);
+    }
+    await addMessage(conversation, req.user, req.file, text);
+    let messages = await listMessages(conversation.id);
+    if (conversation.support_mode === 'ai') {
+      let aiReply;
+      try {
+        aiReply = await generateReply({ language: conversation.language || 'en', messages });
+      } catch (aiError) {
+        console.warn('Support AI unavailable:', aiError.message);
+        aiReply = unavailableMessage(conversation.language || 'en');
+      }
+      await addAiMessage(conversation, aiReply);
+      messages = await listMessages(conversation.id);
+    }
     res.json({ success: true, conversation: await query.get('SELECT * FROM support_conversations WHERE id = ?', [conversation.id]), messages });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message || 'Could not send message.' });

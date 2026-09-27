@@ -436,6 +436,14 @@ async function initDatabase() {
     console.warn('Support chat schema migration warning:', e.message);
   }
 
+  // Support Chat AI mode/language migration for existing conversations.
+  try {
+    await pool.query("ALTER TABLE support_conversations ADD COLUMN support_mode VARCHAR(10) NOT NULL DEFAULT 'pending'");
+  } catch (e) {}
+  try {
+    await pool.query("ALTER TABLE support_conversations ADD COLUMN language VARCHAR(10) NOT NULL DEFAULT 'en'");
+  } catch (e) {}
+
   console.log('✅ MariaDB Schema initialized successfully.');
 }
 
