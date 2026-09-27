@@ -218,7 +218,7 @@ class App {
       }
     }
 
-    // Active UI Theme (Arix Theme vs NookTheme vs LiquidX Theme vs PteroX Theme)
+    // Active UI Theme (Arix Theme vs NookTheme vs LiquidX Theme vs Nuvyra Theme)
     const activeTheme = s.active_theme || localStorage.getItem('nuvyra_active_theme') || 'arix';
     localStorage.setItem('nuvyra_active_theme', activeTheme);
     this.activeTheme = activeTheme;
@@ -233,7 +233,7 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
         logoEl.src = '/assets/nebula-logo.svg';
       }
-      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('PteroX'))) {
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
         subNameEl.innerText = 'Nebula Theme v2.0';
       }
       if (window.nebulaEditor) {
@@ -263,7 +263,7 @@ class App {
       if (logoEl) {
         logoEl.src = pteroxLogo;
       }
-      const pteroxBrand = localStorage.getItem('pterox_brand_name') || s.pterox_brand_name || 'PteroX';
+      const pteroxBrand = (localStorage.getItem('pterox_brand_name') || s.pterox_brand_name || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra');
       if (subNameEl) {
         subNameEl.innerText = `${pteroxBrand} v2.0.2`;
       }
@@ -272,7 +272,7 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/images/pterox-header-logo.webp')) {
         logoEl.src = '/assets/liquidx-logo.svg';
       }
-      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('PteroX'))) {
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
         subNameEl.innerText = 'LiquidX Theme v1.0';
       }
       if (s.liquidx_primary_color) {
@@ -283,7 +283,7 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
         logoEl.src = '/arix/Arix.png';
       }
-      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('PteroX'))) {
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
         subNameEl.innerText = 'Arix Theme v2.1.3';
       }
       if (s.arix_primary_color) {
@@ -294,7 +294,7 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
         logoEl.src = '/assets/nuvyra-logo.svg';
       }
-      if (subNameEl && (subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('PteroX'))) {
+      if (subNameEl && (subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Nuvyra'))) {
         subNameEl.innerText = 'Nuvyra Server Engine';
       }
     }
@@ -1300,7 +1300,7 @@ class App {
     `;
   }
 
-  // PteroX Server Card HTML Template with Banner & Resource Telemetry
+  // Nuvyra Server Card HTML Template with Banner & Resource Telemetry
   renderPteroxServerCardHTML(s) {
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
     const statusCfg = this.getServerStatusConfig(s.status, isSuspended);
@@ -1785,4 +1785,3 @@ class App {
 
 window.app = new App();
 window.escapeHtml = (str) => window.app.escapeHtml(str);
-

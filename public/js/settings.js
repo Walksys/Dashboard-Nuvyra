@@ -90,10 +90,10 @@ class SettingsManager {
                   <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4 text-purple-400"></i> Panel Theme Selection
                   </h3>
-                  <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme, LiquidX, PteroX, and Nebula Theme v2.0</p>
+                  <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme, LiquidX, Nuvyra, and Nebula Theme v2.0</p>
                 </div>
                 <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'nebula' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : (this.currentTheme.activeTheme === 'liquidx' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : (this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'))}">
-                  ${this.currentTheme.activeTheme === 'nebula' ? 'Nebula Theme v2.0 Active' : (this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : (this.currentTheme.activeTheme === 'pterox' ? 'PteroX Theme v2.0.2 Active' : 'NookTheme Active')))}
+                  ${this.currentTheme.activeTheme === 'nebula' ? 'Nebula Theme v2.0 Active' : (this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : (this.currentTheme.activeTheme === 'pterox' ? 'Nuvyra Theme v2.0.2 Active' : 'NookTheme Active')))}
                 </span>
               </div>
 
@@ -174,17 +174,17 @@ class SettingsManager {
                   </div>
                 </div>
 
-                <!-- Option D: PteroX Theme V2.0.2 -->
+                <!-- Option D: Nuvyra Theme V2.0.2 -->
                 <div id="theme-card-pterox" onclick="settingsManager.selectTheme('pterox')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'pterox' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
                   <div class="flex items-start justify-between">
                     <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 p-2 flex items-center justify-center shadow-inner">
-                      <img src="/assets/pterox-preview.svg" alt="PteroX Theme" class="w-full h-full object-contain">
+                      <img src="/assets/pterox-preview.svg" alt="Nuvyra Theme" class="w-full h-full object-contain">
                     </div>
-                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">PteroX v2.0.2</span>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Nuvyra v2.0.2</span>
                   </div>
                   <div>
                     <h4 class="text-base font-bold text-white flex items-center gap-1.5">
-                      PteroX Theme <span class="text-xs text-cyan-400 font-normal">v2.0.2</span>
+                      Nuvyra Theme <span class="text-xs text-cyan-400 font-normal">v2.0.2</span>
                     </h4>
                     <p class="text-xs text-slate-400 mt-1 leading-relaxed">High-velocity cyber deck with deep space #111525 shell, server banner cards, 4 independent logos, and rocket orange accents.</p>
                   </div>
@@ -195,7 +195,7 @@ class SettingsManager {
                       <span class="w-3 h-3 rounded-full bg-[#111525]"></span>
                     </div>
                     <button type="button" id="btn-theme-pterox" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'pterox' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
-                      ${this.currentTheme.activeTheme === 'pterox' ? '✓ Active Theme' : 'Activate PteroX'}
+                      ${this.currentTheme.activeTheme === 'pterox' ? '✓ Active Theme' : 'Activate Nuvyra'}
                     </button>
                   </div>
                 </div>
@@ -274,25 +274,25 @@ class SettingsManager {
                 </div>
               </div>
 
-              <!-- PteroX Theme Enhancements (Branding, 4 Logos, Server Banner) -->
+              <!-- Nuvyra Theme Enhancements (Branding, 4 Logos, Server Banner) -->
               <div id="pterox-options-panel" class="pt-4 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'pterox' ? '' : 'opacity-60'}">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h4 class="text-xs font-bold text-slate-200 flex items-center gap-2">
-                      <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i> PteroX V2 Branding &amp; Logo Suite (pterox.config.ts)
+                      <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i> Nuvyra V2 Branding &amp; Logo Suite (pterox.config.ts)
                     </h4>
                     <p class="text-[11px] text-slate-400">Configure your Brand Name, Support Email, and all 4 independently customizable logo locations</p>
                   </div>
                   <button type="button" onclick="settingsManager.savePteroxBranding()" class="btn-cyber px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
                     <i data-lucide="save" class="w-3.5 h-3.5"></i>
-                    <span>Save PteroX Branding</span>
+                    <span>Save Nuvyra Branding</span>
                   </button>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
                     <label class="block font-semibold text-slate-300 mb-1">Brand Name</label>
-                    <input type="text" id="pterox-cfg-name" value="${localStorage.getItem('pterox_brand_name') || 'PteroX'}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="PteroX">
+                    <input type="text" id="pterox-cfg-name" value="${(localStorage.getItem('pterox_brand_name') || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra')}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="Nuvyra">
                   </div>
                   <div>
                     <label class="block font-semibold text-slate-300 mb-1">Support Email</label>
@@ -1190,7 +1190,7 @@ class SettingsManager {
       }
     } else if (themeName === 'pterox') {
       app.playSound('online');
-      app.toast('PteroX Theme V2.0.2 activated!', 'success');
+      app.toast('Nuvyra Theme V2.0.2 activated!', 'success');
     } else if (themeName === 'liquidx') {
       app.playSound('online');
       app.toast('LiquidX Theme v1.0 activated!', 'success');
@@ -1211,7 +1211,7 @@ class SettingsManager {
     const loginEl = document.getElementById('pterox-cfg-login');
     const loginHeaderEl = document.getElementById('pterox-cfg-login-header');
 
-    const name = nameEl ? nameEl.value.trim() : 'PteroX';
+    const name = nameEl ? nameEl.value.trim() : 'Nuvyra';
     const email = emailEl ? emailEl.value.trim() : 'pterox@webpool.tech';
     const sidebarLogo = sidebarEl ? sidebarEl.value.trim() : '/images/pterox-sidebar-logo.webp';
     const headerLogo = headerEl ? headerEl.value.trim() : '/images/pterox-header-logo.webp';
@@ -1225,7 +1225,7 @@ class SettingsManager {
     localStorage.setItem('pterox_login_logo', loginLogo);
     localStorage.setItem('pterox_login_header_logo', loginHeaderLogo);
 
-    app.toast('PteroX branding configuration saved!', 'success');
+    app.toast('Nuvyra branding configuration saved!', 'success');
     app.applyBrandingAndTheme({ active_theme: this.currentTheme.activeTheme });
   }
 
@@ -1264,7 +1264,7 @@ class SettingsManager {
         nook: 'NookTheme Active',
         arix: 'Arix Theme v2.1.3 Active',
         liquidx: 'LiquidX Theme v1.0 Active',
-        pterox: 'PteroX Theme v2.0.2 Active',
+        pterox: 'Nuvyra Theme v2.0.2 Active',
         nebula: 'Nebula Theme v2.0 Active'
       };
       const badgeClasses = {
@@ -1289,7 +1289,7 @@ class SettingsManager {
     resetCard(cardNook, btnNook, 'Nook');
     resetCard(cardArix, btnArix, 'Arix');
     resetCard(cardLiquidx, btnLiquidx, 'LiquidX');
-    resetCard(cardPterox, btnPterox, 'PteroX');
+    resetCard(cardPterox, btnPterox, 'Nuvyra');
     resetCard(cardNebula, btnNebula, 'Nebula');
 
     if (theme === 'nebula') {

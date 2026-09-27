@@ -1518,7 +1518,7 @@ html.theme-liquidx.light .glass-input {
 }
 
 /* ==========================================================================
-   PteroX Theme V2.0.2 ("Deep Space / High-Velocity Cyber Deck")
+   Nuvyra Theme V2.0.2 ("Deep Space / High-Velocity Cyber Deck")
    ========================================================================== */
 :root.theme-pterox, html.theme-pterox, .theme-pterox {
   --primary: #23aeea;
@@ -1617,7 +1617,7 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   color: #23aeea !important;
 }
 
-/* PteroX Server Banner Card System */
+/* Nuvyra Server Banner Card System */
 .pterox-server-card {
   background: #171d27;
   border: 1px solid #252d38;
@@ -1710,7 +1710,7 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   box-shadow: 0 0 12px rgba(35, 174, 234, 0.4);
 }
 
-/* Status indicator in PteroX */
+/* Status indicator in Nuvyra */
 .pterox-status-indicator {
   display: inline-flex;
   align-items: center;
@@ -1735,7 +1735,7 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   background: #ef4444;
 }
 
-/* Accent Color Mapping for Cyan in PteroX */
+/* Accent Color Mapping for Cyan in Nuvyra */
 html.theme-pterox .text-cyan-400,
 html.theme-pterox .text-cyan-300 {
   color: #23aeea !important;
@@ -1751,7 +1751,7 @@ html.theme-pterox .device-select-card.active {
   box-shadow: 0 0 20px rgba(35, 174, 234, 0.35) !important;
 }
 
-/* Light mode support for PteroX */
+/* Light mode support for Nuvyra */
 html.theme-pterox.light body {
   background: #f1f5f9 !important;
   color: #0f172a !important;

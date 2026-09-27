@@ -7,7 +7,7 @@ class AuthController {
 
     const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
     const isPterox = activeTheme === 'pterox';
-    const brandName = isPterox ? (localStorage.getItem('pterox_brand_name') || 'PteroX') : 'Nuvyra';
+    const brandName = isPterox ? ((localStorage.getItem('pterox_brand_name') || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra')) : 'Nuvyra';
     const loginLogo = isPterox ? (localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp') : null;
 
     modalContainer.innerHTML = `
@@ -82,7 +82,7 @@ class AuthController {
 
     const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
     const isPterox = activeTheme === 'pterox';
-    const brandName = isPterox ? (localStorage.getItem('pterox_brand_name') || 'PteroX') : 'Nuvyra';
+    const brandName = isPterox ? ((localStorage.getItem('pterox_brand_name') || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra')) : 'Nuvyra';
     const loginLogo = isPterox ? (localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp') : null;
 
     modalContainer.innerHTML = `

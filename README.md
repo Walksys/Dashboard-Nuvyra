@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://walksys.qzz.io">
-    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=22D3EE&center=true&vCenter=true&random=false&width=750&lines=⚡+Modern+Node.js+Alternative+to+Pterodactyl;🚀+Real-Time+xterm.js+Console+%26+Live+Meters;🔄+Automated+GitHub+Releases+Detector+%26+Live+Update+Terminal;🎮+Minecraft+Player+Manager+%26+Universal+Addon+Marketplace;🔒+Embedded+SFTP+(Port+3004)+%26+MariaDB+(Port+27017);🎨+Multi-Theme+Personalization%3A+Full+Black+OLED%2C+PteroX+V2%2C+LiquidX" alt="Typing Animation" />
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=22D3EE&center=true&vCenter=true&random=false&width=750&lines=⚡+Modern+Node.js+Alternative+to+Pterodactyl;🚀+Real-Time+xterm.js+Console+%26+Live+Meters;🔄+Automated+GitHub+Releases+Detector+%26+Live+Update+Terminal;🎮+Minecraft+Player+Manager+%26+Universal+Addon+Marketplace;🔒+Embedded+SFTP+(Port+3004)+%26+MariaDB+(Port+27017);🎨+Multi-Theme+Personalization%3A+Full+Black+OLED%2C+Nuvyra+V2%2C+LiquidX" alt="Typing Animation" />
   </a>
 </p>
 
@@ -166,7 +166,7 @@ graph TD
   - Toggle automatic first-login tour for new users with an instant admin "Test Tour" button.
 - **Pure Naming**: Zero references to "Knowledge Base" across all user-facing UI, database settings, and modals.
 
-### 3. 🎨 PteroX V2.0.2 Theme Suite
+### 3. 🎨 Nuvyra V2.0.2 Theme Suite
 - **Complete Visual Assets**: High-resolution branding logos, status illustrations, and server card banners.
 - **Theme Palette & Layouts**: Deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 
@@ -215,7 +215,7 @@ graph TD
 
 ### 4. 🎨 Theme & Customization Engine
 - **🖤 Full Black OLED**: Pure pitch black background (`#000000`), deep black frosted glass cards, and high-contrast neon accents.
-- **🌌 PteroX V2**: High-tech deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
+- **🌌 Nuvyra V2**: High-tech deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 - **🌟 LiquidX**: Polished glassmorphism with custom gold and emerald accents.
 - **💎 Arix**: Modern streamlined layout with deep blue palette.
 - **🖼️ Integrated 4K Wallpapers Browser ([4kwallpapers.com](https://4kwallpapers.com/))**:
