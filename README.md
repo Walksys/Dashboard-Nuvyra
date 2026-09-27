@@ -235,7 +235,7 @@ graph TD
 ## 📦 Supported Runtimes & Environments
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Java-8%20|%2011%20|%2016%20|%2017%20|%2021%20|%2025-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
+  <img src="https://img.shields.io/badge/Java%20Apps%20%26%20Lavalink-8%20|%2011%20|%2016%20|%2017%20|%2018%20|%2019%20|%2021-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java Apps" />
   <img src="https://img.shields.io/badge/Node.js-12%20|%2014%20|%2016%20|%2018%20|%2020%20|%2022%20|%2024%20|%2025-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node" />
   <img src="https://img.shields.io/badge/Python-2.7%20|%203.7%20--%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
 </p>

@@ -11,6 +11,18 @@ function isEmptyDirectory(dir) {
   return fs.existsSync(dir) && fs.readdirSync(dir).length === 0;
 }
 
+function isGeneratedSourceScaffoldOnly(dir, serverType) {
+  const allowed = {
+    nodejs: ['package.json', 'index.js'],
+    node: ['package.json', 'index.js'],
+    python: ['requirements.txt', 'app.py'],
+    java: ['JAVA_APP_README.txt']
+  }[serverType];
+  if (!allowed) return false;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  return entries.length > 0 && entries.every(entry => entry.isFile() && allowed.includes(entry.name));
+}
+
 async function clearStaleMinecraftLocks(serverDir, log) {
   const lockPaths = [];
   const addIfPresent = filePath => { if (fs.existsSync(filePath)) lockPaths.push(filePath); };
@@ -43,12 +55,15 @@ async function clearStaleMinecraftLocks(serverDir, log) {
 }
 
 async function prepareServerSource(server, serverDir, envVars, log) {
-  if (!isEmptyDirectory(serverDir)) return;
-  const isNodeOrPython = ['nodejs', 'node', 'python'].includes(server.server_type);
-  const repoUrl = isNodeOrPython ? String(envVars.GIT_REPO_ADDRESS || '').trim() : '';
+  const isSourceApp = ['nodejs', 'node', 'python', 'java'].includes(server.server_type);
+  const repoUrl = isSourceApp ? String(envVars.GIT_REPO_ADDRESS || '').trim() : '';
+  if (!isEmptyDirectory(serverDir) && !(repoUrl && isGeneratedSourceScaffoldOnly(serverDir, server.server_type))) return;
 
   if (repoUrl) {
     if (!/^https?:\/\//i.test(repoUrl)) throw new Error('Git Repo Address must be an HTTP(S) repository URL.');
+    for (const entry of fs.readdirSync(serverDir)) {
+      fs.rmSync(path.join(serverDir, entry), { recursive: true, force: true });
+    }
     log(`\x1b[36m[Nuvyra]\x1b[0m Cloning Git repository into the empty server folder...\r\n`);
     await execFileAsync('git', ['clone', '--depth', '1', repoUrl, serverDir], { maxBuffer: 1024 * 1024 * 8 });
     return true;
@@ -345,6 +360,8 @@ class RunnerService {
         startupCmd = `java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}`;
       } else if (server.server_type === 'python') {
         startupCmd = 'python3 {{MAIN_FILE}}';
+      } else if (server.server_type === 'java') {
+        startupCmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
       } else if (server.server_type === 'lumenvm' || server.server_type === 'vm' || server.server_type === 'nokvm' || server.server_type === 'lumenvm_nokvm') {
         startupCmd = '/start.sh';
       } else {
@@ -387,7 +404,7 @@ class RunnerService {
     }
 
     const jarFile = envVars.SERVER_JARFILE || 'server.jar';
-    const mainFile = envVars.MAIN_FILE || (server.server_type === 'python' ? 'app.py' : 'index.js');
+    const mainFile = envVars.MAIN_FILE || (server.server_type === 'python' ? 'app.py' : (server.server_type === 'java' ? 'app.jar' : 'index.js'));
     const mcVersion = envVars.MINECRAFT_VERSION || server.jar_version || '1.21.4';
     const buildNumber = envVars.BUILD_NUMBER || 'latest';
 
@@ -426,7 +443,7 @@ class RunnerService {
 
     // Ensure Minecraft configuration (port binding, query port, eula) are synchronized
     const isVmType = ['lumenvm', 'vm', 'nokvm', 'lumenvm_nokvm'].includes(server.server_type);
-    const isMinecraft = !isVmType && (server.server_type === 'minecraft' || (!['nodejs', 'python'].includes(server.server_type) && (fs.existsSync(path.join(serverDir, 'server.jar')) || fs.existsSync(path.join(serverDir, 'server.properties')))));
+    const isMinecraft = !isVmType && (server.server_type === 'minecraft' || (!['nodejs', 'python', 'java'].includes(server.server_type) && (fs.existsSync(path.join(serverDir, 'server.jar')) || fs.existsSync(path.join(serverDir, 'server.properties')))));
     if (isMinecraft) {
       const targetPort = parseInt(server.port, 10) || 25565;
       this.syncMinecraftProperties(serverDir, targetPort);

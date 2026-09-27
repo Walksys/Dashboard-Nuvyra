@@ -117,6 +117,9 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
     } else if (server_type === 'python') {
       defaultImg = defaultImg || imagesConfig.python[1].value; // Python 3.12
       defaultCmd = defaultCmd || 'if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python3 app.py';
+    } else if (server_type === 'java') {
+      defaultImg = defaultImg || imagesConfig.java[1].value; // Java 21
+      defaultCmd = defaultCmd || 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
     } else if (server_type === 'lumenvm' || server_type === 'vm' || server_type === 'nokvm' || server_type === 'lumenvm_nokvm') {
       defaultImg = defaultImg || imagesConfig.lumenvm[0].value; // Debian 12
       defaultCmd = defaultCmd || '/start.sh';
@@ -210,6 +213,8 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
     } else if (server_type === 'python') {
       fs.writeFileSync(path.join(serverDir, 'requirements.txt'), '# Add your Python dependencies here\nflask\n', 'utf8');
       fs.writeFileSync(path.join(serverDir, 'app.py'), `# Nuvyra Python Application\nimport os\nfrom http.server import HTTPServer, BaseHTTPRequestHandler\n\nport = int(os.environ.get('PORT', 5000))\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        self.send_response(200)\n        self.send_header('Content-type', 'text/plain')\n        self.end_headers()\n        self.wfile.write(b'Hello from Nuvyra Python App!')\n\nprint(f"Starting Python server on port {port}...")\nhttpd = HTTPServer(('0.0.0.0', port), Handler)\nhttpd.serve_forever()\n`, 'utf8');
+    } else if (server_type === 'java') {
+      fs.writeFileSync(path.join(serverDir, 'JAVA_APP_README.txt'), `Nuvyra Java Application\n\nUpload a runnable JAR here, then set MAIN_FILE in Startup (default: app.jar).\nFor Lavalink, upload Lavalink.jar and set MAIN_FILE=Lavalink.jar.\nThe selected Docker image supplies the Java runtime version.\n`, 'utf8');
     } else if (server_type === 'lumenvm' || server_type === 'vm' || server_type === 'nokvm' || server_type === 'lumenvm_nokvm') {
       const vmEnv = typeof env_vars === 'object' ? env_vars : {};
       fs.writeFileSync(path.join(serverDir, 'README.txt'), `=== LumenVM Virtual Machine ===\nOS Image: ${defaultImg}\nHostname: ${vmEnv.OS_HOSTNAME || 'lumenvm'}\nAccess Mode: ${vmEnv.DISPLAY_MODE || 'ssh'}\nKVM Mode: ${vmEnv.KVM || 'on'}\nNo-KVM Software Emulation: ${vmEnv.NOKVM === '1' ? 'Active' : 'Disabled'}\nAssigned Port: ${assignedPort}\n\nQEMU virtual disk and machine storage are managed in this directory.\n`, 'utf8');
@@ -967,5 +972,4 @@ router.delete('/:id/network/:allocId', authenticate, requireServerAccess('networ
 });
 
 module.exports = router;
-
 

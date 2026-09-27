@@ -73,6 +73,7 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
         minecraft: imagesConfig.minecraft,
         nodejs: imagesConfig.nodejs,
         python: imagesConfig.python,
+        java: imagesConfig.java,
         lumenvm: imagesConfig.lumenvm,
         nokvm: imagesConfig.nokvm
       }
@@ -215,5 +216,4 @@ router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file')
 });
 
 module.exports = router;
-
 

@@ -32,6 +32,15 @@ module.exports = {
     { label: "Python 3.7",  value: "ghcr.io/ptero-eggs/yolks:python_3.7",  defaultCmd: "if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python3 app.py", mainFile: "app.py" },
     { label: "Python 2.7",  value: "ghcr.io/ptero-eggs/yolks:python_2.7",  defaultCmd: "if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python2 app.py", mainFile: "app.py" }
   ],
+  java: [
+    { label: "Java 21", value: "ghcr.io/pterodactyl/yolks:java_21", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
+    { label: "Java 19", value: "ghcr.io/pterodactyl/yolks:java_19", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
+    { label: "Java 18", value: "ghcr.io/pterodactyl/yolks:java_18", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
+    { label: "Java 17", value: "ghcr.io/pterodactyl/yolks:java_17", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
+    { label: "Java 16", value: "ghcr.io/pterodactyl/yolks:java_16", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
+    { label: "Java 11", value: "ghcr.io/pterodactyl/yolks:java_11", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
+    { label: "Java 8", value: "ghcr.io/pterodactyl/yolks:java_8", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" }
+  ],
   lumenvm: [
     { label: "Debian 12 (Ready to use, Recommended)", value: "ghcr.io/sosuku325/aerovm:guest-debian-12", defaultCmd: "/start.sh" },
     { label: "Ubuntu 24.04 LTS (Ready to use)", value: "ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04", defaultCmd: "/start.sh" },
@@ -73,4 +82,3 @@ module.exports = {
     { id: "gaming", name: "Gaming Grid", preview: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=80" }
   ]
 };
-

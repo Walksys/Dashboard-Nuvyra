@@ -945,7 +945,7 @@ class App {
           <div class="space-y-1">
             <span class="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">User Dashboard</span>
             <h2 class="text-2xl font-black text-white">Welcome back, ${this.user?.username || 'User'}!</h2>
-            <p class="text-xs text-slate-300 max-w-xl">Manage your Minecraft servers, Python bots, and Node.js applications with ultra-low latency container orchestration.</p>
+            <p class="text-xs text-slate-300 max-w-xl">Manage your Minecraft servers, Node.js, Python, and Java applications with ultra-low latency container orchestration.</p>
           </div>
           ${this.user?.role === 'admin' ? `
             <button onclick="admin.showCreateServerModal()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
@@ -1043,7 +1043,7 @@ class App {
             <i data-lucide="server-off" class="w-12 h-12 text-slate-500 mx-auto mb-3"></i>
             <h4 class="text-sm font-bold text-slate-200">No servers deployed yet</h4>
             ${this.user?.role === 'admin' ? `
-              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your first Minecraft, Python, or Node.js server to get started.</p>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your first Minecraft, Node.js, Python, or Java server to get started.</p>
               <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4">
                 + Create Server
               </button>
@@ -1232,6 +1232,7 @@ class App {
       minecraft: '🎮 Minecraft',
       nodejs: '⚡ Node.js',
       python: '🐍 Python',
+      java: '☕ Java Apps',
       lumenvm: '🖥️ VM - KVM',
       nokvm: '🛡️ VM - No-KVM',
       lumenvm_nokvm: '🛡️ VM - No-KVM',

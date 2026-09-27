@@ -1579,6 +1579,7 @@ class ServerConsole {
     const isMinecraft = s.server_type === 'minecraft' || !s.server_type;
     const isPython = s.server_type === 'python';
     const isNode = s.server_type === 'nodejs' || s.server_type === 'node';
+    const isJava = s.server_type === 'java';
     const isVm = s.server_type === 'lumenvm' || s.server_type === 'vm' || s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm';
 
     // Set standard variables based on server type if not yet defined
@@ -1595,6 +1596,9 @@ class ServerConsole {
       if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'app.py';
       if (envVars.REQUIREMENTS_FILE === undefined) envVars.REQUIREMENTS_FILE = 'requirements.txt';
       if (envVars.UNINSTALL_PACKAGES === undefined) envVars.UNINSTALL_PACKAGES = '';
+      if (envVars.GIT_REPO_ADDRESS === undefined) envVars.GIT_REPO_ADDRESS = '';
+    } else if (isJava) {
+      if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'app.jar';
       if (envVars.GIT_REPO_ADDRESS === undefined) envVars.GIT_REPO_ADDRESS = '';
     } else if (isVm) {
       const isNokvm = s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' || envVars.NOKVM === '1';
@@ -1619,6 +1623,8 @@ class ServerConsole {
         rawCmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';
       } else if (isPython) {
         rawCmd = 'python3 {{MAIN_FILE}}';
+      } else if (isJava) {
+        rawCmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
       } else if (isVm) {
         rawCmd = '/start.sh';
       } else {
@@ -1666,6 +1672,16 @@ class ServerConsole {
         { label: 'Python 3.7', value: 'ghcr.io/ptero-eggs/yolks:python_3.7' },
         { label: 'Python 2.7', value: 'ghcr.io/ptero-eggs/yolks:python_2.7' }
       ];
+    } else if (isJava) {
+      dockerOptions = [
+        { label: 'Java 21', value: 'ghcr.io/pterodactyl/yolks:java_21' },
+        { label: 'Java 19', value: 'ghcr.io/pterodactyl/yolks:java_19' },
+        { label: 'Java 18', value: 'ghcr.io/pterodactyl/yolks:java_18' },
+        { label: 'Java 17', value: 'ghcr.io/pterodactyl/yolks:java_17' },
+        { label: 'Java 16', value: 'ghcr.io/pterodactyl/yolks:java_16' },
+        { label: 'Java 11', value: 'ghcr.io/pterodactyl/yolks:java_11' },
+        { label: 'Java 8', value: 'ghcr.io/pterodactyl/yolks:java_8' }
+      ];
     } else if (isVm) {
       dockerOptions = [
         { label: 'Debian 12 (Ready to use, Recommended)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-12' },
@@ -1687,7 +1703,7 @@ class ServerConsole {
       ];
     }
 
-    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isVm ? 'ghcr.io/sosuku325/aerovm:guest-debian-12' : (isNode ? 'ghcr.io/ptero-eggs/yolks:nodejs_20' : 'ghcr.io/ptero-eggs/yolks:python_3.12')));
+    const currentDocker = s.docker_image || ((isMinecraft || isJava) ? 'ghcr.io/pterodactyl/yolks:java_21' : (isVm ? 'ghcr.io/sosuku325/aerovm:guest-debian-12' : (isNode ? 'ghcr.io/ptero-eggs/yolks:nodejs_20' : 'ghcr.io/ptero-eggs/yolks:python_3.12')));
     const matchedPreset = dockerOptions.find(o => o.value === currentDocker);
     const isCustomDocker = !matchedPreset;
 
@@ -1717,7 +1733,7 @@ class ServerConsole {
       },
       GIT_REPO_ADDRESS: {
         label: 'GIT REPO ADDRESS',
-        desc: 'Optional public Git repository URL. It is cloned into the empty server folder on first start for Node.js or Python.'
+        desc: 'Optional public Git repository URL. It is cloned into the empty server folder on first start for Node.js, Python, or Java apps.'
       },
       ADDITIONAL_PACKAGES: {
         label: 'ADDITIONAL PACKAGES',
@@ -1897,13 +1913,15 @@ class ServerConsole {
         cmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';
       } else if (this.serverData?.server_type === 'python') {
         cmd = 'python3 {{MAIN_FILE}}';
+      } else if (this.serverData?.server_type === 'java') {
+        cmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
       } else {
         cmd = 'node {{MAIN_FILE}}';
       }
     }
 
     const jarFile = envVars.SERVER_JARFILE || 'server.jar';
-    const mainFile = envVars.MAIN_FILE || (this.serverData?.server_type === 'python' ? 'app.py' : 'index.js');
+    const mainFile = envVars.MAIN_FILE || (this.serverData?.server_type === 'python' ? 'app.py' : (this.serverData?.server_type === 'java' ? 'app.jar' : 'index.js'));
     const memory = this.serverData?.memory_mb || 1024;
     const port = this.serverData?.port || 25565;
 

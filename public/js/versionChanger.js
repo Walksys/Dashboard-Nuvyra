@@ -73,7 +73,7 @@ class VersionChanger {
           <div class="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs flex items-center gap-3">
             <i data-lucide="alert-triangle" class="w-5 h-5 shrink-0"></i>
             <div>
-              <span class="font-bold">Notice:</span> This server is configured as <strong>${this.serverData.server_type}</strong>. Version Changer is specifically designed for Minecraft servers. To adjust Node.js or Python runtime variables, use the Startup tab.
+              <span class="font-bold">Notice:</span> This server is configured as <strong>${this.serverData.server_type}</strong>. Version Changer is specifically designed for Minecraft servers. To adjust Node.js, Python, or Java runtime variables, use the Startup tab.
             </div>
           </div>
         ` : ''}
@@ -692,4 +692,3 @@ class VersionChanger {
 
 // Global instance
 window.versionChanger = new VersionChanger();
-

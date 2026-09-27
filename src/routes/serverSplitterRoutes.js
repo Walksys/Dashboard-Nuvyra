@@ -208,6 +208,16 @@ router.get('/templates', authenticate, requireServerAccess('settings.read'), asy
         defaultDisk: 2048
       },
       {
+        id: 'java',
+        name: 'Java Application',
+        icon: 'coffee',
+        badge: 'Apps / Lavalink',
+        desc: 'Run Java JAR applications, Lavalink, bots, and services',
+        defaultMemory: 1024,
+        defaultCpu: 100,
+        defaultDisk: 4096
+      },
+      {
         id: 'lumenvm',
         name: 'LumenVM Virtual Machine',
         icon: 'cpu',
@@ -329,6 +339,9 @@ router.post('/', authenticate, requireServerAccess('settings.write'), async (req
     } else if (targetType === 'python') {
       defaultImg = imagesConfig.python[1].value; // Python 3.12
       defaultCmd = 'if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python3 app.py';
+    } else if (targetType === 'java') {
+      defaultImg = imagesConfig.java[1].value; // Java 21
+      defaultCmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
     } else if (targetType === 'lumenvm' || targetType === 'vm') {
       defaultImg = imagesConfig.lumenvm[0].value;
       defaultCmd = '/start.sh';
@@ -401,6 +414,8 @@ router.post('/', authenticate, requireServerAccess('settings.write'), async (req
     } else if (targetType === 'python') {
       fs.writeFileSync(path.join(serverDir, 'requirements.txt'), '# Add requirements here\n');
       fs.writeFileSync(path.join(serverDir, 'app.py'), `# Split Server: ${name}\nimport http.server\nimport socketserver\nimport os\n\nPORT = int(os.environ.get('PORT', ${alloc.port}))\nHandler = http.server.SimpleHTTPRequestHandler\nwith socketserver.TCPServer(('', PORT), Handler) as httpd:\n    print(f'Serving at port {PORT}')\n    httpd.serve_forever()\n`);
+    } else if (targetType === 'java') {
+      fs.writeFileSync(path.join(serverDir, 'JAVA_APP_README.txt'), `Upload a runnable JAR and set MAIN_FILE in Startup (default: app.jar).\nFor Lavalink, use MAIN_FILE=Lavalink.jar.\n`);
     }
 
     // Optionally sync subusers from master

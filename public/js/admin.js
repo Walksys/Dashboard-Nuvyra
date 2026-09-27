@@ -1329,11 +1329,13 @@ class AdminManager {
     const mcSuffixes = ['SMP', 'Craft', 'Realms', 'Node', 'Zone', 'Hub', 'Grid', 'World', 'Legends'];
     const nodeSuffixes = ['App', 'Bot', 'API', 'Worker', 'Service', 'Server'];
     const pySuffixes = ['Bot', 'AI', 'Script', 'Engine', 'Worker', 'Service'];
+    const javaSuffixes = ['App', 'Lavalink', 'Bot', 'Service', 'Worker', 'Gateway'];
 
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     let suffix = mcSuffixes[Math.floor(Math.random() * mcSuffixes.length)];
     if (type === 'nodejs') suffix = nodeSuffixes[Math.floor(Math.random() * nodeSuffixes.length)];
     if (type === 'python') suffix = pySuffixes[Math.floor(Math.random() * pySuffixes.length)];
+    if (type === 'java') suffix = javaSuffixes[Math.floor(Math.random() * javaSuffixes.length)];
     if (type === 'lumenvm' || type === 'vm' || type === 'nokvm' || type === 'lumenvm_nokvm') suffix = ['VM', 'VPS', 'Cloud', 'Box', 'Node', 'Linux', 'Host'][Math.floor(Math.random() * 7)];
 
     const num = Math.floor(10 + Math.random() * 90);
@@ -1343,6 +1345,7 @@ class AdminManager {
   generateServerDesc(type = 'minecraft', engine = 'Paper', ver = '1.21.4') {
     if (type === 'nodejs') return `Ultra-fast Node.js application container with automated process supervisor.`;
     if (type === 'python') return `Low-latency Python application container with automatic runtime environments.`;
+    if (type === 'java') return `Java application container for runnable JAR services, Lavalink, bots, and gateways.`;
     if (type === 'nokvm' || type === 'lumenvm_nokvm') return `VM - No-KVM Virtual Machine instance (Software Emulation - Runs on any VPS) with zero license requirement.`;
     if (type === 'lumenvm' || type === 'vm') return `VM - KVM hardware-accelerated Virtual Machine instance with zero license requirement.`;
     return `High-performance ${engine || 'Minecraft'} ${ver || '1.21.4'} server instance with auto-suspension telemetry.`;
@@ -1665,6 +1668,12 @@ class AdminManager {
                   <i data-lucide="layers" class="w-6 h-6 text-emerald-400"></i>
                   <span class="text-xs font-bold text-white">Python</span>
                   <span class="text-[10px] text-slate-400 text-center">v2.7, 3.7 - 3.13 Apps</span>
+                </label>
+                <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-amber-400 transition">
+                  <input type="radio" name="create_srv_type" value="java" onchange="admin.onServerTypeChange('java')" class="accent-amber-400">
+                  <i data-lucide="coffee" class="w-6 h-6 text-amber-400"></i>
+                  <span class="text-xs font-bold text-white">Java</span>
+                  <span class="text-[10px] text-slate-400 text-center">8, 11, 16-21 Apps &amp; Lavalink</span>
                 </label>
                 <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-amber-400 transition">
                   <input type="radio" name="create_srv_type" value="lumenvm" onchange="admin.onServerTypeChange('lumenvm')" class="accent-amber-400">
@@ -2383,6 +2392,16 @@ class AdminManager {
       { label: 'Python 2.7 (ghcr.io/ptero-eggs/yolks:python_2.7)', value: 'ghcr.io/ptero-eggs/yolks:python_2.7' }
     ];
 
+    const javaImages = [
+      { label: 'Java 21 (ghcr.io/pterodactyl/yolks:java_21)', value: 'ghcr.io/pterodactyl/yolks:java_21' },
+      { label: 'Java 19 (ghcr.io/pterodactyl/yolks:java_19)', value: 'ghcr.io/pterodactyl/yolks:java_19' },
+      { label: 'Java 18 (ghcr.io/pterodactyl/yolks:java_18)', value: 'ghcr.io/pterodactyl/yolks:java_18' },
+      { label: 'Java 17 (ghcr.io/pterodactyl/yolks:java_17)', value: 'ghcr.io/pterodactyl/yolks:java_17' },
+      { label: 'Java 16 (ghcr.io/pterodactyl/yolks:java_16)', value: 'ghcr.io/pterodactyl/yolks:java_16' },
+      { label: 'Java 11 (ghcr.io/pterodactyl/yolks:java_11)', value: 'ghcr.io/pterodactyl/yolks:java_11' },
+      { label: 'Java 8 (ghcr.io/pterodactyl/yolks:java_8)', value: 'ghcr.io/pterodactyl/yolks:java_8' }
+    ];
+
     const vmImages = [
       { label: 'Debian 12 (Ready to use, Recommended)', value: 'ghcr.io/sosuku325/aerovm:guest-debian-12' },
       { label: 'Ubuntu 24.04 LTS (Ready to use)', value: 'ghcr.io/sosuku325/aerovm:guest-ubuntu-24.04' },
@@ -2402,7 +2421,7 @@ class AdminManager {
       { label: 'Shell (Debug / Rescue Mode)', value: 'ghcr.io/sosuku325/aerovm:shell' }
     ];
 
-    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, lumenvm: vmImages, vm: vmImages, nokvm: vmImages, lumenvm_nokvm: vmImages };
+    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, java: javaImages, lumenvm: vmImages, vm: vmImages, nokvm: vmImages, lumenvm_nokvm: vmImages };
     const list = map[type] || mcImages;
 
     select.innerHTML = list.map(item => `

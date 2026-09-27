@@ -358,6 +358,7 @@ class ServerSplitter {
       minecraft: 'box',
       nodejs: 'code',
       python: 'terminal',
+      java: 'coffee',
       lumenvm: 'cpu',
       vm: 'cpu'
     };
@@ -473,6 +474,7 @@ class ServerSplitter {
                 <option value="minecraft" selected>Minecraft: Java Edition (Paper / Purpur / Spigot)</option>
                 <option value="nodejs">Node.js Bot / Web API</option>
                 <option value="python">Python Application / Bot</option>
+                <option value="java">Java Application / Lavalink</option>
                 <option value="lumenvm">LumenVM (Linux Virtual Machine)</option>
               </select>
             </div>
