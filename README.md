@@ -171,7 +171,7 @@ graph TD
 - **Theme Palette & Layouts**: Deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 
 ### 4. 🛠️ McTools Blueprint Extension Suite
-- **Integrated Extension**: Directly ported from [`walksys/Walksys-Cloud (mctools.blueprint)`](https://github.com/Walksys/Nuvyra-Cloud/blob/main/thame/Extension/mctools.blueprint).
+- **Integrated Extension**: Directly ported from [`Walksys/Nuvyra-Cloud (mctools.blueprint)`](https://github.com/Walksys/Nuvyra-Cloud/blob/main/thame/Extension/mctools.blueprint).
 - **Live MOTD & Colored Text Builder**: Real-time Minecraft colored text builder (Sign, Book, Chat, MOTD) with live dark preview box and instant copy in Legacy (`&`), Section (`§`), Tellraw/JSON, and MiniMessage.
 - **Color Palette & Swatches**: Official 16 Minecraft colors with hex codes, RGB picker, and Bungee hex formatting (`&x&r&r&g&g&b&b`).
 - **SmallCaps & Unicode Decorative Fonts**: Real-time styler for SmallCaps, BigCaps, Bubble, Fraktur, FullWidth, Script, and Tiny fonts.

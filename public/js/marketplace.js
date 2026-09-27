@@ -4552,7 +4552,7 @@ sudo apt install -y playit</pre>
               🛠️ McTools Server Utilities Suite
             </h4>
             <p class="text-xs text-slate-300 max-w-2xl">
-              Ported from <code>walksys/Walksys-Cloud (mctools.blueprint)</code>. Includes real-time MOTD colored text builder, 1,200+ Minecraft IDs catalog, color picker, small caps fonts, and inventory slot guides.
+              Ported from <code>Walksys/Nuvyra-Cloud (mctools.blueprint)</code>. Includes real-time MOTD colored text builder, 1,200+ Minecraft IDs catalog, color picker, small caps fonts, and inventory slot guides.
             </p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
@@ -4581,7 +4581,7 @@ sudo apt install -y playit</pre>
                 Server Splitter
               </h4>
               <p class="text-xs text-slate-300 max-w-2xl">
-                Ported from <code>walksys/Walksys-Cloud (serversplitter.blueprint)</code>. Easily partition your server RAM, CPU cores, and Disk into independent Minecraft, Node.js, Python, or VM sub-servers with dedicated ports and live resizing.
+                Ported from <code>Walksys/Nuvyra-Cloud (serversplitter.blueprint)</code>. Easily partition your server RAM, CPU cores, and Disk into independent Minecraft, Node.js, Python, or VM sub-servers with dedicated ports and live resizing.
               </p>
             </div>
           </div>
@@ -4610,7 +4610,7 @@ sudo apt install -y playit</pre>
                 AutoBackups
               </h4>
               <p class="text-xs text-slate-300 max-w-2xl">
-                Ported from <code>walksys/Walksys-Cloud (autobackups.blueprint)</code>. Automatically generate daily server snapshots, schedule execution times, configure tiered retention policies (Days / Weeks / Months), and exclude nodes.
+                Ported from <code>Walksys/Nuvyra-Cloud (autobackups.blueprint)</code>. Automatically generate daily server snapshots, schedule execution times, configure tiered retention policies (Days / Weeks / Months), and exclude nodes.
               </p>
             </div>
           </div>
@@ -4637,7 +4637,7 @@ sudo apt install -y playit</pre>
                 Custom Server Sort
               </h4>
               <p class="text-xs text-slate-300 max-w-2xl">
-                Ported from <code>walksys/Walksys-Cloud (customserversort.blueprint)</code>. Reorder your server list with interactive drag-and-drop handles, sort by name (A-Z, Z-A), online status, server ID, or RAM allocation, with seamless multi-device cloud synchronization.
+                Ported from <code>Walksys/Nuvyra-Cloud (customserversort.blueprint)</code>. Reorder your server list with interactive drag-and-drop handles, sort by name (A-Z, Z-A), online status, server ID, or RAM allocation, with seamless multi-device cloud synchronization.
               </p>
             </div>
           </div>

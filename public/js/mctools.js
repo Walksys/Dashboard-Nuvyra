@@ -1,6 +1,6 @@
 /**
  * McTools - Minecraft Server Utilities Suite
- * Ported from Blueprint Extension: mctools.blueprint (walksys/Walksys-Cloud)
+ * Ported from Blueprint Extension: mctools.blueprint (Walksys/Nuvyra-Cloud)
  * Author: towsifkafi | Maintained by walksys.dev for Nuvyra
  */
 class McToolsController {
