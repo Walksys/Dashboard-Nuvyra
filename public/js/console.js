@@ -1588,12 +1588,12 @@ class ServerConsole {
       if (envVars.BUILD_NUMBER === undefined) envVars.BUILD_NUMBER = 'latest';
     } else if (isNode) {
       if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'index.js';
-      if (envVars.NODE_VERSION === undefined) envVars.NODE_VERSION = '20';
       if (envVars.ADDITIONAL_PACKAGES === undefined) envVars.ADDITIONAL_PACKAGES = '';
+      if (envVars.UNINSTALL_PACKAGES === undefined) envVars.UNINSTALL_PACKAGES = '';
     } else if (isPython) {
       if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'app.py';
       if (envVars.REQUIREMENTS_FILE === undefined) envVars.REQUIREMENTS_FILE = 'requirements.txt';
-      if (envVars.PYTHON_VERSION === undefined) envVars.PYTHON_VERSION = '3.12';
+      if (envVars.UNINSTALL_PACKAGES === undefined) envVars.UNINSTALL_PACKAGES = '';
     } else if (isVm) {
       const isNokvm = s.server_type === 'nokvm' || s.server_type === 'lumenvm_nokvm' || envVars.NOKVM === '1';
       if (envVars.KVM === undefined) envVars.KVM = isNokvm ? 'off' : 'on';
@@ -1605,6 +1605,9 @@ class ServerConsole {
       if (envVars.VM_DISK_GB === undefined) envVars.VM_DISK_GB = String(Math.round((s.disk_mb || 10240) / 1024) || 10);
     }
 
+    // Runtime versions are selected by Docker Image; remove legacy duplicate fields.
+    delete envVars.NODE_VERSION;
+    delete envVars.PYTHON_VERSION;
     this.currentStartupEnvVars = { ...envVars };
 
     // Default startup command template
@@ -1710,21 +1713,17 @@ class ServerConsole {
         label: 'MAIN FILE',
         desc: 'The application entrypoint script file executed at server startup.'
       },
-      NODE_VERSION: {
-        label: 'NODE VERSION',
-        desc: 'The runtime version for the Node.js container environment.'
-      },
       ADDITIONAL_PACKAGES: {
         label: 'ADDITIONAL PACKAGES',
         desc: 'Space-separated list of additional dependencies to install at launch.'
       },
+      UNINSTALL_PACKAGES: {
+        label: 'UNINSTALL PACKAGES',
+        desc: 'Space-separated package names to remove and exclude from the project before startup.'
+      },
       REQUIREMENTS_FILE: {
         label: 'REQUIREMENTS FILE',
         desc: 'Path to requirements.txt for pip package installation.'
-      },
-      PYTHON_VERSION: {
-        label: 'PYTHON VERSION',
-        desc: 'The Python runtime release version.'
       },
       KVM: {
         label: 'KVM ACCELERATION (NO-KVM / KVM ON-OFF)',
@@ -1757,7 +1756,7 @@ class ServerConsole {
       ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER']
       : (isVm
         ? ['KVM', 'DISPLAY_MODE', 'OS_HOSTNAME', 'OS_PASSWORD', 'VM_RAM_MB', 'VM_DISK_GB']
-        : (isNode ? ['MAIN_FILE', 'NODE_VERSION', 'ADDITIONAL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'PYTHON_VERSION']));
+        : (isNode ? ['MAIN_FILE', 'ADDITIONAL_PACKAGES', 'UNINSTALL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'UNINSTALL_PACKAGES']));
 
     // Build variables cards HTML matching screenshot
     let variablesCardsHtml = '';

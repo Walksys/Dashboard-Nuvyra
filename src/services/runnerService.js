@@ -5,6 +5,49 @@ const config = require('../config/config');
 const dockerService = require('./dockerService');
 const { query } = require('../database/db');
 
+function packagePolicyPrefix(serverType) {
+  if (serverType === 'nodejs' || serverType === 'node') {
+    return `
+if [ -n "${'${UNINSTALL_PACKAGES:-}'}" ] && [ -f package.json ]; then
+  for pkg in $UNINSTALL_PACKAGES; do
+    case "$pkg" in *[!A-Za-z0-9_@./+-]*) continue ;; esac
+    node -e 'const fs=require("fs"); const p="package.json"; const d=JSON.parse(fs.readFileSync(p,"utf8")); for (const k of ["dependencies","devDependencies","optionalDependencies","peerDependencies"]) { if (d[k]) delete d[k][process.argv[1]]; } fs.writeFileSync(p, JSON.stringify(d, null, 2) + "\\n");' -- "$pkg" 2>/dev/null || true
+    npm uninstall --no-save -- "$pkg" 2>/dev/null || true
+    npm uninstall --global --no-save -- "$pkg" 2>/dev/null || true
+  done
+fi
+`;
+  }
+  if (serverType === 'python') {
+    return `
+if [ -n "${'${UNINSTALL_PACKAGES:-}'}" ]; then
+  if [ -f "${'${REQUIREMENTS_FILE:-requirements.txt}'}" ]; then
+    python3 - <<'PY_UNINSTALL_REQUIREMENTS'
+import os, re
+blocked = {p.lower().split('==')[0].split('>=')[0].split('<=')[0].split('~=')[0].strip() for p in os.environ.get('UNINSTALL_PACKAGES', '').split() if re.fullmatch(r'[A-Za-z0-9_.+/@-]+', p)}
+path = os.environ.get('REQUIREMENTS_FILE', 'requirements.txt')
+try:
+    with open(path, encoding='utf-8') as f:
+        lines = f.readlines()
+    with open(path, 'w', encoding='utf-8') as f:
+        for line in lines:
+            name = re.match(r'\\s*([A-Za-z0-9_.+/@-]+)', line)
+            if not name or name.group(1).lower() not in blocked:
+                f.write(line)
+except OSError:
+    pass
+PY_UNINSTALL_REQUIREMENTS
+  fi
+  for pkg in $UNINSTALL_PACKAGES; do
+    case "$pkg" in *[!A-Za-z0-9_./+@-]*) continue ;; esac
+    python3 -m pip uninstall -y -- "$pkg" 2>/dev/null || true
+  done
+fi
+`;
+  }
+  return '';
+}
+
 class RunnerService {
   constructor() {
     this.activeProcesses = new Map(); // serverId -> { process, stream, logBuffer: [], sockets: Set, statsInterval }
@@ -254,6 +297,10 @@ class RunnerService {
         startupCmd = 'node {{MAIN_FILE}}';
       }
     }
+
+    // Remove blocked packages before any user startup command can install them.
+    // Docker and native runners both execute this prefix from the server directory.
+    startupCmd = packagePolicyPrefix(server.server_type) + startupCmd;
 
     // Parse env_vars
     let envVars = {};
@@ -749,4 +796,3 @@ class RunnerService {
 }
 
 module.exports = new RunnerService();
-
