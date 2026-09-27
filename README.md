@@ -244,21 +244,7 @@ graph TD
 
 ## 🚀 Quick Start
 
-### 🤖 Optional Staff Support AI (Groq or Local Ollama)
-
-Staff Chat can use Groq for fast multilingual answers, including Arabic, while keeping the user's first-message language. The API key must be stored only in the server environment; never commit it to Git. If Groq is not configured, the panel can fall back to a local Ollama model without an API key.
-
-```bash
-# Preferred hosted provider (server .env only; do not commit the value)
-GROQ_API_KEY=your_new_rotated_key
-SUPPORT_AI_MODEL=mistral-saba-24b
-
-# Offline fallback, if desired
-ollama pull qwen3:4b
-SUPPORT_AI_URL=http://127.0.0.1:11434
-```
-
-If no provider is available, Human Support continues to work normally and the AI thread displays a clear unavailable message instead of breaking the panel.
+Staff Chat is a private human-support conversation. Each user has a separate thread with Staff, and text, emoji, and image attachments are supported.
 
 ### 1. ⚡ 1-Click Universal Auto Install (`menu.sh`)
 Run the full automated installer directly from the web or locally:

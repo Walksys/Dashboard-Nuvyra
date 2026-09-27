@@ -8,10 +8,9 @@ class SupportChatManager {
   stopPolling() { if (this.poller) { clearInterval(this.poller); this.poller = null; } }
   messageHtml(m) {
     const staff = m.sender_type === 'staff';
-    const ai = m.sender_type === 'ai';
-    return `<div class="flex ${staff || ai ? 'justify-end' : 'justify-start'} mb-3">
-      <div class="max-w-[88%] sm:max-w-[70%] rounded-2xl px-3.5 py-2.5 ${staff ? 'bg-purple-500/20 border-purple-400/30' : ai ? 'bg-emerald-500/15 border-emerald-400/30' : 'bg-white/5 border-white/10'} border">
-        <div class="flex items-center gap-2 mb-1 text-[10px] text-slate-400"><strong class="${staff ? 'text-purple-300' : ai ? 'text-emerald-300' : 'text-cyan-300'}">${staff ? 'Staff' : ai ? 'AI Assistant' : this.esc(m.sender_username || 'User')}</strong><span>${this.esc(m.created_at)}</span></div>
+    return `<div class="flex ${staff ? 'justify-end' : 'justify-start'} mb-3">
+      <div class="max-w-[88%] sm:max-w-[70%] rounded-2xl px-3.5 py-2.5 ${staff ? 'bg-purple-500/20 border-purple-400/30' : 'bg-white/5 border-white/10'} border">
+        <div class="flex items-center gap-2 mb-1 text-[10px] text-slate-400"><strong class="${staff ? 'text-purple-300' : 'text-cyan-300'}">${staff ? 'Staff' : this.esc(m.sender_username || 'User')}</strong><span>${this.esc(m.created_at)}</span></div>
         ${m.body ? `<div class="text-sm text-slate-200 whitespace-pre-wrap break-words">${this.esc(m.body)}</div>` : ''}
         ${m.attachment_url ? `<a href="${this.esc(m.attachment_url)}" target="_blank" rel="noopener" class="mt-2 block"><img src="${this.esc(m.attachment_url)}" class="max-h-64 max-w-full rounded-xl border border-white/10 object-contain" alt="${this.esc(m.attachment_name)}"><span class="text-[10px] text-cyan-300 mt-1 inline-block">${this.esc(m.attachment_name || 'Image')}</span></a>` : ''}
       </div>
@@ -35,26 +34,8 @@ class SupportChatManager {
     this.poller = setInterval(() => this.loadUser(true), 10000);
   }
   async loadUser(silent = false) {
-    try {
-      const d = await app.api('/api/support/conversation');
-      const el = document.getElementById('support-user-messages');
-      const form = document.getElementById('support-user-form');
-      if (!el) return;
-      if (d.conversation?.support_mode === 'pending') {
-        if (form) form.classList.add('hidden');
-        el.innerHTML = `<div class="h-64 flex flex-col items-center justify-center text-center gap-4"><div><h3 class="text-white font-bold">How would you like help?</h3><p class="text-xs text-slate-400 mt-1">Choose who should answer your support question.</p></div><div class="flex flex-col sm:flex-row gap-3"><button onclick="supportChat.chooseMode('ai')" class="px-5 py-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 text-emerald-200 text-xs font-bold"><i data-lucide="bot" class="w-4 h-4 inline-block mr-1"></i> AI Assistant<br><span class="text-[10px] font-normal text-emerald-300/70">Instant automated help</span></button><button onclick="supportChat.chooseMode('human')" class="px-5 py-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-400/30 text-purple-200 text-xs font-bold"><i data-lucide="headphones" class="w-4 h-4 inline-block mr-1"></i> Human Support<br><span class="text-[10px] font-normal text-purple-300/70">Talk to Staff</span></button></div></div>`;
-        if (window.lucide) lucide.createIcons();
-        return;
-      }
-      if (form) form.classList.remove('hidden');
-      const banner = d.conversation?.support_mode === 'ai'
-        ? `<div class="mb-4 flex items-center justify-between gap-2 rounded-xl bg-emerald-500/10 border border-emerald-400/20 px-3 py-2"><span class="text-[11px] text-emerald-200"><strong>AI Assistant</strong> · Replies follow your first message language.</span><button onclick="supportChat.chooseMode('human')" class="text-[10px] font-bold text-purple-300 hover:text-white">Transfer to Staff</button></div>`
-        : `<div class="mb-4 rounded-xl bg-purple-500/10 border border-purple-400/20 px-3 py-2 text-[11px] text-purple-200"><strong>Human Support</strong> · Staff will reply in the language of your first message.</div>`;
-      el.innerHTML = banner + (d.messages?.length ? d.messages.map(m => this.messageHtml(m)).join('') : '<div class="h-64 flex items-center justify-center text-slate-500 text-sm">Send a message to Staff Support.</div>');
-      el.scrollTop = el.scrollHeight;
-    } catch (e) { if (!silent) app.toast(e.message, 'error'); }
+    try { const d = await app.api('/api/support/conversation'); const el = document.getElementById('support-user-messages'); if (!el) return; el.innerHTML = d.messages?.length ? d.messages.map(m => this.messageHtml(m)).join('') : '<div class="h-64 flex items-center justify-center text-slate-500 text-sm">Send a message to Staff Support.</div>'; el.scrollTop = el.scrollHeight; } catch (e) { if (!silent) app.toast(e.message, 'error'); }
   }
-  async chooseMode(mode) { try { await app.api('/api/support/conversation/mode', { method: 'POST', body: { mode } }); await this.loadUser(); } catch (e) { app.toast(e.message, 'error'); } }
   async renderAdmin() {
     this.stopPolling();
     const c = document.getElementById('view-container');
