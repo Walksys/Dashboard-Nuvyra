@@ -401,7 +401,11 @@ class App {
       if (roleEl) roleEl.innerText = user.role === 'admin' ? 'Administrator' : 'Standard User';
 
       const avatarEl = document.getElementById('user-avatar-initials');
-      if (avatarEl) avatarEl.innerText = (user.username || 'U').substring(0, 1).toUpperCase();
+      if (avatarEl) {
+        avatarEl.innerHTML = user.avatar
+          ? `<img src="${this.escapeHtml(user.avatar)}" class="w-full h-full rounded-lg object-cover" alt="Profile">`
+          : this.escapeHtml((user.username || 'U').substring(0, 1).toUpperCase());
+      }
 
       const emailEl = document.getElementById('user-dropdown-email');
       if (emailEl) emailEl.innerText = user.email;
