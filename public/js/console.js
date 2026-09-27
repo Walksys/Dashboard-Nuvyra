@@ -1631,16 +1631,29 @@ class ServerConsole {
       ];
     } else if (isNode) {
       dockerOptions = [
-        { label: 'NodeJS 22', value: 'ghcr.io/parkervcp/yolks:nodejs_22' },
-        { label: 'NodeJS 20', value: 'ghcr.io/parkervcp/yolks:nodejs_20' },
-        { label: 'NodeJS 18', value: 'ghcr.io/parkervcp/yolks:nodejs_18' },
-        { label: 'NodeJS 16', value: 'ghcr.io/parkervcp/yolks:nodejs_16' }
+        { label: 'Nodejs 25', value: 'ghcr.io/ptero-eggs/yolks:nodejs_25' },
+        { label: 'Nodejs 24', value: 'ghcr.io/ptero-eggs/yolks:nodejs_24' },
+        { label: 'Nodejs 23', value: 'ghcr.io/ptero-eggs/yolks:nodejs_23' },
+        { label: 'Nodejs 22', value: 'ghcr.io/ptero-eggs/yolks:nodejs_22' },
+        { label: 'Nodejs 21', value: 'ghcr.io/ptero-eggs/yolks:nodejs_21' },
+        { label: 'Nodejs 20', value: 'ghcr.io/ptero-eggs/yolks:nodejs_20' },
+        { label: 'Nodejs 19', value: 'ghcr.io/ptero-eggs/yolks:nodejs_19' },
+        { label: 'Nodejs 18', value: 'ghcr.io/ptero-eggs/yolks:nodejs_18' },
+        { label: 'Nodejs 17', value: 'ghcr.io/ptero-eggs/yolks:nodejs_17' },
+        { label: 'Nodejs 16', value: 'ghcr.io/ptero-eggs/yolks:nodejs_16' },
+        { label: 'Nodejs 14', value: 'ghcr.io/ptero-eggs/yolks:nodejs_14' },
+        { label: 'Nodejs 12', value: 'ghcr.io/ptero-eggs/yolks:nodejs_12' }
       ];
     } else if (isPython) {
       dockerOptions = [
-        { label: 'Python 3.12', value: 'ghcr.io/parkervcp/yolks:python_3.12' },
-        { label: 'Python 3.11', value: 'ghcr.io/parkervcp/yolks:python_3.11' },
-        { label: 'Python 3.10', value: 'ghcr.io/parkervcp/yolks:python_3.10' }
+        { label: 'Python 3.13', value: 'ghcr.io/ptero-eggs/yolks:python_3.13' },
+        { label: 'Python 3.12', value: 'ghcr.io/ptero-eggs/yolks:python_3.12' },
+        { label: 'Python 3.11', value: 'ghcr.io/ptero-eggs/yolks:python_3.11' },
+        { label: 'Python 3.10', value: 'ghcr.io/ptero-eggs/yolks:python_3.10' },
+        { label: 'Python 3.9', value: 'ghcr.io/ptero-eggs/yolks:python_3.9' },
+        { label: 'Python 3.8', value: 'ghcr.io/ptero-eggs/yolks:python_3.8' },
+        { label: 'Python 3.7', value: 'ghcr.io/ptero-eggs/yolks:python_3.7' },
+        { label: 'Python 2.7', value: 'ghcr.io/ptero-eggs/yolks:python_2.7' }
       ];
     } else if (isVm) {
       dockerOptions = [
@@ -1663,7 +1676,7 @@ class ServerConsole {
       ];
     }
 
-    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isVm ? 'ghcr.io/sosuku325/aerovm:guest-debian-12' : (isNode ? 'ghcr.io/parkervcp/yolks:nodejs_20' : 'ghcr.io/parkervcp/yolks:python_3.12')));
+    const currentDocker = s.docker_image || (isMinecraft ? 'ghcr.io/pterodactyl/yolks:java_25' : (isVm ? 'ghcr.io/sosuku325/aerovm:guest-debian-12' : (isNode ? 'ghcr.io/ptero-eggs/yolks:nodejs_20' : 'ghcr.io/ptero-eggs/yolks:python_3.12')));
     const matchedPreset = dockerOptions.find(o => o.value === currentDocker);
     const isCustomDocker = !matchedPreset;
 
@@ -2900,4 +2913,3 @@ class ServerConsole {
 }
 
 window.serverConsole = new ServerConsole();
-
