@@ -15,34 +15,11 @@ async function prepareServerSource(server, serverDir, envVars, log) {
   if (!isEmptyDirectory(serverDir)) return;
   const isNodeOrPython = ['nodejs', 'node', 'python'].includes(server.server_type);
   const repoUrl = isNodeOrPython ? String(envVars.GIT_REPO_ADDRESS || '').trim() : '';
-  const minecraftUrl = server.server_type === 'minecraft' ? String(envVars.MINECRAFT_SOURCE_URL || '').trim() : '';
 
   if (repoUrl) {
     if (!/^https?:\/\//i.test(repoUrl)) throw new Error('Git Repo Address must be an HTTP(S) repository URL.');
     log(`\x1b[36m[Nuvyra]\x1b[0m Cloning Git repository into the empty server folder...\r\n`);
     await execFileAsync('git', ['clone', '--depth', '1', repoUrl, serverDir], { maxBuffer: 1024 * 1024 * 8 });
-    return;
-  }
-
-  if (minecraftUrl) {
-    if (!/^https?:\/\//i.test(minecraftUrl)) throw new Error('Server Download URL must use HTTP or HTTPS.');
-    let sourceName;
-    try {
-      sourceName = decodeURIComponent(path.basename(new URL(minecraftUrl).pathname));
-    } catch (e) {}
-    sourceName = (sourceName || 'minecraft-server-download').replace(/[\\/\0]/g, '').trim();
-    if (!sourceName || sourceName === '.' || sourceName === '..') sourceName = 'minecraft-server-download';
-    const archivePath = path.join(serverDir, sourceName);
-    log(`\x1b[36m[Nuvyra]\x1b[0m Downloading ${sourceName} with wget (large files supported)...\r\n`);
-    await execFileAsync('wget', ['--continue', '--tries=3', '--timeout=60', '--max-redirect=10', '-O', archivePath, minecraftUrl], { maxBuffer: 1024 * 1024 * 4 });
-    const pathname = new URL(minecraftUrl).pathname.toLowerCase();
-    const isArchive = /\.(zip|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz)$/.test(pathname);
-    if (/\.zip$/.test(pathname)) {
-      await execFileAsync('unzip', ['-q', archivePath, '-d', serverDir], { maxBuffer: 1024 * 1024 * 2 });
-    } else if (isArchive) {
-      await execFileAsync('tar', ['-xf', archivePath, '--no-same-owner', '-C', serverDir], { maxBuffer: 1024 * 1024 * 2 });
-    }
-    log(`\x1b[32m[Nuvyra]\x1b[0m ${sourceName} is ready and remains in the Minecraft server folder.\r\n`);
     return true;
   }
   return false;
@@ -357,10 +334,15 @@ class RunnerService {
       envVars = {};
     }
 
+    // Remove the retired Minecraft source-link feature from legacy server settings.
+    if (Object.prototype.hasOwnProperty.call(envVars, 'MINECRAFT_SOURCE_URL')) {
+      delete envVars.MINECRAFT_SOURCE_URL;
+      await query.run('UPDATE servers SET env_vars = ? WHERE id = ?', [JSON.stringify(envVars), sId]);
+    }
+
     try {
       const sourcePrepared = await prepareServerSource(server, serverDir, envVars, message => this.appendLog(sId, message));
-      if (sourcePrepared && (envVars.MINECRAFT_SOURCE_URL || envVars.GIT_REPO_ADDRESS)) {
-        delete envVars.MINECRAFT_SOURCE_URL;
+      if (sourcePrepared && envVars.GIT_REPO_ADDRESS) {
         delete envVars.GIT_REPO_ADDRESS;
         await query.run('UPDATE servers SET env_vars = ? WHERE id = ?', [JSON.stringify(envVars), sId]);
         this.appendLog(sId, '\x1b[32m[Nuvyra]\x1b[0m Source link cleared after successful one-time setup.\r\n');

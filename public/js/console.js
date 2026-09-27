@@ -1586,7 +1586,6 @@ class ServerConsole {
       if (envVars.MINECRAFT_VERSION === undefined) envVars.MINECRAFT_VERSION = 'latest';
       if (envVars.SERVER_JARFILE === undefined) envVars.SERVER_JARFILE = 'server.jar';
       if (envVars.BUILD_NUMBER === undefined) envVars.BUILD_NUMBER = 'latest';
-      if (envVars.MINECRAFT_SOURCE_URL === undefined) envVars.MINECRAFT_SOURCE_URL = '';
     } else if (isNode) {
       if (envVars.MAIN_FILE === undefined) envVars.MAIN_FILE = 'index.js';
       if (envVars.ADDITIONAL_PACKAGES === undefined) envVars.ADDITIONAL_PACKAGES = '';
@@ -1712,10 +1711,6 @@ class ServerConsole {
         label: 'BUILD NUMBER',
         desc: 'The build number for the paper release. Leave at latest to always get the latest version. Invalid versions will default to latest.'
       },
-      MINECRAFT_SOURCE_URL: {
-        label: 'MINECRAFT SERVER SOURCE',
-        desc: 'Optional direct URL for a Minecraft server file or archive. It downloads once with the filename from the URL, extracts into the empty server folder, then clears the link.'
-      },
       MAIN_FILE: {
         label: 'MAIN FILE',
         desc: 'The application entrypoint script file executed at server startup.'
@@ -1764,7 +1759,7 @@ class ServerConsole {
 
     // Priority order
     const orderedKeys = isMinecraft
-      ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER', 'MINECRAFT_SOURCE_URL']
+      ? ['MINECRAFT_VERSION', 'SERVER_JARFILE', 'BUILD_NUMBER']
       : (isVm
         ? ['KVM', 'DISPLAY_MODE', 'OS_HOSTNAME', 'OS_PASSWORD', 'VM_RAM_MB', 'VM_DISK_GB']
         : (isNode ? ['MAIN_FILE', 'GIT_REPO_ADDRESS', 'ADDITIONAL_PACKAGES', 'UNINSTALL_PACKAGES'] : ['MAIN_FILE', 'REQUIREMENTS_FILE', 'GIT_REPO_ADDRESS', 'UNINSTALL_PACKAGES']));
