@@ -1707,7 +1707,7 @@ class App {
       ? window.discordLive.renderCardInner()
       : `
         <div class="relative w-full bg-[#111214] flex justify-center items-center overflow-hidden">
-          <img src="/images/walksys-discord.png" class="w-full h-auto object-contain select-none" alt="Walksys Discord Profile">
+          <img src="https://i.ibb.co/Ndsk9qRN/owner-Bxizl-J-J-1.jpg" class="w-full h-auto object-contain select-none" alt="Walksys Discord Profile">
         </div>
       `;
 
