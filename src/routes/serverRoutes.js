@@ -225,9 +225,16 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
 
     Promise.all([
       query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [req.user.id]),
-      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [targetUserId])
-    ]).then(([actor, owner]) => notifyServerCreated({
-      server: { id: newServerId, name, server_type },
+      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [targetUserId]),
+      query.get('SELECT a.ip, a.port, n.name, n.fqdn FROM allocations a LEFT JOIN nodes n ON n.id = a.node_id WHERE a.id = ?', [allocId || 0])
+    ]).then(([actor, owner, endpoint]) => notifyServerCreated({
+      server: {
+        id: newServerId,
+        name,
+        server_type,
+        address: endpoint && endpoint.ip && endpoint.port ? `${endpoint.ip}:${endpoint.port}` : `Port ${assignedPort}`,
+        node: endpoint && (endpoint.fqdn || endpoint.name)
+      },
       actor,
       owner,
       source: req.user.id === targetUserId ? 'User/Admin Panel' : 'Admin created for user'

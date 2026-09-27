@@ -444,9 +444,16 @@ router.post('/', authenticate, requireServerAccess('settings.write'), async (req
 
     Promise.all([
       query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [req.user.id]),
-      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [master.user_id])
-    ]).then(([actor, owner]) => notifyServerCreated({
-      server: { id: newSplitId, name: name.trim(), server_type: targetType },
+      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [master.user_id]),
+      query.get('SELECT a.ip, a.port, n.name, n.fqdn FROM allocations a LEFT JOIN nodes n ON n.id = a.node_id WHERE a.id = ?', [alloc.id])
+    ]).then(([actor, owner, endpoint]) => notifyServerCreated({
+      server: {
+        id: newSplitId,
+        name: name.trim(),
+        server_type: targetType,
+        address: endpoint && endpoint.ip && endpoint.port ? `${endpoint.ip}:${endpoint.port}` : `Port ${alloc.port}`,
+        node: endpoint && (endpoint.fqdn || endpoint.name)
+      },
       actor,
       owner,
       source: 'Server Splitter'

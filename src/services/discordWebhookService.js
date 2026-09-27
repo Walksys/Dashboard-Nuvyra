@@ -49,7 +49,7 @@ async function send(payload) {
 function userFields(user, label = 'User') {
   return [
     { name: `${label} Username`, value: clean(user && user.username), inline: true },
-    { name: `${label} Email`, value: clean(user && user.email), inline: true },
+    { name: `${label} Gmail / Email`, value: clean(user && user.email), inline: true },
     { name: `${label} ID`, value: clean(user && user.id), inline: true }
   ];
 }
@@ -69,9 +69,10 @@ async function notifyUserRegistered({ user, provider = 'Panel', profile = null }
   return send({
     username: 'Nuvyra Notifications',
     avatar_url: user && user.avatar ? user.avatar : undefined,
+    content: 'A new user has registered on **Nuvyra Panel**.',
     embeds: [{
       title: 'New User Registration',
-      description: 'A new account was created on the panel.',
+      description: 'A new account was created successfully. The account details are listed below.',
       color: providerName.toLowerCase() === 'discord' ? 0x5865f2 : 0x4285f4,
       fields,
       thumbnail: user && user.avatar ? { url: user.avatar } : undefined,
@@ -85,7 +86,9 @@ async function notifyServerCreated({ server, actor, owner, source = 'Admin/API' 
   const fields = [
     { name: 'Server Name', value: clean(server && server.name), inline: true },
     { name: 'Server Type', value: clean(server && server.server_type), inline: true },
-    { name: 'Server ID', value: clean(server && server.id), inline: true },
+    { name: 'Server Number', value: `#${clean(server && server.id)}`, inline: true },
+    { name: 'Server Address', value: clean(server && server.address, 'Not assigned'), inline: false },
+    { name: 'Node / Host', value: clean(server && server.node, 'Not assigned'), inline: true },
     { name: 'Created By', value: `${clean(actor && actor.username)} (${clean(actor && actor.email)})`, inline: false },
     { name: 'Owner', value: `${clean(owner && owner.username)} (${clean(owner && owner.email)})`, inline: false },
     { name: 'Source', value: clean(source), inline: true }
@@ -94,9 +97,10 @@ async function notifyServerCreated({ server, actor, owner, source = 'Admin/API' 
   return send({
     username: 'Nuvyra Notifications',
     avatar_url: owner && owner.avatar ? owner.avatar : undefined,
+    content: `A new **${clean(server && server.server_type)}** server has been created on **Nuvyra Panel**.`,
     embeds: [{
       title: 'Server Created',
-      description: 'A new server was created on the panel.',
+      description: 'The server is now registered in the panel. Full ownership and connection details are listed below.',
       color: 0x22c55e,
       fields,
       thumbnail: owner && owner.avatar ? { url: owner.avatar } : undefined,
