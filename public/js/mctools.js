@@ -271,7 +271,7 @@ class McToolsController {
 
             <!-- Main Input Area -->
             <div class="relative">
-              <textarea id="mctools-motd-input" oninput="mctools.updateMotdPreview()" rows="5" class="w-full glass-input p-3.5 rounded-xl font-mono text-xs text-white resize-none" placeholder="Enter your text with & codes, e.g.:&#10;&a&lwalksys CLOUD &7» &bSurvival 1.21.x&#10;&e⚡ 50% SALE &7| &dplay.walksyshost.in">&a&lwalksys HOST &7» &bCustom Minecraft Network&#10;&e✦ Join Now: &fplay.walksyshost.in &a[1.20 - 1.21.x]</textarea>
+              <textarea id="mctools-motd-input" oninput="mctools.updateMotdPreview()" rows="5" class="w-full glass-input p-3.5 rounded-xl font-mono text-xs text-white resize-none" placeholder="Enter your text with & codes, e.g.:&#10;&a&lwalksys CLOUD &7» &bSurvival 1.21.x&#10;&e⚡ 50% SALE &7| &dplay.walksys.qzz.io">&a&lwalksys HOST &7» &bCustom Minecraft Network&#10;&e✦ Join Now: &fplay.walksys.qzz.io &a[1.20 - 1.21.x]</textarea>
             </div>
           </div>
         </div>
@@ -358,9 +358,9 @@ class McToolsController {
     const textarea = document.getElementById('mctools-motd-input');
     if (!textarea) return;
     if (tpl === 'default') {
-      textarea.value = `&a&lwalksys HOST &7» &bCustom Minecraft Network\n&e✦ Join Now: &fplay.walksyshost.in &a[1.20 - 1.21.x]`;
+      textarea.value = `&a&lwalksys HOST &7» &bCustom Minecraft Network\n&e✦ Join Now: &fplay.walksys.qzz.io &a[1.20 - 1.21.x]`;
     } else {
-      textarea.value = `&c&l⚔ HARDCORE SMP &7| &eSEASON 4\n&d⚡ 50% OFF RANKS &7» &bstore.walksyshost.in`;
+      textarea.value = `&c&l⚔ HARDCORE SMP &7| &eSEASON 4\n&d⚡ 50% OFF RANKS &7» &bstore.walksys.qzz.io`;
     }
     this.updateMotdPreview();
   }

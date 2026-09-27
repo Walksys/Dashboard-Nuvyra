@@ -1,7 +1,7 @@
 /**
  * Nuvyra Discord Live Profile Detector & Real-time Presence Engine
  * Developer ID: 1476587556962308177 (Walksys / walksys.dev)
- * Website: https://walksyshost.in/
+ * Website: https://walksys.qzz.io/
  */
 (function() {
   const DEVELOPER_ID = '1476587556962308177';
@@ -443,10 +443,10 @@
               <h4 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-mono">About Me</h4>
               <div class="text-xs text-slate-300 space-y-1 font-sans leading-relaxed">
                 <p>hii I am a game devoloper / bot devoloper</p>
-                <p class="text-indigo-400 font-medium">join for - <a href="https://walksyshost.in/" target="_blank" class="underline hover:text-indigo-300">walksyshost.in</a></p>
+                <p class="text-indigo-400 font-medium">join for - <a href="https://walksys.qzz.io/" target="_blank" class="underline hover:text-indigo-300">walksys.qzz.io</a></p>
                 <p class="text-cyan-400 font-semibold flex items-center gap-1.5">
                   <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i>
-                  founder of walksyshost.in
+                  founder of walksys.qzz.io
                 </p>
               </div>
             </div>

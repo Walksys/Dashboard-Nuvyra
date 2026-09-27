@@ -3,20 +3,20 @@
 <!-- ============================================================================== -->
 
 <p align="center">
-  <a href="https://walksyshost.in">
+  <a href="https://walksys.qzz.io">
     <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20Nuvyra%20v2.5.2&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Nuvyra Header Banner" />
   </a>
 </p>
 
 <p align="center">
-  <a href="https://walksyshost.in">
+  <a href="https://walksys.qzz.io">
     <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=22D3EE&center=true&vCenter=true&random=false&width=750&lines=⚡+Modern+Node.js+Alternative+to+Pterodactyl;🚀+Real-Time+xterm.js+Console+%26+Live+Meters;🔄+Automated+GitHub+Releases+Detector+%26+Live+Update+Terminal;🎮+Minecraft+Player+Manager+%26+Universal+Addon+Marketplace;🔒+Embedded+SFTP+(Port+3004)+%26+MariaDB+(Port+27017);🎨+Multi-Theme+Personalization%3A+Full+Black+OLED%2C+PteroX+V2%2C+LiquidX" alt="Typing Animation" />
   </a>
 </p>
 
 <p align="center">
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-18.0%2B-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" /></a>
-  <a href="https://walksyshost.in"><img src="https://img.shields.io/badge/Website-walksyshost.in-007ACC?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" /></a>
+  <a href="https://walksys.qzz.io"><img src="https://img.shields.io/badge/Website-walksys.qzz.io-007ACC?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" /></a>
   <a href="#-system-updates--live-terminal-engine"><img src="https://img.shields.io/badge/Auto--Updater-Live%20Terminal-00C7B7?style=for-the-badge&logo=terminal&logoColor=white" alt="Auto Updater" /></a>
   <a href="#-theme--customization-engine"><img src="https://img.shields.io/badge/Theme-Full%20Black%20OLED-111525?style=for-the-badge&logo=styled-components&logoColor=white" alt="Theme" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F7DF1E?style=for-the-badge&logo=open-source-initiative&logoColor=black" alt="License" /></a>
@@ -369,11 +369,11 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 ---
 
 <p align="center">
-  <a href="https://walksyshost.in">
+  <a href="https://walksys.qzz.io">
     <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=21,16,11,6,2&height=120&section=footer" width="100%" alt="Footer Wave" />
   </a>
 </p>
 
 <p align="center">
-  <b>Nuvyra</b> &copy; 2026 • Designed &amp; Engineered with ❤️ by <a href="https://walksyshost.in"><b>Walksys</b> (walksyshost.in)</a> • Licensed under the <a href="LICENSE">MIT License</a>
+  <b>Nuvyra</b> &copy; 2026 • Designed &amp; Engineered with ❤️ by <a href="https://walksys.qzz.io"><b>Walksys</b> (walksys.qzz.io)</a> • Licensed under the <a href="LICENSE">MIT License</a>
 </p>
