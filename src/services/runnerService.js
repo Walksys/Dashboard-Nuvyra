@@ -2,7 +2,6 @@ const { spawn, execFile } = require('child_process');
 const { promisify } = require('util');
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 const config = require('../config/config');
 const dockerService = require('./dockerService');
 const { query } = require('../database/db');
@@ -33,25 +32,18 @@ async function prepareServerSource(server, serverDir, envVars, log) {
     } catch (e) {}
     sourceName = (sourceName || 'minecraft-server-download').replace(/[\\/\0]/g, '').trim();
     if (!sourceName || sourceName === '.' || sourceName === '..') sourceName = 'minecraft-server-download';
-    const tempFile = path.join(os.tmpdir(), `nuvyra-source-${server.id}-${Date.now()}-${sourceName}`);
-    try {
-      log(`\x1b[36m[Nuvyra]\x1b[0m Downloading ${sourceName} with wget (large files supported)...\r\n`);
-      await execFileAsync('wget', ['--continue', '--tries=3', '--timeout=60', '--max-redirect=10', '-O', tempFile, minecraftUrl], { maxBuffer: 1024 * 1024 * 4 });
-      const pathname = new URL(minecraftUrl).pathname.toLowerCase();
-      const isArchive = /\.(zip|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz)$/.test(pathname);
-      if (/\.zip$/.test(pathname)) {
-        await execFileAsync('unzip', ['-q', tempFile, '-d', serverDir], { maxBuffer: 1024 * 1024 * 2 });
-      } else if (isArchive) {
-        await execFileAsync('tar', ['-xf', tempFile, '--no-same-owner', '-C', serverDir], { maxBuffer: 1024 * 1024 * 2 });
-      } else {
-        fs.renameSync(tempFile, path.join(serverDir, sourceName));
-      }
-      if (isArchive) fs.unlinkSync(tempFile);
-      log(`\x1b[32m[Nuvyra]\x1b[0m ${sourceName} is ready in the Minecraft server folder.\r\n`);
-      return true;
-    } finally {
-      try { fs.unlinkSync(tempFile); } catch (e) {}
+    const archivePath = path.join(serverDir, sourceName);
+    log(`\x1b[36m[Nuvyra]\x1b[0m Downloading ${sourceName} with wget (large files supported)...\r\n`);
+    await execFileAsync('wget', ['--continue', '--tries=3', '--timeout=60', '--max-redirect=10', '-O', archivePath, minecraftUrl], { maxBuffer: 1024 * 1024 * 4 });
+    const pathname = new URL(minecraftUrl).pathname.toLowerCase();
+    const isArchive = /\.(zip|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz)$/.test(pathname);
+    if (/\.zip$/.test(pathname)) {
+      await execFileAsync('unzip', ['-q', archivePath, '-d', serverDir], { maxBuffer: 1024 * 1024 * 2 });
+    } else if (isArchive) {
+      await execFileAsync('tar', ['-xf', archivePath, '--no-same-owner', '-C', serverDir], { maxBuffer: 1024 * 1024 * 2 });
     }
+    log(`\x1b[32m[Nuvyra]\x1b[0m ${sourceName} is ready and remains in the Minecraft server folder.\r\n`);
+    return true;
   }
   return false;
 }
