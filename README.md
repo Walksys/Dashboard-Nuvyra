@@ -1,10 +1,10 @@
 <!-- ============================================================================== -->
-<!--                     🎮 Nuvyra v2.5.2 - NEXT-GEN GAME & APP PANEL               -->
+<!--                     🎮 Nuvyra v2.5.3 - NEXT-GEN GAME & APP PANEL               -->
 <!-- ============================================================================== -->
 
 <p align="center">
   <a href="https://walksys.qzz.io">
-    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20Nuvyra%20v2.5.2&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Nuvyra Header Banner" />
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20Nuvyra%20v2.5.3&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Nuvyra Header Banner" />
   </a>
 </p>
 
@@ -77,10 +77,10 @@ graph TD
 
 ---
 
-## ✨ What is New in v2.5.2
+## ✨ What is New in v2.5.3
 
 <p align="center">
-  <img src="public/assets/console-preview.png" alt="Nuvyra v2.5.2 Console & Live Parsentbar Telemetry Preview" style="border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.25); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);" width="100%" />
+  <img src="public/assets/console-preview.png" alt="Nuvyra v2.5.3 Console & Live Parsentbar Telemetry Preview" style="border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.25); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);" width="100%" />
 </p>
 
 ### 1. 🟢 Real-Time 5-State Server Lifecycle Engine

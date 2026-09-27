@@ -84,7 +84,7 @@ show_banner() {
     local host_ip
     host_ip=$(get_server_ip)
 
-    local version="v2.5.2"
+    local version="v2.5.3"
     if [ -f "$Nuvyra_DIR/package.json" ]; then
         local pkg_v
         pkg_v=$(grep -m1 '"version"' "$Nuvyra_DIR/package.json" 2>/dev/null | awk -F '"' '{print $4}')
