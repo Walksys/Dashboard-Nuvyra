@@ -116,12 +116,12 @@ graph TD
 ### 5. 💻 Modernized `menu.sh` Management Interface
 - **Official ASCII Banner**: Striking cyberpunk ASCII art header upon launching `./menu.sh`:
   ```
-  ███╗   ███╗██████╗  █████╗ ███╗   ██╗███████╗██╗     
-  ████╗ ████║██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     
-  ██╔████╔██║██████╔╝███████║██╔██╗ ██║█████╗  ██║     
-  ██║╚██╔╝██║██╔═══╝ ██╔══██║██║╚██╗██║██╔══╝  ██║     
-  ██║ ╚═╝ ██║██║     ██║  ██║██║ ╚████║███████╗███████╗
-  ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝
+  ███╗   ██╗██╗   ██╗██╗   ██╗██╗   ██╗██████╗  █████╗
+  ████╗  ██║██║   ██║██║   ██║╚██╗ ██╔╝██╔══██╗██╔══██╗
+  ██╔██╗ ██║██║   ██║██║   ██║ ╚████╔╝ ██████╔╝███████║
+  ██║╚██╗██║██║   ██║╚██╗ ██╔╝  ╚██╔╝  ██╔══██╗██╔══██║
+  ██║ ╚████║╚██████╔╝ ╚████╔╝    ██║   ██║  ██║██║  ██║
+  ╚═╝  ╚═══╝ ╚═════╝   ╚═══╝     ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝
   ```
 - **Live System Telemetry Dashboard**: Real-time display of Public IP, Local Network IP, Active Port Matrix (`3001`, `3003`, `3004`, `27017`), and PM2 Daemon status (`ONLINE` / `STOPPED`).
 - **Structured Modular Menus**: Main Menu, PM2 Process Suite, and Database Management menus with intuitive numeric selection.
