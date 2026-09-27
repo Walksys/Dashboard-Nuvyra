@@ -223,14 +223,14 @@ class App {
     localStorage.setItem('nuvyra_active_theme', activeTheme);
     this.activeTheme = activeTheme;
 
-    document.documentElement.classList.remove('theme-arix', 'theme-nook', 'theme-liquidx', 'theme-pterox', 'theme-nebula');
+    document.documentElement.classList.remove('theme-arix', 'theme-nook', 'theme-liquidx', 'theme-nuvyra', 'theme-nebula');
 
     const logoEl = document.getElementById('header-logo-img');
     const subNameEl = document.getElementById('header-sub-name');
 
     if (activeTheme === 'nebula') {
       document.documentElement.classList.add('theme-nebula');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/assets/nebula-logo.svg';
       }
       if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
@@ -257,19 +257,19 @@ class App {
       }
     }
 
-    if (activeTheme === 'pterox') {
-      document.documentElement.classList.add('theme-pterox');
-      const pteroxLogo = localStorage.getItem('pterox_header_logo') || s.pterox_header_logo || '/images/pterox-header-logo.webp';
+    if (activeTheme === 'nuvyra') {
+      document.documentElement.classList.add('theme-nuvyra');
+      const nuvyraLogo = localStorage.getItem('nuvyra_header_logo') || s.nuvyra_header_logo || '/images/nuvyra-header-logo.webp';
       if (logoEl) {
-        logoEl.src = pteroxLogo;
+        logoEl.src = nuvyraLogo;
       }
-      const pteroxBrand = (localStorage.getItem('pterox_brand_name') || s.pterox_brand_name || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra');
+      const nuvyraBrand = (localStorage.getItem('nuvyra_brand_name') || s.nuvyra_brand_name || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra');
       if (subNameEl) {
-        subNameEl.innerText = `${pteroxBrand} v2.0.2`;
+        subNameEl.innerText = `${nuvyraBrand} v2.0.2`;
       }
     } else if (activeTheme === 'liquidx') {
       document.documentElement.classList.add('theme-liquidx');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/images/pterox-header-logo.webp')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/assets/liquidx-logo.svg';
       }
       if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
@@ -280,7 +280,7 @@ class App {
       }
     } else if (activeTheme === 'arix') {
       document.documentElement.classList.add('theme-arix');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/arix/Arix.png';
       }
       if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
@@ -291,7 +291,7 @@ class App {
       }
     } else {
       document.documentElement.classList.add('theme-nook');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/pterox-header-logo.webp')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/assets/nuvyra-logo.svg';
       }
       if (subNameEl && (subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Nuvyra'))) {
@@ -1205,8 +1205,8 @@ class App {
 
   // HTML Template for Server Card
   renderServerCardHTML(s) {
-    if (this.activeTheme === 'pterox') {
-      return this.renderPteroxServerCardHTML(s);
+    if (this.activeTheme === 'nuvyra') {
+      return this.renderNuvyraServerCardHTML(s);
     }
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
     const statusCfg = this.getServerStatusConfig(s.status, isSuspended);
@@ -1301,11 +1301,11 @@ class App {
   }
 
   // Nuvyra Server Card HTML Template with Banner & Resource Telemetry
-  renderPteroxServerCardHTML(s) {
+  renderNuvyraServerCardHTML(s) {
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
     const statusCfg = this.getServerStatusConfig(s.status, isSuspended);
 
-    const bannerImg = localStorage.getItem('pterox_server_banner') || '/images/server-banner.jpg';
+    const bannerImg = localStorage.getItem('nuvyra_server_banner') || '/images/server-banner.jpg';
     const ipPort = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
 
     let statusText = statusCfg.label;
@@ -1314,11 +1314,11 @@ class App {
     const isRunning = !isSuspended && statusCfg.key === 'running';
 
     return `
-      <div data-server-id="${s.id}" class="pterox-server-card flex flex-col justify-between group relative">
+      <div data-server-id="${s.id}" class="nuvyra-server-card flex flex-col justify-between group relative">
         <!-- Top Banner Header -->
-        <div class="pterox-server-card-banner" style="background-image: url('${bannerImg}');">
-          <div class="pterox-server-card-banner-overlay"></div>
-          <div class="pterox-server-card-top relative z-10 flex items-center justify-between">
+        <div class="nuvyra-server-card-banner" style="background-image: url('${bannerImg}');">
+          <div class="nuvyra-server-card-banner-overlay"></div>
+          <div class="nuvyra-server-card-top relative z-10 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               ${window.customServerSort ? customServerSort.renderDragHandleHTML() : ''}
               <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-cyan-400 border border-cyan-500/30 backdrop-blur-sm">
@@ -1345,7 +1345,7 @@ class App {
         </div>
 
         <!-- Metrics & Telemetry Body -->
-        <div class="pterox-server-card-body p-4 space-y-3 flex-1 flex flex-col justify-between">
+        <div class="nuvyra-server-card-body p-4 space-y-3 flex-1 flex flex-col justify-between">
           <div class="grid grid-cols-3 gap-2 text-center text-xs">
             <div class="bg-black/30 p-2 rounded-xl border border-white/5">
               <span class="text-[9px] uppercase tracking-wider text-slate-400 block mb-0.5">RAM</span>
@@ -1372,7 +1372,7 @@ class App {
 
           <!-- Quick Action Footer -->
           <div class="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-            <button onclick="app.navigate('server-manage/${s.id}/console')" class="pterox-btn-primary flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5">
+            <button onclick="app.navigate('server-manage/${s.id}/console')" class="nuvyra-btn-primary flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5">
               <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Manage
             </button>
             ${isSuspended

@@ -1520,19 +1520,19 @@ html.theme-liquidx.light .glass-input {
 /* ==========================================================================
    Nuvyra Theme V2.0.2 ("Deep Space / High-Velocity Cyber Deck")
    ========================================================================== */
-:root.theme-pterox, html.theme-pterox, .theme-pterox {
+:root.theme-nuvyra, html.theme-nuvyra, .theme-nuvyra {
   --primary: #23aeea;
-  --pterox-cyan: #23aeea;
-  --pterox-cyan-glow: rgba(35, 174, 234, 0.4);
-  --pterox-orange: #ff5108;
-  --pterox-orange-glow: rgba(255, 81, 8, 0.4);
-  --pterox-bg: #111525;
-  --pterox-card: #171d27;
-  --pterox-border: #252d38;
+  --nuvyra-cyan: #23aeea;
+  --nuvyra-cyan-glow: rgba(35, 174, 234, 0.4);
+  --nuvyra-orange: #ff5108;
+  --nuvyra-orange-glow: rgba(255, 81, 8, 0.4);
+  --nuvyra-bg: #111525;
+  --nuvyra-card: #171d27;
+  --nuvyra-border: #252d38;
   --card-border: #252d38;
 }
 
-html.theme-pterox body {
+html.theme-nuvyra body {
   background: radial-gradient(1000px 600px at 85% 10%, rgba(35, 174, 234, 0.12), transparent 55%),
               radial-gradient(900px 700px at 15% 90%, rgba(255, 81, 8, 0.10), transparent 50%),
               #111525 !important;
@@ -1541,84 +1541,84 @@ html.theme-pterox body {
   font-family: 'Poppins', system-ui, sans-serif;
 }
 
-html.theme-pterox #overlay-layer {
+html.theme-nuvyra #overlay-layer {
   background: radial-gradient(circle at top right, rgba(35, 174, 234, 0.08), transparent 70%), rgba(17, 21, 37, 0.85);
 }
 
-html.theme-pterox .glass-panel {
+html.theme-nuvyra .glass-panel {
   background: #171d27 !important;
   border: 1px solid #252d38 !important;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45) !important;
 }
 
-html.theme-pterox .glass-card {
+html.theme-nuvyra .glass-card {
   background: #171d27 !important;
   border: 1px solid #252d38 !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35) !important;
   transition: all 0.2s ease !important;
 }
 
-html.theme-pterox .glass-card:hover {
+html.theme-nuvyra .glass-card:hover {
   border-color: #23aeea !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(35, 174, 234, 0.2) !important;
 }
 
-html.theme-pterox .btn-cyber {
+html.theme-nuvyra .btn-cyber {
   background: linear-gradient(135deg, #0284c7 0%, #23aeea 100%) !important;
   color: white !important;
   box-shadow: 0 0 15px rgba(35, 174, 234, 0.3) !important;
 }
 
-html.theme-pterox .btn-cyber:hover {
+html.theme-nuvyra .btn-cyber:hover {
   background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
   box-shadow: 0 0 25px rgba(35, 174, 234, 0.5) !important;
 }
 
-html.theme-pterox .btn-cyber-orange {
+html.theme-nuvyra .btn-cyber-orange {
   background: linear-gradient(135deg, #ff6b2b 0%, #ff5108 100%) !important;
   color: white !important;
   box-shadow: 0 0 15px rgba(255, 81, 8, 0.3) !important;
 }
 
-html.theme-pterox .btn-cyber-orange:hover {
+html.theme-nuvyra .btn-cyber-orange:hover {
   background: linear-gradient(135deg, #ea4a00 0%, #d43d00 100%) !important;
   box-shadow: 0 0 25px rgba(255, 81, 8, 0.5) !important;
 }
 
-html.theme-pterox .glass-input {
+html.theme-nuvyra .glass-input {
   background: #0f141f !important;
   border: 1px solid #252d38 !important;
   color: #ffffff !important;
 }
 
-html.theme-pterox .glass-input:focus {
+html.theme-nuvyra .glass-input:focus {
   border-color: #23aeea !important;
   box-shadow: 0 0 0 2px rgba(35, 174, 234, 0.25) !important;
 }
 
-html.theme-pterox .nook-sidebar {
+html.theme-nuvyra .nook-sidebar {
   background: #171d27 !important;
   border-right: 1px solid #252d38 !important;
 }
 
-html.theme-pterox .nook-topbar {
+html.theme-nuvyra .nook-topbar {
   background: #171d27 !important;
   border-bottom: 1px solid #252d38 !important;
 }
 
-html.theme-pterox .nook-nav-item.active {
+html.theme-nuvyra .nook-nav-item.active {
   background: rgba(35, 174, 234, 0.12) !important;
   border-color: rgba(35, 174, 234, 0.4) !important;
   color: #23aeea !important;
 }
 
-html.theme-pterox .nook-nav-item.active .nook-icon-box {
+html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   background: rgba(35, 174, 234, 0.2) !important;
   color: #23aeea !important;
 }
 
 /* Nuvyra Server Banner Card System */
-.pterox-server-card {
+.nuvyra-server-card {
   background: #171d27;
   border: 1px solid #252d38;
   border-radius: 12px;
@@ -1630,13 +1630,13 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-.pterox-server-card:hover {
+.nuvyra-server-card:hover {
   border-color: #23aeea;
   transform: translateY(-3px);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(35, 174, 234, 0.2);
 }
 
-.pterox-server-banner {
+.nuvyra-server-banner {
   position: relative;
   height: 90px;
   background-size: cover;
@@ -1648,13 +1648,13 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   text-decoration: none;
 }
 
-.pterox-server-banner-overlay {
+.nuvyra-server-banner-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(23, 29, 39, 0.2) 0%, rgba(23, 29, 39, 0.95) 100%);
 }
 
-.pterox-server-title {
+.nuvyra-server-title {
   position: relative;
   z-index: 2;
   font-family: 'Poppins', sans-serif;
@@ -1664,7 +1664,7 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
-.pterox-server-info {
+.nuvyra-server-info {
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -1673,13 +1673,13 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   color: #94a3b8;
 }
 
-.pterox-server-info .stats-row {
+.nuvyra-server-info .stats-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.pterox-server-actions {
+.nuvyra-server-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1689,8 +1689,8 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   background: rgba(0, 0, 0, 0.2);
 }
 
-.pterox-server-actions a,
-.pterox-server-actions button {
+.nuvyra-server-actions a,
+.nuvyra-server-actions button {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -1703,15 +1703,15 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   font-size: 13px;
 }
 
-.pterox-server-actions a:hover,
-.pterox-server-actions button:hover {
+.nuvyra-server-actions a:hover,
+.nuvyra-server-actions button:hover {
   background: #23aeea;
   color: #ffffff;
   box-shadow: 0 0 12px rgba(35, 174, 234, 0.4);
 }
 
 /* Status indicator in Nuvyra */
-.pterox-status-indicator {
+.nuvyra-status-indicator {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1719,7 +1719,7 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   font-weight: 600;
 }
 
-.pterox-online-dot {
+.nuvyra-online-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -1728,7 +1728,7 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
   animation: pulse-green 2s infinite;
 }
 
-.pterox-offline-dot {
+.nuvyra-offline-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -1736,39 +1736,39 @@ html.theme-pterox .nook-nav-item.active .nook-icon-box {
 }
 
 /* Accent Color Mapping for Cyan in Nuvyra */
-html.theme-pterox .text-cyan-400,
-html.theme-pterox .text-cyan-300 {
+html.theme-nuvyra .text-cyan-400,
+html.theme-nuvyra .text-cyan-300 {
   color: #23aeea !important;
 }
 
-html.theme-pterox .theme-select-card.active {
+html.theme-nuvyra .theme-select-card.active {
   border-color: #23aeea !important;
   box-shadow: 0 0 24px rgba(35, 174, 234, 0.45) !important;
 }
 
-html.theme-pterox .device-select-card.active {
+html.theme-nuvyra .device-select-card.active {
   border-color: #23aeea !important;
   box-shadow: 0 0 20px rgba(35, 174, 234, 0.35) !important;
 }
 
 /* Light mode support for Nuvyra */
-html.theme-pterox.light body {
+html.theme-nuvyra.light body {
   background: #f1f5f9 !important;
   color: #0f172a !important;
 }
 
-html.theme-pterox.light .glass-panel {
+html.theme-nuvyra.light .glass-panel {
   background: #ffffff !important;
   border-color: #cbd5e1 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
 }
 
-html.theme-pterox.light .glass-card {
+html.theme-nuvyra.light .glass-card {
   background: #ffffff !important;
   border-color: #e2e8f0 !important;
 }
 
-html.theme-pterox.light .glass-input {
+html.theme-nuvyra.light .glass-input {
   background: #f8fafc !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;

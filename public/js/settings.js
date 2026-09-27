@@ -93,7 +93,7 @@ class SettingsManager {
                   <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme, LiquidX, Nuvyra, and Nebula Theme v2.0</p>
                 </div>
                 <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'nebula' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : (this.currentTheme.activeTheme === 'liquidx' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : (this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'))}">
-                  ${this.currentTheme.activeTheme === 'nebula' ? 'Nebula Theme v2.0 Active' : (this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : (this.currentTheme.activeTheme === 'pterox' ? 'Nuvyra Theme v2.0.2 Active' : 'NookTheme Active')))}
+                  ${this.currentTheme.activeTheme === 'nebula' ? 'Nebula Theme v2.0 Active' : (this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : (this.currentTheme.activeTheme === 'nuvyra' ? 'Nuvyra Theme v2.0.2 Active' : 'NookTheme Active')))}
                 </span>
               </div>
 
@@ -175,10 +175,10 @@ class SettingsManager {
                 </div>
 
                 <!-- Option D: Nuvyra Theme V2.0.2 -->
-                <div id="theme-card-pterox" onclick="settingsManager.selectTheme('pterox')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'pterox' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
+                <div id="theme-card-nuvyra" onclick="settingsManager.selectTheme('nuvyra')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'nuvyra' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
                   <div class="flex items-start justify-between">
                     <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 p-2 flex items-center justify-center shadow-inner">
-                      <img src="/assets/pterox-preview.svg" alt="Nuvyra Theme" class="w-full h-full object-contain">
+                      <img src="/assets/nuvyra-preview.svg" alt="Nuvyra Theme" class="w-full h-full object-contain">
                     </div>
                     <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Nuvyra v2.0.2</span>
                   </div>
@@ -194,8 +194,8 @@ class SettingsManager {
                       <span class="w-3 h-3 rounded-full bg-[#ff5108]"></span>
                       <span class="w-3 h-3 rounded-full bg-[#111525]"></span>
                     </div>
-                    <button type="button" id="btn-theme-pterox" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'pterox' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
-                      ${this.currentTheme.activeTheme === 'pterox' ? '✓ Active Theme' : 'Activate Nuvyra'}
+                    <button type="button" id="btn-theme-nuvyra" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'nuvyra' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
+                      ${this.currentTheme.activeTheme === 'nuvyra' ? '✓ Active Theme' : 'Activate Nuvyra'}
                     </button>
                   </div>
                 </div>
@@ -275,15 +275,15 @@ class SettingsManager {
               </div>
 
               <!-- Nuvyra Theme Enhancements (Branding, 4 Logos, Server Banner) -->
-              <div id="pterox-options-panel" class="pt-4 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'pterox' ? '' : 'opacity-60'}">
+              <div id="nuvyra-options-panel" class="pt-4 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'nuvyra' ? '' : 'opacity-60'}">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h4 class="text-xs font-bold text-slate-200 flex items-center gap-2">
-                      <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i> Nuvyra V2 Branding &amp; Logo Suite (pterox.config.ts)
+                      <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i> Nuvyra V2 Branding &amp; Logo Suite (nuvyra.config.ts)
                     </h4>
                     <p class="text-[11px] text-slate-400">Configure your Brand Name, Support Email, and all 4 independently customizable logo locations</p>
                   </div>
-                  <button type="button" onclick="settingsManager.savePteroxBranding()" class="btn-cyber px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <button type="button" onclick="settingsManager.saveNuvyraBranding()" class="btn-cyber px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
                     <i data-lucide="save" class="w-3.5 h-3.5"></i>
                     <span>Save Nuvyra Branding</span>
                   </button>
@@ -292,11 +292,11 @@ class SettingsManager {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
                     <label class="block font-semibold text-slate-300 mb-1">Brand Name</label>
-                    <input type="text" id="pterox-cfg-name" value="${(localStorage.getItem('pterox_brand_name') || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra')}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="Nuvyra">
+                    <input type="text" id="nuvyra-cfg-name" value="${(localStorage.getItem('nuvyra_brand_name') || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra')}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="Nuvyra">
                   </div>
                   <div>
                     <label class="block font-semibold text-slate-300 mb-1">Support Email</label>
-                    <input type="email" id="pterox-cfg-email" value="${localStorage.getItem('pterox_support_email') || 'pterox@webpool.tech'}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="support@domain.com">
+                    <input type="email" id="nuvyra-cfg-email" value="${localStorage.getItem('nuvyra_support_email') || 'nuvyra@webpool.tech'}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="support@domain.com">
                   </div>
                 </div>
 
@@ -305,36 +305,36 @@ class SettingsManager {
                   <!-- Logo 1: Sidebar -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-purple-300">1. Sidebar Logo</span>
-                    <input type="text" id="pterox-cfg-sidebar" value="${localStorage.getItem('pterox_sidebar_logo') || '/images/pterox-sidebar-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-sidebar-logo.webp">
+                    <input type="text" id="nuvyra-cfg-sidebar" value="${localStorage.getItem('nuvyra_sidebar_logo') || '/images/nuvyra-sidebar-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-sidebar-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('pterox_sidebar_logo') || '/images/pterox-sidebar-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-sidebar">
+                      <img src="${localStorage.getItem('nuvyra_sidebar_logo') || '/images/nuvyra-sidebar-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-sidebar">
                     </div>
                   </div>
 
                   <!-- Logo 2: Header -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-cyan-300">2. Header Logo</span>
-                    <input type="text" id="pterox-cfg-header" value="${localStorage.getItem('pterox_header_logo') || '/images/pterox-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-header-logo.webp">
+                    <input type="text" id="nuvyra-cfg-header" value="${localStorage.getItem('nuvyra_header_logo') || '/images/nuvyra-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-header-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('pterox_header_logo') || '/images/pterox-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-header">
+                      <img src="${localStorage.getItem('nuvyra_header_logo') || '/images/nuvyra-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-header">
                     </div>
                   </div>
 
                   <!-- Logo 3: Login Main -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-emerald-300">3. Login Page Logo</span>
-                    <input type="text" id="pterox-cfg-login" value="${localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-login-logo.webp">
+                    <input type="text" id="nuvyra-cfg-login" value="${localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-login-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-login">
+                      <img src="${localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-login">
                     </div>
                   </div>
 
                   <!-- Logo 4: Login Header -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-amber-300">4. Login Header Logo</span>
-                    <input type="text" id="pterox-cfg-login-header" value="${localStorage.getItem('pterox_login_header_logo') || '/images/pterox-login-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/pterox-login-header-logo.webp">
+                    <input type="text" id="nuvyra-cfg-login-header" value="${localStorage.getItem('nuvyra_login_header_logo') || '/images/nuvyra-login-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-login-header-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('pterox_login_header_logo') || '/images/pterox-login-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-pterox-login-header">
+                      <img src="${localStorage.getItem('nuvyra_login_header_logo') || '/images/nuvyra-login-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-login-header">
                     </div>
                   </div>
                 </div>
@@ -1188,7 +1188,7 @@ class SettingsManager {
       if (window.nebulaEditor) {
         window.nebulaEditor.applyConfig();
       }
-    } else if (themeName === 'pterox') {
+    } else if (themeName === 'nuvyra') {
       app.playSound('online');
       app.toast('Nuvyra Theme V2.0.2 activated!', 'success');
     } else if (themeName === 'liquidx') {
@@ -1203,27 +1203,27 @@ class SettingsManager {
     this.saveSettings(true);
   }
 
-  savePteroxBranding() {
-    const nameEl = document.getElementById('pterox-cfg-name');
-    const emailEl = document.getElementById('pterox-cfg-email');
-    const sidebarEl = document.getElementById('pterox-cfg-sidebar');
-    const headerEl = document.getElementById('pterox-cfg-header');
-    const loginEl = document.getElementById('pterox-cfg-login');
-    const loginHeaderEl = document.getElementById('pterox-cfg-login-header');
+  saveNuvyraBranding() {
+    const nameEl = document.getElementById('nuvyra-cfg-name');
+    const emailEl = document.getElementById('nuvyra-cfg-email');
+    const sidebarEl = document.getElementById('nuvyra-cfg-sidebar');
+    const headerEl = document.getElementById('nuvyra-cfg-header');
+    const loginEl = document.getElementById('nuvyra-cfg-login');
+    const loginHeaderEl = document.getElementById('nuvyra-cfg-login-header');
 
     const name = nameEl ? nameEl.value.trim() : 'Nuvyra';
-    const email = emailEl ? emailEl.value.trim() : 'pterox@webpool.tech';
-    const sidebarLogo = sidebarEl ? sidebarEl.value.trim() : '/images/pterox-sidebar-logo.webp';
-    const headerLogo = headerEl ? headerEl.value.trim() : '/images/pterox-header-logo.webp';
-    const loginLogo = loginEl ? loginEl.value.trim() : '/images/pterox-login-logo.webp';
-    const loginHeaderLogo = loginHeaderEl ? loginHeaderEl.value.trim() : '/images/pterox-login-header-logo.webp';
+    const email = emailEl ? emailEl.value.trim() : 'nuvyra@webpool.tech';
+    const sidebarLogo = sidebarEl ? sidebarEl.value.trim() : '/images/nuvyra-sidebar-logo.webp';
+    const headerLogo = headerEl ? headerEl.value.trim() : '/images/nuvyra-header-logo.webp';
+    const loginLogo = loginEl ? loginEl.value.trim() : '/images/nuvyra-login-logo.webp';
+    const loginHeaderLogo = loginHeaderEl ? loginHeaderEl.value.trim() : '/images/nuvyra-login-header-logo.webp';
 
-    localStorage.setItem('pterox_brand_name', name);
-    localStorage.setItem('pterox_support_email', email);
-    localStorage.setItem('pterox_sidebar_logo', sidebarLogo);
-    localStorage.setItem('pterox_header_logo', headerLogo);
-    localStorage.setItem('pterox_login_logo', loginLogo);
-    localStorage.setItem('pterox_login_header_logo', loginHeaderLogo);
+    localStorage.setItem('nuvyra_brand_name', name);
+    localStorage.setItem('nuvyra_support_email', email);
+    localStorage.setItem('nuvyra_sidebar_logo', sidebarLogo);
+    localStorage.setItem('nuvyra_header_logo', headerLogo);
+    localStorage.setItem('nuvyra_login_logo', loginLogo);
+    localStorage.setItem('nuvyra_login_header_logo', loginHeaderLogo);
 
     app.toast('Nuvyra branding configuration saved!', 'success');
     app.applyBrandingAndTheme({ active_theme: this.currentTheme.activeTheme });
@@ -1246,17 +1246,17 @@ class SettingsManager {
     const cardArix = document.getElementById('theme-card-arix');
     const cardNook = document.getElementById('theme-card-nook');
     const cardLiquidx = document.getElementById('theme-card-liquidx');
-    const cardPterox = document.getElementById('theme-card-pterox');
+    const cardNuvyra = document.getElementById('theme-card-nuvyra');
     const cardNebula = document.getElementById('theme-card-nebula');
     const btnArix = document.getElementById('btn-theme-arix');
     const btnNook = document.getElementById('btn-theme-nook');
     const btnLiquidx = document.getElementById('btn-theme-liquidx');
-    const btnPterox = document.getElementById('btn-theme-pterox');
+    const btnNuvyra = document.getElementById('btn-theme-nuvyra');
     const btnNebula = document.getElementById('btn-theme-nebula');
     const badge = document.getElementById('active-theme-badge');
     const arixPanel = document.getElementById('arix-options-panel');
     const liquidxPanel = document.getElementById('liquidx-options-panel');
-    const pteroxPanel = document.getElementById('pterox-options-panel');
+    const nuvyraPanel = document.getElementById('nuvyra-options-panel');
     const nebulaPanel = document.getElementById('nebula-options-panel');
 
     if (badge) {
@@ -1264,14 +1264,14 @@ class SettingsManager {
         nook: 'NookTheme Active',
         arix: 'Arix Theme v2.1.3 Active',
         liquidx: 'LiquidX Theme v1.0 Active',
-        pterox: 'Nuvyra Theme v2.0.2 Active',
+        nuvyra: 'Nuvyra Theme v2.0.2 Active',
         nebula: 'Nebula Theme v2.0 Active'
       };
       const badgeClasses = {
         nook: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
         arix: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
         liquidx: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-        pterox: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+        nuvyra: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
         nebula: 'bg-purple-500/20 text-purple-300 border-purple-500/40'
       };
       badge.innerText = labels[theme] || `${theme} Active`;
@@ -1289,7 +1289,7 @@ class SettingsManager {
     resetCard(cardNook, btnNook, 'Nook');
     resetCard(cardArix, btnArix, 'Arix');
     resetCard(cardLiquidx, btnLiquidx, 'LiquidX');
-    resetCard(cardPterox, btnPterox, 'Nuvyra');
+    resetCard(cardNuvyra, btnNuvyra, 'Nuvyra');
     resetCard(cardNebula, btnNebula, 'Nebula');
 
     if (theme === 'nebula') {
@@ -1300,17 +1300,17 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.remove('opacity-60');
-    } else if (theme === 'pterox') {
-      if (cardPterox) cardPterox.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
-      if (btnPterox) {
-        btnPterox.innerText = '✓ Active Theme';
-        btnPterox.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+    } else if (theme === 'nuvyra') {
+      if (cardNuvyra) cardNuvyra.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
+      if (btnNuvyra) {
+        btnNuvyra.innerText = '✓ Active Theme';
+        btnNuvyra.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (pteroxPanel) pteroxPanel.classList.remove('opacity-60');
+      if (nuvyraPanel) nuvyraPanel.classList.remove('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else if (theme === 'liquidx') {
       if (cardLiquidx) cardLiquidx.className = 'theme-select-card p-5 rounded-2xl border active bg-amber-950/20 border-amber-500/50 flex flex-col justify-between space-y-4';
@@ -1320,7 +1320,7 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.remove('opacity-60');
-      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else if (theme === 'arix') {
       if (cardArix) cardArix.className = 'theme-select-card p-5 rounded-2xl border active bg-purple-950/20 border-purple-500/50 flex flex-col justify-between space-y-4';
@@ -1330,7 +1330,7 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.remove('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else {
       if (cardNook) cardNook.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
@@ -1340,7 +1340,7 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (pteroxPanel) pteroxPanel.classList.add('opacity-60');
+      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     }
   }

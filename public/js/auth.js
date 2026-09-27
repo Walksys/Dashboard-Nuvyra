@@ -6,17 +6,17 @@ class AuthController {
     if (document.getElementById('login-modal')) return;
 
     const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
-    const isPterox = activeTheme === 'pterox';
-    const brandName = isPterox ? ((localStorage.getItem('pterox_brand_name') || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra')) : 'Nuvyra';
-    const loginLogo = isPterox ? (localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp') : null;
+    const isNuvyra = activeTheme === 'nuvyra';
+    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra')) : 'Nuvyra';
+    const loginLogo = isNuvyra ? (localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp') : null;
 
     modalContainer.innerHTML = `
-      <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isPterox ? 'theme-pterox' : ''}">
+      <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isNuvyra ? 'theme-nuvyra' : ''}">
         <div class="glass-panel w-full max-w-md p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl relative">
           <div class="text-center space-y-2 mb-6">
-            ${isPterox && loginLogo ? `
+            ${isNuvyra && loginLogo ? `
               <div class="flex justify-center mb-2">
-                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/pterox-login-logo.webp'">
+                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/nuvyra-login-logo.webp'">
               </div>
             ` : `
               <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-400">
@@ -81,17 +81,17 @@ class AuthController {
     if (!modalContainer) return;
 
     const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
-    const isPterox = activeTheme === 'pterox';
-    const brandName = isPterox ? ((localStorage.getItem('pterox_brand_name') || 'Nuvyra').replace(/^PteroX$/i, 'Nuvyra')) : 'Nuvyra';
-    const loginLogo = isPterox ? (localStorage.getItem('pterox_login_logo') || '/images/pterox-login-logo.webp') : null;
+    const isNuvyra = activeTheme === 'nuvyra';
+    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra')) : 'Nuvyra';
+    const loginLogo = isNuvyra ? (localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp') : null;
 
     modalContainer.innerHTML = `
-      <div id="register-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isPterox ? 'theme-pterox' : ''}">
+      <div id="register-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isNuvyra ? 'theme-nuvyra' : ''}">
         <div class="glass-panel w-full max-w-md p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl relative">
           <div class="text-center space-y-2 mb-6">
-            ${isPterox && loginLogo ? `
+            ${isNuvyra && loginLogo ? `
               <div class="flex justify-center mb-2">
-                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/pterox-login-logo.webp'">
+                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/nuvyra-login-logo.webp'">
               </div>
             ` : `
               <div class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mx-auto text-purple-400">
