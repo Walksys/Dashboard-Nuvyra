@@ -1713,8 +1713,8 @@ class ServerConsole {
         desc: 'The build number for the paper release. Leave at latest to always get the latest version. Invalid versions will default to latest.'
       },
       MINECRAFT_SOURCE_URL: {
-        label: 'SERVER DOWNLOAD URL',
-        desc: 'Optional direct URL for a Minecraft server file or archive. It downloads and extracts only when the server folder is empty.'
+        label: 'MINECRAFT SERVER SOURCE',
+        desc: 'Optional direct URL for a Minecraft server file or archive. It downloads once with the filename from the URL, extracts into the empty server folder, then clears the link.'
       },
       MAIN_FILE: {
         label: 'MAIN FILE',

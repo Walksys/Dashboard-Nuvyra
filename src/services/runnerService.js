@@ -1,8 +1,5 @@
 const { spawn, execFile } = require('child_process');
 const { promisify } = require('util');
-const http = require('http');
-const https = require('https');
-const { pipeline } = require('stream/promises');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -13,34 +10,6 @@ const execFileAsync = promisify(execFile);
 
 function isEmptyDirectory(dir) {
   return fs.existsSync(dir) && fs.readdirSync(dir).length === 0;
-}
-
-function downloadToFile(url, destination, redirects = 0) {
-  if (redirects > 5) return Promise.reject(new Error('Too many redirects while downloading source file.'));
-  return new Promise((resolve, reject) => {
-    let parsed;
-    try { parsed = new URL(url); } catch (err) { reject(new Error('Source URL is invalid.')); return; }
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      reject(new Error('Source URL must use HTTP or HTTPS.'));
-      return;
-    }
-    const client = parsed.protocol === 'https:' ? https : http;
-    const request = client.get(parsed, response => {
-      if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location) {
-        response.resume();
-        downloadToFile(new URL(response.headers.location, url).toString(), destination, redirects + 1).then(resolve, reject);
-        return;
-      }
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        response.resume();
-        reject(new Error(`Download failed with HTTP ${response.statusCode}.`));
-        return;
-      }
-      pipeline(response, fs.createWriteStream(destination)).then(resolve, reject);
-    });
-    request.setTimeout(30 * 60 * 1000, () => request.destroy(new Error('Source download timed out.')));
-    request.on('error', reject);
-  });
 }
 
 async function prepareServerSource(server, serverDir, envVars, log) {
@@ -58,10 +27,16 @@ async function prepareServerSource(server, serverDir, envVars, log) {
 
   if (minecraftUrl) {
     if (!/^https?:\/\//i.test(minecraftUrl)) throw new Error('Server Download URL must use HTTP or HTTPS.');
-    const tempFile = path.join(os.tmpdir(), `nuvyra-source-${server.id}-${Date.now()}`);
+    let sourceName;
     try {
-      log(`\x1b[36m[Nuvyra]\x1b[0m Downloading Minecraft server source (streaming, large files supported)...\r\n`);
-      await downloadToFile(minecraftUrl, tempFile);
+      sourceName = decodeURIComponent(path.basename(new URL(minecraftUrl).pathname));
+    } catch (e) {}
+    sourceName = (sourceName || 'minecraft-server-download').replace(/[\\/\0]/g, '').trim();
+    if (!sourceName || sourceName === '.' || sourceName === '..') sourceName = 'minecraft-server-download';
+    const tempFile = path.join(os.tmpdir(), `nuvyra-source-${server.id}-${Date.now()}-${sourceName}`);
+    try {
+      log(`\x1b[36m[Nuvyra]\x1b[0m Downloading ${sourceName} with wget (large files supported)...\r\n`);
+      await execFileAsync('wget', ['--continue', '--tries=3', '--timeout=60', '--max-redirect=10', '-O', tempFile, minecraftUrl], { maxBuffer: 1024 * 1024 * 4 });
       const pathname = new URL(minecraftUrl).pathname.toLowerCase();
       const isArchive = /\.(zip|tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz)$/.test(pathname);
       if (/\.zip$/.test(pathname)) {
@@ -69,14 +44,16 @@ async function prepareServerSource(server, serverDir, envVars, log) {
       } else if (isArchive) {
         await execFileAsync('tar', ['-xf', tempFile, '--no-same-owner', '-C', serverDir], { maxBuffer: 1024 * 1024 * 2 });
       } else {
-        const filename = path.basename(new URL(minecraftUrl).pathname) || 'server-download.bin';
-        fs.copyFileSync(tempFile, path.join(serverDir, filename));
+        fs.renameSync(tempFile, path.join(serverDir, sourceName));
       }
-      log(`\x1b[32m[Nuvyra]\x1b[0m Minecraft source is ready in the server folder.\r\n`);
+      if (isArchive) fs.unlinkSync(tempFile);
+      log(`\x1b[32m[Nuvyra]\x1b[0m ${sourceName} is ready in the Minecraft server folder.\r\n`);
+      return true;
     } finally {
       try { fs.unlinkSync(tempFile); } catch (e) {}
     }
   }
+  return false;
 }
 
 function packagePolicyPrefix(serverType) {
@@ -389,7 +366,13 @@ class RunnerService {
     }
 
     try {
-      await prepareServerSource(server, serverDir, envVars, message => this.appendLog(sId, message));
+      const sourcePrepared = await prepareServerSource(server, serverDir, envVars, message => this.appendLog(sId, message));
+      if (sourcePrepared && (envVars.MINECRAFT_SOURCE_URL || envVars.GIT_REPO_ADDRESS)) {
+        delete envVars.MINECRAFT_SOURCE_URL;
+        delete envVars.GIT_REPO_ADDRESS;
+        await query.run('UPDATE servers SET env_vars = ? WHERE id = ?', [JSON.stringify(envVars), sId]);
+        this.appendLog(sId, '\x1b[32m[Nuvyra]\x1b[0m Source link cleared after successful one-time setup.\r\n');
+      }
     } catch (sourceErr) {
       this.appendLog(sId, `\x1b[31m[Nuvyra Error]\x1b[0m Could not prepare startup source: ${sourceErr.message}\r\n`);
       return { success: false, error: sourceErr.message };
