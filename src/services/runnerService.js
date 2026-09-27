@@ -11,6 +11,37 @@ function isEmptyDirectory(dir) {
   return fs.existsSync(dir) && fs.readdirSync(dir).length === 0;
 }
 
+async function clearStaleMinecraftLocks(serverDir, log) {
+  const lockPaths = [];
+  const addIfPresent = filePath => { if (fs.existsSync(filePath)) lockPaths.push(filePath); };
+  addIfPresent(path.join(serverDir, 'session.lock'));
+  for (const entry of fs.readdirSync(serverDir, { withFileTypes: true })) {
+    if (entry.isDirectory()) addIfPresent(path.join(serverDir, entry.name, 'session.lock'));
+  }
+
+  for (const lockPath of lockPaths) {
+    let holders = '';
+    try {
+      const result = await execFileAsync('lsof', ['-t', '--', lockPath], { maxBuffer: 1024 * 1024 });
+      holders = String(result.stdout || '').trim();
+    } catch (e) {
+      try {
+        await execFileAsync('fuser', ['-s', lockPath], { maxBuffer: 1024 * 1024 });
+        holders = 'active process';
+      } catch (fuserError) {}
+    }
+    if (holders) {
+      throw new Error(`Minecraft world lock is active: ${path.relative(serverDir, lockPath)} (PID ${holders.split(/\s+/)[0]}). Stop the other Minecraft process first.`);
+    }
+    try {
+      fs.unlinkSync(lockPath);
+      log(`\x1b[33m[Nuvyra]\x1b[0m Removed stale Minecraft lock: ${path.relative(serverDir, lockPath)}\r\n`);
+    } catch (err) {
+      throw new Error(`Could not remove stale Minecraft lock ${path.relative(serverDir, lockPath)}: ${err.message}`);
+    }
+  }
+}
+
 async function prepareServerSource(server, serverDir, envVars, log) {
   if (!isEmptyDirectory(serverDir)) return;
   const isNodeOrPython = ['nodejs', 'node', 'python'].includes(server.server_type);
@@ -299,6 +330,9 @@ class RunnerService {
     }
 
     const record = this.activeProcesses.get(sId);
+    if (server.server_type === 'minecraft') {
+      await clearStaleMinecraftLocks(serverDir, message => this.appendLog(sId, message));
+    }
     record.status = 'starting';
     await query.run('UPDATE servers SET status = ? WHERE id = ?', ['starting', sId]);
     this.broadcast(sId, { type: 'status', status: 'starting' });
