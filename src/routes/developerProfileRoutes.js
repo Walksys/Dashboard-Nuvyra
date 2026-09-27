@@ -37,7 +37,7 @@ async function fetchDeveloperProfile() {
     global_name: 'walksys',
     pronouns: 'he/him',
     avatar: null,
-    avatar_url: '/images/walksys-discord.png',
+    avatar_url: 'https://i.ibb.co/Ndsk9qRN/owner-Bxizl-J-J-1.jpg',
     banner: null,
     banner_url: null,
     banner_color: '#5865F2',
