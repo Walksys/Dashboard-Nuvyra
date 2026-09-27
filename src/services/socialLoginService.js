@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('crypto').randomUUID ? { v4: require('crypto').ra
 const config = require('../config/config');
 const { query } = require('../database/db');
 const { logActivity } = require('./activityService');
+const { notifyUserRegistered } = require('./discordWebhookService');
 
 // Provider metadata and OAuth endpoint configurations
 const PROVIDER_CONFIGS = {
@@ -444,6 +445,12 @@ class SocialLoginService {
       logActivity(newUserId, null, 'USER_REGISTER', `Registered account via ${providerRecord.name}`, req);
     }
 
+    notifyUserRegistered({
+      user: { id: newUserId, username: chosenUsername, email: userEmail, avatar: profile.avatar || null },
+      provider: providerRecord.name || providerRecord.short_name,
+      profile
+    }).catch(() => {});
+
     const token = jwt.sign(
       { id: newUserId, username: chosenUsername, role: 'user' },
       config.JWT_SECRET,
@@ -494,4 +501,3 @@ class SocialLoginService {
 }
 
 module.exports = new SocialLoginService();
-

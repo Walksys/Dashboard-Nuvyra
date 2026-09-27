@@ -23,7 +23,8 @@ async function seedDatabase() {
     { key: 'transparency_bar', value: '18', description: 'Card Transparency level (0 to 100)' },
     { key: 'blur_bar', value: '16', description: 'Backdrop Blur filter radius in pixels (0 to 40)' },
     { key: 'registration_enabled', value: '1', description: 'Allow public user self-registration' },
-    { key: 'default_language', value: 'en', description: 'Default UI language' }
+    { key: 'default_language', value: 'en', description: 'Default UI language' },
+    { key: 'discord_webhook_url', value: '', description: 'Discord webhook for registration and server creation notifications' }
   ];
 
   for (const s of defaultSettings) {
@@ -94,4 +95,3 @@ async function seedDatabase() {
 }
 
 module.exports = { seedDatabase };
-

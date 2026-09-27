@@ -83,6 +83,24 @@ class SettingsManager {
           <!-- Left 2 Cols: Main Controls & Wallpaper Engine -->
           <div class="lg:col-span-2 space-y-6">
 
+            <!-- Discord WebHook Notifications -->
+            <div class="glass-panel p-6 rounded-3xl border border-indigo-500/25 bg-indigo-950/10 space-y-4">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                  <i data-lucide="message-circle" class="w-5 h-5 text-indigo-300"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white">Discord WebHook</h3>
+                  <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">Send private notifications when a user registers or a server is created. The URL is stored server-side and is never exposed to normal users.</p>
+                </div>
+              </div>
+              <div>
+                <label for="set-discord-webhook" class="block text-xs font-semibold text-slate-300 mb-1.5">Discord WebHook URL</label>
+                <input id="set-discord-webhook" type="url" placeholder="https://discord.com/api/webhooks/..." autocomplete="off" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs font-mono" />
+                <p class="text-[10px] text-slate-500 mt-1.5">Only discord.com or discordapp.com webhook URLs are accepted. Leave empty to disable notifications.</p>
+              </div>
+            </div>
+
             <!-- Card 0: Active Theme Selection (NookTheme vs Arix Theme v2.1.3) -->
             <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
@@ -1003,6 +1021,7 @@ class SettingsManager {
       document.getElementById('set-favicon-name').value = s.favicon_name || 'Nuvyra';
       document.getElementById('set-panel-logo').value = s.panel_logo || '';
       document.getElementById('set-favicon-logo').value = s.favicon_logo || '';
+      document.getElementById('set-discord-webhook').value = s.discord_webhook_url || '';
 
       const bgUrl = s.panel_bg || '';
       const bgType = s.panel_bg_type || (/\.(mp4|webm|mkv|mov)($|\?)/i.test(bgUrl) ? 'video' : 'image');
@@ -1990,6 +2009,7 @@ class SettingsManager {
       favicon_name: document.getElementById('set-favicon-name')?.value.trim() || 'Nuvyra',
       panel_logo: document.getElementById('set-panel-logo')?.value.trim() || '',
       favicon_logo: document.getElementById('set-favicon-logo')?.value.trim() || '',
+      discord_webhook_url: document.getElementById('set-discord-webhook')?.value.trim() || '',
       panel_bg: this.currentTheme.bg || '',
       panel_bg_type: this.currentTheme.bgType || 'image',
       panel_bg_category: this.activeCategory || 'all',

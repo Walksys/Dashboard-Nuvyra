@@ -10,6 +10,7 @@ const runnerService = require('../services/runnerService');
 const mcjarsService = require('../services/mcjarsService');
 const dockerService = require('../services/dockerService');
 const { logActivity } = require('../services/activityService');
+const { notifyServerCreated } = require('../services/discordWebhookService');
 const imagesConfig = require('../config/images');
 
 // List Servers
@@ -221,6 +222,16 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
     }
 
     logActivity(req.user.id, newServerId, 'SERVER_CREATE', `Created server ${name} (${server_type})`, req);
+
+    Promise.all([
+      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [req.user.id]),
+      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [targetUserId])
+    ]).then(([actor, owner]) => notifyServerCreated({
+      server: { id: newServerId, name, server_type },
+      actor,
+      owner,
+      source: req.user.id === targetUserId ? 'User/Admin Panel' : 'Admin created for user'
+    })).catch(() => {});
 
     res.json({
       success: true,
@@ -972,4 +983,3 @@ router.delete('/:id/network/:allocId', authenticate, requireServerAccess('networ
 });
 
 module.exports = router;
-

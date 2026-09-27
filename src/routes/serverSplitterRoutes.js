@@ -11,6 +11,7 @@ const runnerService = require('../services/runnerService');
 const mcjarsService = require('../services/mcjarsService');
 const imagesConfig = require('../config/images');
 const { logActivity } = require('../services/activityService');
+const { notifyServerCreated } = require('../services/discordWebhookService');
 
 /**
  * Helper: Resolve master server and current server context
@@ -440,6 +441,16 @@ router.post('/', authenticate, requireServerAccess('settings.write'), async (req
       `Created child split server "${name.trim()}" (ID: ${newSplitId}) with ${reqMem}MB RAM, ${reqCpu}% CPU, ${reqDisk}MB Disk`,
       req
     );
+
+    Promise.all([
+      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [req.user.id]),
+      query.get('SELECT id, username, email, avatar, role FROM users WHERE id = ?', [master.user_id])
+    ]).then(([actor, owner]) => notifyServerCreated({
+      server: { id: newSplitId, name: name.trim(), server_type: targetType },
+      actor,
+      owner,
+      source: 'Server Splitter'
+    })).catch(() => {});
 
     res.json({
       success: true,

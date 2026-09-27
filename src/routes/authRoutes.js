@@ -10,6 +10,7 @@ const { query } = require('../database/db');
 const { authenticate } = require('../middleware/auth');
 const { uploadUserAvatar } = require('../middleware/upload');
 const { logActivity } = require('../services/activityService');
+const { notifyUserRegistered } = require('../services/discordWebhookService');
 
 // Login
 router.post('/login', async (req, res) => {
@@ -133,6 +134,11 @@ router.post('/register', async (req, res) => {
     );
 
     logActivity(result.lastID, null, 'USER_REGISTER', 'User account registered', req);
+
+    notifyUserRegistered({
+      user: { id: result.lastID, username: cleanUsername, email: cleanEmail, avatar: null },
+      provider: 'Panel'
+    }).catch(() => {});
 
     res.json({
       success: true,

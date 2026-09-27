@@ -8,11 +8,12 @@ const imagesConfig = require('../config/images');
 const config = require('../config/config');
 const wallpaperService = require('../services/wallpaperService');
 const { logActivity } = require('../services/activityService');
+const { validWebhookUrl } = require('../services/discordWebhookService');
 
 // Get Public Settings (Accessible by all users and guests)
 router.get('/public', async (req, res) => {
   try {
-    const rows = await query.all('SELECT `key`, `value` FROM settings');
+    const rows = await query.all('SELECT `key`, `value` FROM settings WHERE `key` <> ?', ['discord_webhook_url']);
     const settings = {};
     for (const r of rows) {
       settings[r.key] = r.value;
@@ -87,6 +88,13 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
 router.put('/', authenticate, requireAdmin, async (req, res) => {
   try {
     const updates = req.body;
+    if (updates.discord_webhook_url !== undefined) {
+      const webhook = String(updates.discord_webhook_url || '').trim();
+      if (webhook && !validWebhookUrl(webhook)) {
+        return res.status(400).json({ success: false, error: 'Please enter a valid Discord WebHook URL.' });
+      }
+      updates.discord_webhook_url = webhook;
+    }
     const allowedKeys = [
       'panel_name',
       'panel_logo',
@@ -110,7 +118,8 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       'liquidx_primary_color',
       'tutorials_enabled',
       'tutorials_autostart_enabled',
-      'nebula_config'
+      'nebula_config',
+      'discord_webhook_url'
     ];
 
     for (const [key, value] of Object.entries(updates)) {
@@ -216,4 +225,3 @@ router.post('/upload', authenticate, requireAdmin, uploadBranding.single('file')
 });
 
 module.exports = router;
-
