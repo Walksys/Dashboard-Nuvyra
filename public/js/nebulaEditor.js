@@ -193,6 +193,9 @@ class NebulaEditor {
   }
 
   saveConfig(silent = false) {
+    if (this.config.alertEnabled) {
+      sessionStorage.removeItem('nebula_alert_dismissed');
+    }
     localStorage.setItem(this.storageKey, JSON.stringify(this.config));
     this.applyConfig(this.config);
 
@@ -291,6 +294,9 @@ class NebulaEditor {
 
   applyLive(key, value) {
     this.config[key] = value;
+    if (key === 'alertEnabled' && value) {
+      sessionStorage.removeItem('nebula_alert_dismissed');
+    }
     this.applyConfig(this.config);
   }
 
@@ -353,11 +359,10 @@ class NebulaEditor {
 
     if (!container) return;
 
-    // Check if Nebula is the active theme and alert is enabled
-    const isNebula = document.documentElement.classList.contains('theme-nebula');
+    // Dashboard announcements are available across all active themes.
     const isDismissed = sessionStorage.getItem('nebula_alert_dismissed') === '1';
 
-    if (!isNebula || !this.config.alertEnabled || !this.config.alertText || isDismissed) {
+    if (!this.config.alertEnabled || !this.config.alertText || isDismissed) {
       container.innerHTML = '';
       container.classList.add('hidden');
       return;
@@ -717,4 +722,3 @@ document.addEventListener('DOMContentLoaded', () => {
     window.nebulaEditor.applyConfig();
   }
 });
-

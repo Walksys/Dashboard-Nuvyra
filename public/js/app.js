@@ -228,6 +228,18 @@ class App {
     const logoEl = document.getElementById('header-logo-img');
     const subNameEl = document.getElementById('header-sub-name');
 
+    // Load the announcement configuration for every dashboard theme.
+    // The alert is a dashboard-wide announcement, not a Nebula-only widget.
+    if (window.nebulaEditor) {
+      if (s.nebula_config) {
+        try {
+          const parsed = typeof s.nebula_config === 'string' ? JSON.parse(s.nebula_config) : s.nebula_config;
+          window.nebulaEditor.config = { ...window.nebulaEditor.config, ...parsed };
+        } catch (e) {}
+      }
+      window.nebulaEditor.applyConfig();
+    }
+
     if (activeTheme === 'nebula') {
       document.documentElement.classList.add('theme-nebula');
       if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
@@ -237,17 +249,9 @@ class App {
         subNameEl.innerText = 'Nebula Theme v2.0';
       }
       if (window.nebulaEditor) {
-        if (s.nebula_config) {
-          try {
-            const parsed = typeof s.nebula_config === 'string' ? JSON.parse(s.nebula_config) : s.nebula_config;
-            window.nebulaEditor.config = { ...window.nebulaEditor.config, ...parsed };
-          } catch (e) {}
-        }
         window.nebulaEditor.applyConfig();
       }
     } else {
-      const banner = document.getElementById('nebula-alert-banner');
-      if (banner) banner.classList.add('hidden');
       document.body.classList.remove('nebula-sidebar-compact', 'nebula-btn-outline', 'nebula-btn-line');
       document.documentElement.classList.remove('nebula-sidebar-compact', 'nebula-btn-outline', 'nebula-btn-line');
       const wallLayer = document.getElementById('wallpaper-layer');
