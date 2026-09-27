@@ -735,18 +735,23 @@ class App {
     this.navigate(`server-manage/${serverId}/console`, { serverId });
   }
 
-  renderNookServerSidebar(serverId, activeSubTab = 'console') {
+  renderNookServerSidebar(serverId, activeSubTab = 'console', serverType = null) {
     const container = document.getElementById('server-nav-links');
     if (!container) return;
 
+    const isMinecraftServer = !serverType || serverType === 'minecraft';
     const routes = [
       { tab: 'console', name: 'Console', icon: 'terminal' },
       { tab: 'files', name: 'Files', icon: 'folder' },
-      { tab: 'properties', name: 'Properties', icon: 'sliders' },
-      { tab: 'players', name: 'Players', icon: 'gamepad-2' },
+      ...(isMinecraftServer ? [
+        { tab: 'properties', name: 'Properties', icon: 'sliders' },
+        { tab: 'players', name: 'Players', icon: 'gamepad-2' }
+      ] : []),
       { tab: 'importer', name: 'Importer', icon: 'download-cloud' },
       { tab: 'splitter', name: 'Splitter', icon: 'git-fork' },
-      { tab: 'marketplace', name: 'Addons', icon: 'shopping-bag' },
+      ...(isMinecraftServer ? [
+        { tab: 'marketplace', name: 'Addons', icon: 'shopping-bag' }
+      ] : []),
       { tab: 'databases', name: 'Databases', icon: 'database' },
       { tab: 'schedules', name: 'Schedules', icon: 'clock' },
       { tab: 'subusers', name: 'Users', icon: 'users' },
@@ -828,8 +833,12 @@ class App {
       const subTab = parts[2] || 'console';
       this.currentServerId = sId;
 
-      this.renderNookServerSidebar(sId, subTab);
       await serverConsole.renderServerManagementSuite(sId, subTab);
+      const serverType = serverConsole.serverData?.server_type || null;
+      const isMinecraftServer = !serverType || serverType === 'minecraft';
+      const minecraftOnlyTabs = ['properties', 'players', 'marketplace', 'plugins', 'mods', 'version-changer', 'version', 'worlds'];
+      const visibleSubTab = !isMinecraftServer && minecraftOnlyTabs.includes(subTab) ? 'console' : subTab;
+      this.renderNookServerSidebar(sId, visibleSubTab, serverType);
     } else if (isAdminContext) {
       // Security guard: redirect if not admin
       if (this.user && this.user.role !== 'admin') {

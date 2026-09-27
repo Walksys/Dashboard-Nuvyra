@@ -389,6 +389,12 @@ class ServerConsole {
       'version-changer': 'version-changer',
       'version': 'version-changer'
     };
+    const serverType = this.serverData?.server_type;
+    const isMinecraftServer = !serverType || serverType === 'minecraft';
+    const minecraftOnlyTabs = ['properties', 'players', 'marketplace', 'plugins', 'plugin', 'mods', 'mod', 'version-changer', 'version', 'worlds'];
+    if (!isMinecraftServer && minecraftOnlyTabs.includes(tabName)) {
+      tabName = 'console';
+    }
 
     // Update left sidebar active tab
     document.querySelectorAll('#server-nav-links .nook-nav-item').forEach(btn => {
