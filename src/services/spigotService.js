@@ -55,11 +55,9 @@ class SpigotService {
 
       const rawItems = res.data || [];
       let items = rawItems.map(item => {
-        let iconUrl = '/assets/favicon.svg';
+        let iconUrl = 'https://i.ibb.co/spT76wQC/3018ec40-a97a-11f1-bdea-4bc571aa87bf.png';
         if (item.icon?.url) {
           iconUrl = item.icon.url.startsWith('http') ? item.icon.url : `https://spigotmc.org/${item.icon.url}`;
-        } else if (item.icon?.data) {
-          iconUrl = `data:image/png;base64,${item.icon.data}`;
         }
 
         const testedVersions = item.testedVersions || [];
@@ -126,11 +124,9 @@ class SpigotService {
       const item = res.data;
       if (!item) throw new Error('Resource not found.');
 
-      let iconUrl = '/assets/favicon.svg';
+      let iconUrl = 'https://i.ibb.co/spT76wQC/3018ec40-a97a-11f1-bdea-4bc571aa87bf.png';
       if (item.icon?.url) {
         iconUrl = item.icon.url.startsWith('http') ? item.icon.url : `https://spigotmc.org/${item.icon.url}`;
-      } else if (item.icon?.data) {
-        iconUrl = `data:image/png;base64,${item.icon.data}`;
       }
 
       return {
@@ -259,4 +255,3 @@ class SpigotService {
 }
 
 module.exports = new SpigotService();
-
