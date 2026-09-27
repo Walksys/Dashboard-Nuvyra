@@ -137,7 +137,7 @@ graph TD
 ## ✨ What is New in v2.5.0
 
 ### 1. 🔄 System Updates & Auto-Detection Engine
-- **GitHub Releases Auto-Detection**: Real-time checking against [walksys/Nuvyra/releases](https://github.com/walksys/Nuvyra/releases) with semver comparison.
+- **GitHub Releases Auto-Detection**: Real-time checking against [Walksys/Dashboard-Nuvyra/releases](https://github.com/Walksys/Dashboard-Nuvyra/releases) with semver comparison.
 - **Dedicated Updates Dashboard (`#admin-updates`)**:
   - Displays Installed Version vs Latest Release tag.
   - Formatted Markdown Changelog reader and Release History accordion.
