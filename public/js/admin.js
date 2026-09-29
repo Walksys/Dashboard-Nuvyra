@@ -1642,12 +1642,12 @@ class AdminManager {
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="animate-spin">⏳</span> Creating...'; }
     try {
       const data = await app.api('/api/servers', { method: 'POST', body: JSON.stringify({
-        name, description: 'Nuvyra Silver Free Server', server_type: type,
+        name, description: 'Nuvyra Free Server', server_type: type,
         docker_image: document.getElementById('free-server-image')?.value,
         mc_jar_type: document.getElementById('free-minecraft-engine')?.value || 'paper',
         mc_jar_version: document.getElementById('free-minecraft-version')?.value || '1.21.4'
       }) });
-      if (data.success) { document.getElementById('modal-container').innerHTML = ''; app.toast('Silver Free server created successfully!', 'success'); app.navigate(`server-manage/${data.serverId}/console`); }
+      if (data.success) { document.getElementById('modal-container').innerHTML = ''; app.toast('Free server created successfully!', 'success'); app.navigate(`server-manage/${data.serverId}/console`); }
     } catch (err) { app.toast(err.message || 'Failed to create Free Server.', 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="rocket" class="w-4 h-4"></i> Create Server Free'; if (window.lucide) lucide.createIcons(); } }
   }
 

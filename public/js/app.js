@@ -1052,7 +1052,7 @@ class App {
                 + Create Server
               </button>
             ` : `
-              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your one Silver Free server with fixed resources, or contact an administrator for an assigned server.</p>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your one free server with fixed resources, or contact an administrator for an assigned server.</p>
               <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
             `}
           </div>
@@ -1133,7 +1133,7 @@ class App {
                 Deploy Your First Server
               </button>
             ` : `
-              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You do not have an active server. Create your one Silver Free server or contact an administrator.</p>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You do not have an active server. Create your one free server or contact an administrator.</p>
               <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
             `}
           </div>
