@@ -1585,7 +1585,7 @@ class AdminManager {
         <div class="glass-panel w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-3xl border border-white/15 shadow-2xl space-y-5">
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
             <div>
-              <h3 class="text-lg font-black text-white flex items-center gap-2"><i data-lucide="gift" class="w-5 h-5 text-cyan-400"></i> Create Silver Free</h3>
+              <h3 class="text-lg font-black text-white flex items-center gap-2"><i data-lucide="gift" class="w-5 h-5 text-cyan-400"></i> Create Server Free</h3>
               <p class="text-[11px] text-slate-400 mt-1">One free server per account • fixed resources • 1 backup</p>
             </div>
             <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -1610,7 +1610,7 @@ class AdminManager {
               <div><label class="block text-xs font-semibold text-slate-300 mb-1">Minecraft Version</label><input id="free-minecraft-version" value="1.21.4" placeholder="e.g. 1.21.4" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs text-white"></div>
             </div>
             <div class="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3 text-[11px] text-slate-300">Free resources: <strong class="text-cyan-300">Minecraft 2 GB RAM / 100% CPU / 5 GB Disk</strong>; applications 512 MB RAM / 50% CPU / 1 GB Disk. Domains and Minecraft downloads remain available.</div>
-            <button id="free-server-submit" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i data-lucide="rocket" class="w-4 h-4"></i> Create Silver Free</button>
+            <button id="free-server-submit" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i data-lucide="rocket" class="w-4 h-4"></i> Create Server Free</button>
           </form>
         </div>
       </div>`;
@@ -1648,7 +1648,7 @@ class AdminManager {
         mc_jar_version: document.getElementById('free-minecraft-version')?.value || '1.21.4'
       }) });
       if (data.success) { document.getElementById('modal-container').innerHTML = ''; app.toast('Silver Free server created successfully!', 'success'); app.navigate(`server-manage/${data.serverId}/console`); }
-    } catch (err) { app.toast(err.message || 'Failed to create Free Server.', 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="rocket" class="w-4 h-4"></i> Create Silver Free'; if (window.lucide) lucide.createIcons(); } }
+    } catch (err) { app.toast(err.message || 'Failed to create Free Server.', 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="rocket" class="w-4 h-4"></i> Create Server Free'; if (window.lucide) lucide.createIcons(); } }
   }
 
   // Show Server Creation Wizard (with MCJars integration & Docker templates - Admin Only)

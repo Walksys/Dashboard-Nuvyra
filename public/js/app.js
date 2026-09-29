@@ -957,7 +957,7 @@ class App {
             </button>
           ` : `
             <button onclick="admin.showFreeServerModal()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
-              <i data-lucide="gift" class="w-4 h-4"></i> Create Silver Free
+              <i data-lucide="gift" class="w-4 h-4"></i> Create Server Free
             </button>
           `}
         </div>
@@ -1053,7 +1053,7 @@ class App {
               </button>
             ` : `
               <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your one Silver Free server with fixed resources, or contact an administrator for an assigned server.</p>
-              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Silver Free</button>
+              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
             `}
           </div>
         `;
@@ -1099,7 +1099,7 @@ class App {
                 <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Server
               </button>
             ` : `
-              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"><i data-lucide="gift" class="w-4 h-4"></i> Create Silver Free</button>
+              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"><i data-lucide="gift" class="w-4 h-4"></i> Create Server Free</button>
             `}
           </div>
         </div>
@@ -1134,7 +1134,7 @@ class App {
               </button>
             ` : `
               <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You do not have an active server. Create your one Silver Free server or contact an administrator.</p>
-              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Silver Free</button>
+              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
             `}
           </div>
         `;
