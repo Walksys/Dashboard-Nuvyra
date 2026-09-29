@@ -164,6 +164,7 @@ async function initDatabase() {
       jar_build VARCHAR(50),
       container_id VARCHAR(128),
       expiration_date DATETIME,
+      is_free TINYINT(1) DEFAULT 0,
       is_suspended TINYINT(1) DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -363,6 +364,9 @@ async function initDatabase() {
   } catch (e) {}
   try {
     await pool.query('ALTER TABLE servers ADD COLUMN is_split TINYINT(1) DEFAULT 0');
+  } catch (e) {}
+  try {
+    await pool.query('ALTER TABLE servers ADD COLUMN is_free TINYINT(1) DEFAULT 0');
   } catch (e) {}
   try {
     await pool.query('CREATE INDEX idx_servers_parent ON servers(parent_id)');

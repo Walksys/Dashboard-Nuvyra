@@ -12,6 +12,7 @@ const mcjarsService = require('../services/mcjarsService');
 const imagesConfig = require('../config/images');
 const { logActivity } = require('../services/activityService');
 const { notifyServerCreated } = require('../services/discordWebhookService');
+const { isFreeServer, freeServerError } = require('../services/serverPlanService');
 
 /**
  * Helper: Resolve master server and current server context
@@ -248,6 +249,9 @@ router.post('/', authenticate, requireServerAccess('settings.write'), async (req
     }
 
     const { master } = context;
+    if (isFreeServer(master)) {
+      return res.status(403).json({ success: false, error: freeServerError('creating split servers') });
+    }
     const pool = await calculateResources(master);
 
     if (pool.used.splits >= pool.total.splits) {
@@ -364,8 +368,8 @@ router.post('/', authenticate, requireServerAccess('settings.write'), async (req
         uuid, name, description, user_id, node_id, allocation_id,
         server_type, docker_image, startup_cmd, memory_mb, cpu_limit,
         disk_mb, status, env_vars, jar_type, jar_version,
-        parent_id, is_split, splitter_limit
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, 1, 0)
+        parent_id, is_split, splitter_limit, is_free
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, 1, 0, 0)
     `, [
       splitUuid,
       name.trim(),

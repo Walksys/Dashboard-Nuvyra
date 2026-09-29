@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true });
 const { query } = require('../database/db');
 const { authenticate, requireServerAccess } = require('../middleware/auth');
 const { logActivity } = require('../services/activityService');
+const { isFreeServer, freeServerError } = require('../services/serverPlanService');
 
 // List subusers
 router.get('/', authenticate, requireServerAccess('subusers.read'), async (req, res) => {
@@ -32,6 +33,9 @@ router.get('/', authenticate, requireServerAccess('subusers.read'), async (req, 
 router.post('/', authenticate, requireServerAccess('subusers.create'), async (req, res) => {
   try {
     const serverId = req.params.serverId;
+    if (isFreeServer(req.server)) {
+      return res.status(403).json({ success: false, error: freeServerError('adding subusers') });
+    }
     const { userIdentifier, permissions } = req.body; // email or username
 
     if (!userIdentifier) {
@@ -109,4 +113,3 @@ router.delete('/:subuserId', authenticate, requireServerAccess('subusers.delete'
 });
 
 module.exports = router;
-

@@ -6,6 +6,7 @@ const backupService = require('../services/backupService');
 const { authenticate, requireServerAccess } = require('../middleware/auth');
 const { logActivity } = require('../services/activityService');
 const { query } = require('../database/db');
+const { isFreeServer, FREE_BACKUP_LIMIT } = require('../services/serverPlanService');
 
 // List backups for server
 router.get('/', authenticate, requireServerAccess('backups.read'), async (req, res) => {
@@ -23,6 +24,12 @@ router.post('/', authenticate, requireServerAccess('backups.create'), async (req
   try {
     const serverId = req.params.serverId;
     const { name } = req.body;
+    if (isFreeServer(req.server)) {
+      const existing = await query.get('SELECT COUNT(*) AS total FROM backups WHERE server_id = ?', [serverId]);
+      if (Number(existing?.total || 0) >= FREE_BACKUP_LIMIT) {
+        return res.status(403).json({ success: false, error: 'Free servers are limited to one backup. Delete the existing backup before creating another.' });
+      }
+    }
     const backup = await backupService.createBackup(serverId, name || 'Manual Backup');
     logActivity(req.user.id, serverId, 'BACKUP_CREATE', `Created backup: ${backup.name}`, req);
     res.json({ success: true, backup });
@@ -82,4 +89,3 @@ router.delete('/:backupId', authenticate, requireServerAccess('backups.delete'),
 });
 
 module.exports = router;
-

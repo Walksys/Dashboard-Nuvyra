@@ -4,6 +4,7 @@ const { authenticate, requireServerAccess } = require('../middleware/auth');
 const serverImporterService = require('../services/serverImporterService');
 const { query } = require('../database/db');
 const { logActivity } = require('../services/activityService');
+const { isFreeServer, freeServerError } = require('../services/serverPlanService');
 
 // Initialize profiles table if not exists
 query.exec(`
@@ -24,6 +25,9 @@ query.exec(`
 // Test SFTP connection
 router.post('/test', authenticate, requireServerAccess('settings.edit'), async (req, res) => {
   try {
+    if (isFreeServer(req.server)) {
+      return res.status(403).json({ success: false, error: freeServerError('external server imports') });
+    }
     const { host, port, username, password } = req.body;
     if (!host || !username) {
       return res.status(400).json({ success: false, error: 'Host and Username are required.' });
@@ -39,6 +43,9 @@ router.post('/test', authenticate, requireServerAccess('settings.edit'), async (
 // Trigger Server Import (SFTP or Direct URL Archive)
 router.post('/import', authenticate, requireServerAccess('settings.edit'), async (req, res) => {
   try {
+    if (isFreeServer(req.server)) {
+      return res.status(403).json({ success: false, error: freeServerError('external server imports') });
+    }
     const serverId = req.params.serverId;
     const { mode, host, port, username, password, remotePath, archiveUrl, wipeTarget } = req.body;
 

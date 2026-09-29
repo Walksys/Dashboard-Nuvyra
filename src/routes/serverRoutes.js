@@ -12,6 +12,7 @@ const dockerService = require('../services/dockerService');
 const { logActivity } = require('../services/activityService');
 const { notifyServerCreated } = require('../services/discordWebhookService');
 const imagesConfig = require('../config/images');
+const { isFreeServer, freeServerError } = require('../services/serverPlanService');
 
 // List Servers
 router.get('/', authenticate, async (req, res) => {
@@ -83,7 +84,8 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
       allocation_id,
       env_vars,
       mc_jar_type,
-      mc_jar_version
+      mc_jar_version,
+      is_free
     } = req.body;
 
     if (!name || !server_type) {
@@ -153,8 +155,8 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
       INSERT INTO servers (
         uuid, name, description, user_id, node_id, allocation_id,
         server_type, docker_image, startup_cmd, memory_mb, cpu_limit,
-        disk_mb, status, env_vars, jar_type, jar_version
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?)
+        disk_mb, status, env_vars, jar_type, jar_version, is_free
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?)
     `, [
       serverUuid,
       name,
@@ -170,7 +172,8 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
       parseInt(disk_mb || 5120, 10),
       typeof env_vars === 'object' ? JSON.stringify(env_vars) : (env_vars || '{}'),
       mc_jar_type || null,
-      mc_jar_version || null
+      mc_jar_version || null,
+      is_free === true || is_free === 1 || is_free === '1' ? 1 : 0
     ]);
 
     const newServerId = insertResult.lastID;
@@ -728,6 +731,9 @@ router.get('/:id/databases', authenticate, requireServerAccess('database.read'),
 router.post('/:id/databases', authenticate, requireServerAccess('database.create'), async (req, res) => {
   try {
     const serverId = req.params.id;
+    if (isFreeServer(req.server)) {
+      return res.status(403).json({ success: false, error: freeServerError('creating additional databases') });
+    }
     const { database_name, host_id } = req.body;
 
     let host = null;
@@ -923,6 +929,9 @@ router.get('/:id/network', authenticate, requireServerAccess('network.read'), as
 router.post('/:id/network/primary', authenticate, requireServerAccess('network.update'), async (req, res) => {
   try {
     const server = req.server;
+    if (isFreeServer(server)) {
+      return res.status(403).json({ success: false, error: freeServerError('changing network allocations') });
+    }
     const { allocation_id } = req.body;
     if (!allocation_id) return res.status(400).json({ success: false, error: 'Allocation ID is required.' });
 
@@ -943,6 +952,9 @@ router.post('/:id/network/primary', authenticate, requireServerAccess('network.u
 router.post('/:id/network/assign', authenticate, requireServerAccess('network.create'), async (req, res) => {
   try {
     const server = req.server;
+    if (isFreeServer(server)) {
+      return res.status(403).json({ success: false, error: freeServerError('opening additional ports') });
+    }
     const { allocation_id } = req.body;
 
     let alloc;
@@ -970,6 +982,9 @@ router.post('/:id/network/assign', authenticate, requireServerAccess('network.cr
 router.delete('/:id/network/:allocId', authenticate, requireServerAccess('network.delete'), async (req, res) => {
   try {
     const server = req.server;
+    if (isFreeServer(server)) {
+      return res.status(403).json({ success: false, error: freeServerError('changing network allocations') });
+    }
     const allocId = parseInt(req.params.allocId, 10);
 
     if (server.allocation_id === allocId) {

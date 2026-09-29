@@ -5,6 +5,7 @@ const scheduleService = require('../services/scheduleService');
 const { authenticate, requireServerAccess } = require('../middleware/auth');
 const { logActivity } = require('../services/activityService');
 const { query } = require('../database/db');
+const { isFreeServer, freeServerError } = require('../services/serverPlanService');
 
 // List schedules
 router.get('/', authenticate, requireServerAccess('schedules.read'), async (req, res) => {
@@ -21,6 +22,9 @@ router.get('/', authenticate, requireServerAccess('schedules.read'), async (req,
 router.post('/', authenticate, requireServerAccess('schedules.create'), async (req, res) => {
   try {
     const serverId = req.params.serverId;
+    if (isFreeServer(req.server)) {
+      return res.status(403).json({ success: false, error: freeServerError('creating schedules') });
+    }
     const { name, cron_expression, action_type, payload } = req.body;
 
     if (!name || !cron_expression || !action_type) {
@@ -109,4 +113,3 @@ router.delete('/:scheduleId', authenticate, requireServerAccess('schedules.delet
 });
 
 module.exports = router;
-
