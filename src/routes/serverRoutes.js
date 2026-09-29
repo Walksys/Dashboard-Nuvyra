@@ -67,9 +67,10 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// Create Server (Admin Only)
-router.post('/', authenticate, requireAdmin, async (req, res) => {
+// Create Server - administrators can deploy custom instances; normal users can create one Free Server.
+router.post('/', authenticate, async (req, res) => {
   try {
+    const isAdmin = req.user.role === 'admin';
     let {
       name,
       description,
@@ -87,6 +88,39 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
       mc_jar_version,
       is_free
     } = req.body;
+
+    if (!isAdmin) {
+      const allowedFreeTypes = ['minecraft', 'nodejs', 'python', 'java'];
+      if (!allowedFreeTypes.includes(server_type)) {
+        return res.status(403).json({ success: false, error: 'Free accounts may create Minecraft, Node.js, Python, or Java servers only.' });
+      }
+
+      const owned = await query.get('SELECT COUNT(*) AS total FROM servers WHERE user_id = ?', [req.user.id]);
+      if (Number(owned?.total || 0) > 0) {
+        return res.status(403).json({ success: false, error: 'Free accounts are limited to one server. Delete your existing server before creating another.' });
+      }
+
+      const freeImages = imagesConfig[server_type] || [];
+      const requestedImage = freeImages.find(image => image.value === docker_image);
+      docker_image = requestedImage ? requestedImage.value : freeImages[0]?.value;
+      user_id = req.user.id;
+      node_id = 1;
+      allocation_id = undefined;
+      env_vars = {};
+      is_free = 1;
+
+      if (server_type === 'minecraft') {
+        mc_jar_type = ['paper', 'purpur', 'fabric', 'forge', 'neoforge', 'vanilla', 'spigot', 'folia', 'bungeecord', 'velocity'].includes(String(mc_jar_type).toLowerCase()) ? String(mc_jar_type).toLowerCase() : 'paper';
+        mc_jar_version = mc_jar_version || '1.21.4';
+        memory_mb = ['bungeecord', 'velocity'].includes(mc_jar_type) ? 1024 : 2048;
+        cpu_limit = 100;
+        disk_mb = ['bungeecord', 'velocity'].includes(mc_jar_type) ? 1024 : 5120;
+      } else {
+        memory_mb = 512;
+        cpu_limit = 50;
+        disk_mb = 1024;
+      }
+    }
 
     if (!name || !server_type) {
       return res.status(400).json({ success: false, error: 'Server name and server type are required.' });

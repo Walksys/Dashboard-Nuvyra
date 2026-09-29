@@ -956,8 +956,8 @@ class App {
               <i data-lucide="plus-circle" class="w-4 h-4"></i> Deploy New Server
             </button>
           ` : `
-            <button onclick="app.navigate('user-servers')" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
-              <i data-lucide="server" class="w-4 h-4"></i> My Servers
+            <button onclick="admin.showFreeServerModal()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
+              <i data-lucide="gift" class="w-4 h-4"></i> Create Silver Free
             </button>
           `}
         </div>
@@ -1052,7 +1052,8 @@ class App {
                 + Create Server
               </button>
             ` : `
-              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">No servers assigned yet. Contact your panel administrator to allocate a server instance to your account.</p>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your one Silver Free server with fixed resources, or contact an administrator for an assigned server.</p>
+              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Silver Free</button>
             `}
           </div>
         `;
@@ -1097,7 +1098,9 @@ class App {
               <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Server
               </button>
-            ` : ''}
+            ` : `
+              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"><i data-lucide="gift" class="w-4 h-4"></i> Create Silver Free</button>
+            `}
           </div>
         </div>
 
@@ -1130,7 +1133,8 @@ class App {
                 Deploy Your First Server
               </button>
             ` : `
-              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You do not have any active servers assigned. Please contact your panel administrator to allocate a server to your account.</p>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You do not have an active server. Create your one Silver Free server or contact an administrator.</p>
+              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Silver Free</button>
             `}
           </div>
         `;

@@ -1574,6 +1574,83 @@ class AdminManager {
     }
   }
 
+  // Show the restricted Free Server wizard for normal users.
+  showFreeServerModal() {
+    if (!app.user || app.user.role === 'admin') return this.showCreateServerModal();
+    const modalContainer = document.getElementById('modal-container');
+    if (!modalContainer) return;
+    const initialName = this.generateServerName('minecraft');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-3xl border border-white/15 shadow-2xl space-y-5">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div>
+              <h3 class="text-lg font-black text-white flex items-center gap-2"><i data-lucide="gift" class="w-5 h-5 text-cyan-400"></i> Create Silver Free</h3>
+              <p class="text-[11px] text-slate-400 mt-1">One free server per account • fixed resources • 1 backup</p>
+            </div>
+            <button type="button" onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          <form onsubmit="admin.handleFreeServerCreate(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-2">Server Type</label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                ${[['minecraft','box','Minecraft'],['nodejs','cpu','Node.js'],['python','terminal','Python'],['java','coffee','Java']].map(([value, icon, label], i) => `
+                  <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-1.5 cursor-pointer hover:border-cyan-400 transition">
+                    <input type="radio" name="free_server_type" value="${value}" ${i === 0 ? 'checked' : ''} onchange="admin.onFreeServerTypeChange()" class="accent-cyan-400">
+                    <i data-lucide="${icon}" class="w-5 h-5 text-cyan-400"></i><span class="text-xs font-bold text-white">${label}</span>
+                  </label>`).join('')}
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label class="block text-xs font-semibold text-slate-300 mb-1">Server Name</label><input id="free-server-name" value="${app.escapeHtml(initialName)}" required maxlength="64" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs text-white"></div>
+              <div><label class="block text-xs font-semibold text-slate-300 mb-1">Runtime / Java Version</label><select id="free-server-image" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs text-white"></select></div>
+            </div>
+            <div id="free-minecraft-options" class="space-y-3">
+              <div><label class="block text-xs font-semibold text-slate-300 mb-1">Minecraft Engine</label><select id="free-minecraft-engine" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs text-white"><option value="paper">Paper</option><option value="purpur">Purpur</option><option value="fabric">Fabric</option><option value="forge">Forge</option><option value="neoforge">NeoForge</option><option value="vanilla">Vanilla</option><option value="spigot">Spigot</option><option value="folia">Folia</option><option value="bungeecord">BungeeCord (1 GB)</option><option value="velocity">Velocity (1 GB)</option></select></div>
+              <div><label class="block text-xs font-semibold text-slate-300 mb-1">Minecraft Version</label><input id="free-minecraft-version" value="1.21.4" placeholder="e.g. 1.21.4" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs text-white"></div>
+            </div>
+            <div class="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3 text-[11px] text-slate-300">Free resources: <strong class="text-cyan-300">Minecraft 2 GB RAM / 100% CPU / 5 GB Disk</strong>; applications 512 MB RAM / 50% CPU / 1 GB Disk. Domains and Minecraft downloads remain available.</div>
+            <button id="free-server-submit" class="btn-cyber w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i data-lucide="rocket" class="w-4 h-4"></i> Create Silver Free</button>
+          </form>
+        </div>
+      </div>`;
+    this.onFreeServerTypeChange();
+    if (window.lucide) lucide.createIcons();
+  }
+
+  onFreeServerTypeChange() {
+    const type = document.querySelector('input[name="free_server_type"]:checked')?.value || 'minecraft';
+    const options = {
+      minecraft: [['Java 25', 'ghcr.io/pterodactyl/yolks:java_25'], ['Java 21', 'ghcr.io/pterodactyl/yolks:java_21'], ['Java 17', 'ghcr.io/pterodactyl/yolks:java_17'], ['Java 11', 'ghcr.io/pterodactyl/yolks:java_11'], ['Java 8', 'ghcr.io/pterodactyl/yolks:java_8']],
+      nodejs: [['Node.js 25', 'ghcr.io/ptero-eggs/yolks:nodejs_25'], ['Node.js 22', 'ghcr.io/ptero-eggs/yolks:nodejs_22'], ['Node.js 20', 'ghcr.io/ptero-eggs/yolks:nodejs_20'], ['Node.js 18', 'ghcr.io/ptero-eggs/yolks:nodejs_18'], ['Node.js 16', 'ghcr.io/ptero-eggs/yolks:nodejs_16'], ['Node.js 14', 'ghcr.io/ptero-eggs/yolks:nodejs_14'], ['Node.js 12', 'ghcr.io/ptero-eggs/yolks:nodejs_12']],
+      python: [['Python 3.13', 'ghcr.io/ptero-eggs/yolks:python_3.13'], ['Python 3.12', 'ghcr.io/ptero-eggs/yolks:python_3.12'], ['Python 3.11', 'ghcr.io/ptero-eggs/yolks:python_3.11'], ['Python 3.10', 'ghcr.io/ptero-eggs/yolks:python_3.10'], ['Python 3.9', 'ghcr.io/ptero-eggs/yolks:python_3.9'], ['Python 3.8', 'ghcr.io/ptero-eggs/yolks:python_3.8'], ['Python 3.7', 'ghcr.io/ptero-eggs/yolks:python_3.7'], ['Python 2.7', 'ghcr.io/ptero-eggs/yolks:python_2.7']],
+      java: [['Java 21', 'ghcr.io/pterodactyl/yolks:java_21'], ['Java 19', 'ghcr.io/pterodactyl/yolks:java_19'], ['Java 18', 'ghcr.io/pterodactyl/yolks:java_18'], ['Java 17', 'ghcr.io/pterodactyl/yolks:java_17'], ['Java 16', 'ghcr.io/pterodactyl/yolks:java_16'], ['Java 11', 'ghcr.io/pterodactyl/yolks:java_11'], ['Java 8', 'ghcr.io/pterodactyl/yolks:java_8']]
+    };
+    const select = document.getElementById('free-server-image');
+    if (select) select.innerHTML = (options[type] || options.minecraft).map(([label, value]) => `<option value="${value}">${label}</option>`).join('');
+    const mc = document.getElementById('free-minecraft-options');
+    if (mc) mc.classList.toggle('hidden', type !== 'minecraft');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async handleFreeServerCreate(e) {
+    e.preventDefault();
+    const type = document.querySelector('input[name="free_server_type"]:checked')?.value || 'minecraft';
+    const name = document.getElementById('free-server-name')?.value.trim();
+    const btn = document.getElementById('free-server-submit');
+    if (!name) return app.toast('Server name is required.', 'warning');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="animate-spin">⏳</span> Creating...'; }
+    try {
+      const data = await app.api('/api/servers', { method: 'POST', body: JSON.stringify({
+        name, description: 'Nuvyra Silver Free Server', server_type: type,
+        docker_image: document.getElementById('free-server-image')?.value,
+        mc_jar_type: document.getElementById('free-minecraft-engine')?.value || 'paper',
+        mc_jar_version: document.getElementById('free-minecraft-version')?.value || '1.21.4'
+      }) });
+      if (data.success) { document.getElementById('modal-container').innerHTML = ''; app.toast('Silver Free server created successfully!', 'success'); app.navigate(`server-manage/${data.serverId}/console`); }
+    } catch (err) { app.toast(err.message || 'Failed to create Free Server.', 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="rocket" class="w-4 h-4"></i> Create Silver Free'; if (window.lucide) lucide.createIcons(); } }
+  }
+
   // Show Server Creation Wizard (with MCJars integration & Docker templates - Admin Only)
   async showCreateServerModal() {
     if (!app.user || app.user.role !== 'admin') {
@@ -1609,9 +1686,6 @@ class AdminManager {
               <h3 class="text-lg font-black text-white flex items-center gap-2">
                 <i data-lucide="server" class="w-5 h-5 text-cyan-400"></i> Deploy New Server Instance
               </h3>
-              <a href="/deploy.php" target="_blank" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-[10px] font-mono font-bold flex items-center gap-1 transition" title="Open Full Page PHP Deployment Portal">
-                <i data-lucide="external-link" class="w-3 h-3"></i> Full Page PHP
-              </a>
             </div>
             <button onclick="document.getElementById('modal-container').innerHTML=''" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
               <i data-lucide="x" class="w-4 h-4"></i>
