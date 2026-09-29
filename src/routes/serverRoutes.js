@@ -601,16 +601,16 @@ router.post('/:id/change-version', authenticate, requireServerAccess('settings.e
   }
 });
 
-// Delete Server - Only Administrators can delete servers
-router.delete('/:id', authenticate, (req, res, next) => {
-  if (!req.user || req.user.role !== 'admin') {
+// Delete Server - Administrators or the server owner can delete their server.
+router.delete('/:id', authenticate, requireServerAccess(), (req, res, next) => {
+  if (!req.user || (req.user.role !== 'admin' && !req.isOwner)) {
     return res.status(403).json({
       success: false,
-      error: 'Permission denied: Only administrators can delete servers. Normal users cannot delete servers.'
+      error: 'Permission denied: only administrators or the server owner can delete this server.'
     });
   }
   next();
-}, requireServerAccess(), async (req, res) => {
+}, async (req, res) => {
   const serverId = req.params.id;
   try {
     const server = req.server;
