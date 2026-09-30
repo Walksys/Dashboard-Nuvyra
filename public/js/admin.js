@@ -2183,9 +2183,33 @@ class AdminManager {
 
     const resources = document.getElementById('srv-create-ram-val')?.closest('.space-y-3.pt-1');
     if (resources) resources.classList.add('hidden');
+    this.renderFreeImageCards(document.querySelector('input[name="create_srv_type"]:checked')?.value || 'minecraft');
     const submit = document.querySelector('#modal-container form button[type="submit"]');
     if (submit) submit.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Create Server Free';
     if (window.lucide) lucide.createIcons();
+  }
+
+  renderFreeImageCards(type) {
+    const select = document.getElementById('srv-docker-image');
+    if (!select || !this.freeDeployMode) return;
+    let cards = document.getElementById('free-runtime-cards');
+    if (!cards) {
+      cards = document.createElement('div');
+      cards.id = 'free-runtime-cards';
+      select.insertAdjacentElement('afterend', cards);
+    }
+    select.classList.add('hidden');
+    const palettes = { minecraft: ['border-cyan-400/40', 'bg-cyan-500/10', 'text-cyan-300'], nodejs: ['border-purple-400/40', 'bg-purple-500/10', 'text-purple-300'], python: ['border-emerald-400/40', 'bg-emerald-500/10', 'text-emerald-300'], java: ['border-amber-400/40', 'bg-amber-500/10', 'text-amber-300'] };
+    const [border, bg, text] = palettes[type] || palettes.minecraft;
+    const options = Array.from(select.options);
+    cards.innerHTML = `<div class="flex items-center justify-between mb-2 mt-3"><span class="text-xs font-semibold text-slate-300">Choose ${type === 'nodejs' ? 'Node.js' : type === 'python' ? 'Python' : type === 'java' ? 'Java' : 'Java Runtime'} Version</span><span class="text-[10px] text-slate-500">${options.length} available</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${options.map((option, index) => { const label = option.textContent.split(' (')[0]; const selected = option.value === select.value || (!select.value && index === 0); return `<button type="button" onclick="admin.selectFreeRuntime('${option.value}')" class="p-3 rounded-xl text-left border ${selected ? `${border} ${bg} ring-1 ring-current` : 'border-white/10 bg-slate-900/50 hover:border-white/30'} transition"><span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${selected ? bg.replace('/10', '') : 'bg-slate-600'}"></span><strong class="text-xs ${selected ? text : 'text-slate-200'}">${label}</strong></span><span class="block text-[9px] text-slate-500 mt-1 truncate">Docker runtime</span></button>`; }).join('')}</div>`;
+  }
+
+  selectFreeRuntime(value) {
+    const select = document.getElementById('srv-docker-image');
+    if (!select) return;
+    select.value = value;
+    this.renderFreeImageCards(document.querySelector('input[name="create_srv_type"]:checked')?.value || 'minecraft');
   }
 
   initDeployVersionChanger() {
@@ -2294,6 +2318,7 @@ class AdminManager {
 
   onDeployVersionChange(version) {
     this.autoMatchDeployJava(version);
+    if (this.freeDeployMode) this.renderFreeImageCards('minecraft');
     this.renderDeployQuickVersionPills();
     // Update description if in auto mode
     const tag = document.getElementById('srv-desc-mode-tag');
@@ -2451,6 +2476,7 @@ class AdminManager {
     select.innerHTML = list.map(item => `
       <option value="${item.value}">${item.label}</option>
     `).join('');
+    if (this.freeDeployMode) this.renderFreeImageCards(type);
   }
 
   onServerTypeChange(type) {
