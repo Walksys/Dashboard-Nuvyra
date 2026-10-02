@@ -101,6 +101,23 @@ class SettingsManager {
               </div>
             </div>
 
+            <!-- Free Server Control -->
+            <div class="glass-panel p-6 rounded-3xl border border-cyan-500/25 bg-cyan-950/10 space-y-4">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3"><div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0"><i data-lucide="gift" class="w-5 h-5 text-cyan-300"></i></div><div><h3 class="text-sm font-bold text-white">Free Server Control</h3><p class="text-[11px] text-slate-400 mt-1">Enable Create Server Free and define fixed resources for normal accounts.</p></div></div>
+                <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="set-free-server-enabled" class="sr-only peer"><div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div></label>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-white/5">
+                <label class="text-[11px] text-slate-400">Minecraft RAM (MB)<input id="set-free-mc-ram" type="number" min="256" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
+                <label class="text-[11px] text-slate-400">Minecraft CPU (%)<input id="set-free-mc-cpu" type="number" min="1" max="100" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
+                <label class="text-[11px] text-slate-400">Minecraft Disk (MB)<input id="set-free-mc-disk" type="number" min="512" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
+                <label class="text-[11px] text-slate-400">Apps RAM (MB)<input id="set-free-app-ram" type="number" min="128" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
+                <label class="text-[11px] text-slate-400">Apps CPU (%)<input id="set-free-app-cpu" type="number" min="1" max="100" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
+                <label class="text-[11px] text-slate-400">Apps Disk (MB)<input id="set-free-app-disk" type="number" min="256" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
+              </div>
+              <label class="block text-[11px] text-slate-400">Panel Version<input id="set-panel-version" type="text" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs font-mono" placeholder="2.5.3"></label>
+            </div>
+
             <!-- Card 0: Active Theme Selection (NookTheme vs Arix Theme v2.1.3) -->
             <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
@@ -1022,6 +1039,14 @@ class SettingsManager {
       document.getElementById('set-panel-logo').value = s.panel_logo || '';
       document.getElementById('set-favicon-logo').value = s.favicon_logo || '';
       document.getElementById('set-discord-webhook').value = s.discord_webhook_url || '';
+      document.getElementById('set-free-server-enabled').checked = s.free_server_enabled === '1';
+      document.getElementById('set-free-mc-ram').value = s.free_minecraft_ram_mb || '2048';
+      document.getElementById('set-free-mc-cpu').value = s.free_minecraft_cpu || '100';
+      document.getElementById('set-free-mc-disk').value = s.free_minecraft_disk_mb || '5120';
+      document.getElementById('set-free-app-ram').value = s.free_app_ram_mb || '512';
+      document.getElementById('set-free-app-cpu').value = s.free_app_cpu || '50';
+      document.getElementById('set-free-app-disk').value = s.free_app_disk_mb || '1024';
+      document.getElementById('set-panel-version').value = s.panel_version || '2.5.3';
 
       const bgUrl = s.panel_bg || '';
       const bgType = s.panel_bg_type || (/\.(mp4|webm|mkv|mov)($|\?)/i.test(bgUrl) ? 'video' : 'image');
@@ -2010,6 +2035,14 @@ class SettingsManager {
       panel_logo: document.getElementById('set-panel-logo')?.value.trim() || '',
       favicon_logo: document.getElementById('set-favicon-logo')?.value.trim() || '',
       discord_webhook_url: document.getElementById('set-discord-webhook')?.value.trim() || '',
+      free_server_enabled: document.getElementById('set-free-server-enabled')?.checked ? '1' : '0',
+      free_minecraft_ram_mb: document.getElementById('set-free-mc-ram')?.value || '2048',
+      free_minecraft_cpu: document.getElementById('set-free-mc-cpu')?.value || '100',
+      free_minecraft_disk_mb: document.getElementById('set-free-mc-disk')?.value || '5120',
+      free_app_ram_mb: document.getElementById('set-free-app-ram')?.value || '512',
+      free_app_cpu: document.getElementById('set-free-app-cpu')?.value || '50',
+      free_app_disk_mb: document.getElementById('set-free-app-disk')?.value || '1024',
+      panel_version: document.getElementById('set-panel-version')?.value.trim() || '2.5.3',
       panel_bg: this.currentTheme.bg || '',
       panel_bg_type: this.currentTheme.bgType || 'image',
       panel_bg_category: this.activeCategory || 'all',

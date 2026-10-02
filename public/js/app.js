@@ -269,7 +269,7 @@ class App {
       }
       const nuvyraBrand = (localStorage.getItem('nuvyra_brand_name') || s.nuvyra_brand_name || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra');
       if (subNameEl) {
-        subNameEl.innerText = `${nuvyraBrand} v2.0.2`;
+        subNameEl.innerText = `${nuvyraBrand} v${s.panel_version || '2.5.3'}`;
       }
     } else if (activeTheme === 'liquidx') {
       document.documentElement.classList.add('theme-liquidx');
@@ -956,7 +956,7 @@ class App {
               <i data-lucide="plus-circle" class="w-4 h-4"></i> Deploy New Server
             </button>
           ` : `
-            <button onclick="admin.showFreeServerModal()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
+            <button onclick="admin.showFreeServerModal()" ${this.settings?.free_server_enabled !== '1' ? 'disabled title="Free Server is disabled by administrator"' : ''} class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg ${this.settings?.free_server_enabled !== '1' ? 'opacity-50 cursor-not-allowed' : ''}">
               <i data-lucide="gift" class="w-4 h-4"></i> Create Server Free
             </button>
           `}
@@ -1053,7 +1053,7 @@ class App {
               </button>
             ` : `
               <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your one free server with fixed resources, or contact an administrator for an assigned server.</p>
-              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
+              <button onclick="admin.showFreeServerModal()" ${this.settings?.free_server_enabled !== '1' ? 'disabled title="Free Server is disabled by administrator"' : ''} class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4 ${this.settings?.free_server_enabled !== '1' ? 'opacity-50 cursor-not-allowed' : ''}"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
             `}
           </div>
         `;
@@ -1099,7 +1099,7 @@ class App {
                 <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Server
               </button>
             ` : `
-              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"><i data-lucide="gift" class="w-4 h-4"></i> Create Server Free</button>
+              <button onclick="admin.showFreeServerModal()" ${this.settings?.free_server_enabled !== '1' ? 'disabled title="Free Server is disabled by administrator"' : ''} class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 ${this.settings?.free_server_enabled !== '1' ? 'opacity-50 cursor-not-allowed' : ''}"><i data-lucide="gift" class="w-4 h-4"></i> Create Server Free</button>
             `}
           </div>
         </div>
@@ -1134,7 +1134,7 @@ class App {
               </button>
             ` : `
               <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">You do not have an active server. Create your one free server or contact an administrator.</p>
-              <button onclick="admin.showFreeServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
+              <button onclick="admin.showFreeServerModal()" ${this.settings?.free_server_enabled !== '1' ? 'disabled title="Free Server is disabled by administrator"' : ''} class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4 ${this.settings?.free_server_enabled !== '1' ? 'opacity-50 cursor-not-allowed' : ''}"><i data-lucide="gift" class="w-3.5 h-3.5 inline"></i> Create Server Free</button>
             `}
           </div>
         `;

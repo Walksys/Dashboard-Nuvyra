@@ -24,7 +24,17 @@ async function seedDatabase() {
     { key: 'blur_bar', value: '16', description: 'Backdrop Blur filter radius in pixels (0 to 40)' },
     { key: 'registration_enabled', value: '1', description: 'Allow public user self-registration' },
     { key: 'default_language', value: 'en', description: 'Default UI language' },
-    { key: 'discord_webhook_url', value: '', description: 'Discord webhook for registration and server creation notifications' }
+    { key: 'discord_webhook_url', value: '', description: 'Discord webhook for registration and server creation notifications' },
+    { key: 'free_server_enabled', value: '0', description: 'Enable Create Server Free for normal users' },
+    { key: 'free_minecraft_ram_mb', value: '2048', description: 'Free Minecraft RAM in MB' },
+    { key: 'free_minecraft_cpu', value: '100', description: 'Free Minecraft CPU percentage' },
+    { key: 'free_minecraft_disk_mb', value: '5120', description: 'Free Minecraft disk in MB' },
+    { key: 'free_proxy_ram_mb', value: '1024', description: 'Free proxy RAM in MB' },
+    { key: 'free_proxy_disk_mb', value: '1024', description: 'Free proxy disk in MB' },
+    { key: 'free_app_ram_mb', value: '512', description: 'Free Node.js, Python and Java RAM in MB' },
+    { key: 'free_app_cpu', value: '50', description: 'Free Node.js, Python and Java CPU percentage' },
+    { key: 'free_app_disk_mb', value: '1024', description: 'Free Node.js, Python and Java disk in MB' },
+    { key: 'panel_version', value: '2.5.3', description: 'Displayed panel version' }
   ];
 
   for (const s of defaultSettings) {

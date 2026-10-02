@@ -1577,6 +1577,9 @@ class AdminManager {
   // Reuse the full Admin deployment design for normal users, with server-side Free limits.
   showFreeServerModal() {
     if (!app.user || app.user.role === 'admin') return this.showCreateServerModal();
+    if (app.settings?.free_server_enabled !== '1') {
+      return app.toast('Free Server creation is currently disabled by the administrator.', 'warning');
+    }
     return this.showCreateServerModal({ freeMode: true });
   }
 
@@ -2191,7 +2194,7 @@ class AdminManager {
 
   renderFreeImageCards(type) {
     const select = document.getElementById('srv-docker-image');
-    if (!select || !this.freeDeployMode) return;
+    if (!select) return;
     let cards = document.getElementById('free-runtime-cards');
     if (!cards) {
       cards = document.createElement('div');
@@ -2476,7 +2479,7 @@ class AdminManager {
     select.innerHTML = list.map(item => `
       <option value="${item.value}">${item.label}</option>
     `).join('');
-    if (this.freeDeployMode) this.renderFreeImageCards(type);
+    this.renderFreeImageCards(type);
   }
 
   onServerTypeChange(type) {

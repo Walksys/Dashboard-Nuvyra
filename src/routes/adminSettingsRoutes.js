@@ -119,7 +119,17 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       'tutorials_enabled',
       'tutorials_autostart_enabled',
       'nebula_config',
-      'discord_webhook_url'
+      'discord_webhook_url',
+      'free_server_enabled',
+      'free_minecraft_ram_mb',
+      'free_minecraft_cpu',
+      'free_minecraft_disk_mb',
+      'free_proxy_ram_mb',
+      'free_proxy_disk_mb',
+      'free_app_ram_mb',
+      'free_app_cpu',
+      'free_app_disk_mb',
+      'panel_version'
     ];
 
     for (const [key, value] of Object.entries(updates)) {

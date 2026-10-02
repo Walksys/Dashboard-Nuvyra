@@ -91,6 +91,10 @@ router.post('/', authenticate, async (req, res) => {
 
     if (!isAdmin) {
       const allowedFreeTypes = ['minecraft', 'nodejs', 'python', 'java'];
+      const enabledSetting = await query.get('SELECT `value` FROM settings WHERE `key` = ?', ['free_server_enabled']);
+      if (String(enabledSetting?.value || '0') !== '1') {
+        return res.status(403).json({ success: false, error: 'Free Server creation is currently disabled by the administrator.' });
+      }
       if (!allowedFreeTypes.includes(server_type)) {
         return res.status(403).json({ success: false, error: 'Free accounts may create Minecraft, Node.js, Python, or Java servers only.' });
       }
@@ -109,16 +113,22 @@ router.post('/', authenticate, async (req, res) => {
       env_vars = {};
       is_free = 1;
 
+      const freeValue = async (key, fallback, min, max) => {
+        const row = await query.get('SELECT `value` FROM settings WHERE `key` = ?', [key]);
+        const value = Number(row?.value);
+        return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+      };
+
       if (server_type === 'minecraft') {
         mc_jar_type = ['paper', 'purpur', 'fabric', 'forge', 'neoforge', 'vanilla', 'spigot', 'folia', 'bungeecord', 'velocity'].includes(String(mc_jar_type).toLowerCase()) ? String(mc_jar_type).toLowerCase() : 'paper';
         mc_jar_version = mc_jar_version || '1.21.4';
-        memory_mb = ['bungeecord', 'velocity'].includes(mc_jar_type) ? 1024 : 2048;
-        cpu_limit = 100;
-        disk_mb = ['bungeecord', 'velocity'].includes(mc_jar_type) ? 1024 : 5120;
+        memory_mb = ['bungeecord', 'velocity'].includes(mc_jar_type) ? await freeValue('free_proxy_ram_mb', 1024, 128, 65536) : await freeValue('free_minecraft_ram_mb', 2048, 256, 65536);
+        cpu_limit = await freeValue('free_minecraft_cpu', 100, 1, 100);
+        disk_mb = ['bungeecord', 'velocity'].includes(mc_jar_type) ? await freeValue('free_proxy_disk_mb', 1024, 256, 1048576) : await freeValue('free_minecraft_disk_mb', 5120, 512, 1048576);
       } else {
-        memory_mb = 512;
-        cpu_limit = 50;
-        disk_mb = 1024;
+        memory_mb = await freeValue('free_app_ram_mb', 512, 128, 65536);
+        cpu_limit = await freeValue('free_app_cpu', 50, 1, 100);
+        disk_mb = await freeValue('free_app_disk_mb', 1024, 256, 1048576);
       }
     }
 
