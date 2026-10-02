@@ -42,7 +42,7 @@ const supportRoutes = require('./routes/supportRoutes');
 
 
 async function bootstrap() {
-  console.log('🚀 Initializing Nuvyra Core Engine...');
+  console.log('🚀 Initializing Casa Hosting Core Engine...');
 
   // Initialize DB & Seed
   await initDatabase();
@@ -126,7 +126,7 @@ async function bootstrap() {
 
   console.log(`
 ╔══════════════════════════════════════════════════════╗
-║               🎮 Nuvyra READY TO USE                 ║
+║               🎮 Casa Hosting READY TO USE                 ║
 ╠══════════════════════════════════════════════════════╣
 ║  • Web Panel UI:    http://localhost:${config.PORT_WEB}            ║
 ║  • Daemon/API Port: http://localhost:${config.PORT_API}            ║

@@ -1,4 +1,4 @@
-// Nuvyra Authentication Controller
+// Casa Hosting Authentication Controller
 class AuthController {
   showLoginModal() {
     const modalContainer = document.getElementById('modal-container');
@@ -7,7 +7,7 @@ class AuthController {
 
     const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
     const isNuvyra = activeTheme === 'nuvyra';
-    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra')) : 'Nuvyra';
+    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Casa Hosting').replace(/^Nuvyra$/i, 'Casa Hosting')) : 'Casa Hosting';
     const loginLogo = isNuvyra ? (localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp') : null;
 
     modalContainer.innerHTML = `
@@ -82,7 +82,7 @@ class AuthController {
 
     const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
     const isNuvyra = activeTheme === 'nuvyra';
-    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra')) : 'Nuvyra';
+    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Casa Hosting').replace(/^Nuvyra$/i, 'Casa Hosting')) : 'Casa Hosting';
     const loginLogo = isNuvyra ? (localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp') : null;
 
     modalContainer.innerHTML = `

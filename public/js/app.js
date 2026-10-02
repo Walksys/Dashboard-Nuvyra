@@ -245,7 +245,7 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/assets/nebula-logo.svg';
       }
-      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Casa Hosting' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Casa Hosting'))) {
         subNameEl.innerText = 'Nebula Theme v2.0';
       }
       if (window.nebulaEditor) {
@@ -267,7 +267,7 @@ class App {
       if (logoEl) {
         logoEl.src = nuvyraLogo;
       }
-      const nuvyraBrand = (localStorage.getItem('nuvyra_brand_name') || s.nuvyra_brand_name || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra');
+      const nuvyraBrand = (localStorage.getItem('nuvyra_brand_name') || s.nuvyra_brand_name || 'Casa Hosting').replace(/^Nuvyra$/i, 'Casa Hosting');
       if (subNameEl) {
         subNameEl.innerText = `${nuvyraBrand} v${s.panel_version || '2.5.3'}`;
       }
@@ -276,7 +276,7 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/assets/liquidx-logo.svg';
       }
-      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Casa Hosting' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Casa Hosting'))) {
         subNameEl.innerText = 'LiquidX Theme v1.0';
       }
       if (s.liquidx_primary_color) {
@@ -287,7 +287,7 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/arix/Arix.png';
       }
-      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Nuvyra' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Nuvyra'))) {
+      if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Casa Hosting' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Casa Hosting'))) {
         subNameEl.innerText = 'Arix Theme v2.1.3';
       }
       if (s.arix_primary_color) {
@@ -298,8 +298,8 @@ class App {
       if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
         logoEl.src = '/assets/nuvyra-logo.svg';
       }
-      if (subNameEl && (subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Nuvyra'))) {
-        subNameEl.innerText = 'Nuvyra Server Engine';
+      if (subNameEl && (subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Casa Hosting'))) {
+        subNameEl.innerText = 'Casa Hosting Server Engine';
       }
     }
 

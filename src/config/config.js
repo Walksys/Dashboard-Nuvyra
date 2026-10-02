@@ -8,7 +8,7 @@ module.exports = {
   PORT_SFTP: parseInt(process.env.PORT_SFTP || '3004', 10),
 
   // Secrets & JWT
-  JWT_SECRET: process.env.JWT_SECRET || 'nuvyra_super_secure_jwt_secret_key_2026_x892!',
+  JWT_SECRET: process.env.JWT_SECRET || 'casa_super_secure_jwt_secret_key_2026_x892!',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   CURSEFORGE_API_KEY: process.env.CURSEFORGE_API_KEY || '$2a$10$2LouREiMl.mx0kVBK.RlK.nloje4XS3oF8uSw809VZr07O.0A5cLq',
   CURSEFORGE_BASE_URL: process.env.CURSEFORGE_BASE_URL || 'https://api.curseforge.com/v1',
@@ -16,8 +16,8 @@ module.exports = {
   // Storage Paths
   BASE_DIR: path.resolve(__dirname, '../../'),
   DATA_DIR: path.resolve(__dirname, '../../data'),
-  SERVERS_DIR: path.resolve(__dirname, '../../nuvyra/servers'),
-  BACKUPS_DIR: path.resolve(__dirname, '../../nuvyra/backups'),
+  SERVERS_DIR: path.resolve(__dirname, '../../casa/servers'),
+  BACKUPS_DIR: path.resolve(__dirname, '../../casa/backups'),
   UPLOADS_DIR: path.resolve(__dirname, '../../public/uploads'),
 
   // Database Configuration (MariaDB / MySQL)

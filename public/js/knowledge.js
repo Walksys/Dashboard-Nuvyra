@@ -1,4 +1,4 @@
-// Nuvyra Interactive Auto Tutorials Module
+// Casa Hosting Interactive Auto Tutorials Module
 class TutorialsManager {
   constructor() {
     this.activeCategory = 'all';
@@ -9,7 +9,7 @@ class TutorialsManager {
         category: 'getting-started',
         badge: 'Auto Guided Tour',
         badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        title: 'Complete Nuvyra Dashboard & Navigation Auto-Tour',
+        title: 'Complete Casa Hosting Dashboard & Navigation Auto-Tour',
         duration: '2 min auto-tour',
         interactiveAction: 'tour:panel-tour',
         summary: 'Take an automated guided walkthrough of server cards, live telemetry meters, marketplace addons, and custom themes.',
