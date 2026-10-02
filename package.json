@@ -1,7 +1,7 @@
 {
-  "name": "nuvyra",
+  "name": "casa-hosting",
   "version": "2.5.2",
-  "description": "Nuvyra - High-Performance Game & Application Server Web Management Panel in Node.js",
+  "description": "Casa Hosting - High-Performance Game & Application Server Web Management Panel in Node.js",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -27,7 +27,7 @@
     "sftp",
     "panel"
   ],
-  "author": "Nuvyra Team",
+  "author": "Casa Hosting",
   "license": "MIT",
   "dependencies": {
     "archiver": "^7.0.1",

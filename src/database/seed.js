@@ -8,9 +8,9 @@ async function seedDatabase() {
 
   // Default Settings
   const defaultSettings = [
-    { key: 'panel_name', value: 'Nuvyra', description: 'Application display name' },
+    { key: 'panel_name', value: 'Casa', description: 'Application display name' },
     { key: 'panel_logo', value: '', description: 'Panel Logo image URL or uploaded file path' },
-    { key: 'favicon_name', value: 'Nuvyra', description: 'Favicon tab title' },
+    { key: 'favicon_name', value: 'Casa', description: 'Favicon tab title' },
     { key: 'favicon_logo', value: '', description: 'Favicon icon URL or uploaded path' },
     { key: 'panel_bg', value: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=3840&q=90', description: 'Panel Background Image or Video URL' },
     { key: 'panel_bg_type', value: 'image', description: 'image or video' },

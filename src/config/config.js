@@ -28,7 +28,7 @@ module.exports = {
   DB_NAME: process.env.DB_NAME || 'panel',
 
   // Panel Defaults
-  DEFAULT_PANEL_NAME: 'Nuvyra',
+  DEFAULT_PANEL_NAME: 'Casa',
   DEFAULT_THEME: {
     transparency: 18, // 0 - 100%
     blur: 16,        // 0 - 40px

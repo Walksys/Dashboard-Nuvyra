@@ -38,7 +38,6 @@ const autoBackupRoutes = require('./routes/autoBackupRoutes');
 const autoBackupService = require('./services/autoBackupService');
 const socialLoginRoutes = require('./routes/socialLoginRoutes');
 const adminUpdateRoutes = require('./routes/adminUpdateRoutes');
-const developerProfileRoutes = require('./routes/developerProfileRoutes');
 const supportRoutes = require('./routes/supportRoutes');
 
 
@@ -99,8 +98,6 @@ async function bootstrap() {
   app.use('/api/activity', activityRoutes);
   app.use('/api/marketplace', marketplaceRoutes);
   app.use('/api/servers/:serverId/marketplace', marketplaceRoutes);
-  app.use('/api/public', developerProfileRoutes);
-  app.use('/api/developer', developerProfileRoutes);
   app.use('/api', supportRoutes);
 
   // Fallback to index.html for SPA routing
