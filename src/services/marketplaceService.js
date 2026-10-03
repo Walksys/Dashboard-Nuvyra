@@ -5,7 +5,7 @@ const config = require('../config/config');
 const fileManagerService = require('./fileManagerService');
 
 const MODRINTH_API = 'https://api.modrinth.com/v2';
-const USER_AGENT = 'Nuvyra-Game-Server-Panel/1.0.0 (contact@nuvyra.local)';
+const USER_AGENT = 'Casa-Game-Server-Panel/1.0.0 (contact@casa.local)';
 
 const apiClient = axios.create({
   baseURL: MODRINTH_API,

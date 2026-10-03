@@ -1,12 +1,12 @@
 // Casa Hosting Application Core & Router
 class App {
   constructor() {
-    this.token = localStorage.getItem('nuvyra_token') || null;
+    this.token = localStorage.getItem('casa_token') || null;
     this.user = null;
     this.currentView = 'user-overview';
     this.currentServerId = null;
     this.settings = {};
-    this.deviceMode = localStorage.getItem('nuvyra_device_mode') || 'auto';
+    this.deviceMode = localStorage.getItem('casa_device_mode') || 'auto';
     this.init();
   }
 
@@ -18,7 +18,7 @@ class App {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('social_token')) {
         const token = urlParams.get('social_token');
-        localStorage.setItem('nuvyra_token', token);
+        localStorage.setItem('casa_token', token);
         this.token = token;
         window.history.replaceState({}, document.title, window.location.pathname + (window.location.hash || '#overview'));
         setTimeout(() => this.toast('Signed in via Social Login successfully!', 'success'), 300);
@@ -42,8 +42,8 @@ class App {
 
     // Auto-Tutorial Guided Tour on first login
     try {
-      const autoTourEnabled = (this.settings?.tutorials_autostart_enabled === '1' || localStorage.getItem('nuvyra_tutorials_autostart_enabled') === '1');
-      const autoTourDone = localStorage.getItem('nuvyra_autotour_done') === '1';
+      const autoTourEnabled = (this.settings?.tutorials_autostart_enabled === '1' || localStorage.getItem('casa_tutorials_autostart_enabled') === '1');
+      const autoTourDone = localStorage.getItem('casa_autotour_done') === '1';
       if (autoTourEnabled && !autoTourDone && window.autoTutorial && this.user) {
         setTimeout(() => {
           if (this.user && !document.getElementById('tutorial-tooltip-card')) {
@@ -188,11 +188,11 @@ class App {
     // Theme Mode (Dark / Light)
     const isLight = s.theme_mode === 'light';
     if (isLight) {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark', 'casa-dark-mode');
       document.documentElement.classList.add('light');
     } else {
       document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark', 'casa-dark-mode');
     }
 
     // Apply Background (Image or Video)
@@ -218,12 +218,12 @@ class App {
       }
     }
 
-    // Active UI Theme (Arix Theme vs NookTheme vs LiquidX Theme vs Nuvyra Theme)
-    const activeTheme = s.active_theme || localStorage.getItem('nuvyra_active_theme') || 'arix';
-    localStorage.setItem('nuvyra_active_theme', activeTheme);
+    // Active UI Theme (Arix Theme vs NookTheme vs LiquidX Theme vs Casa Theme)
+    const activeTheme = s.active_theme || localStorage.getItem('casa_active_theme') || 'arix';
+    localStorage.setItem('casa_active_theme', activeTheme);
     this.activeTheme = activeTheme;
 
-    document.documentElement.classList.remove('theme-arix', 'theme-nook', 'theme-liquidx', 'theme-nuvyra', 'theme-nebula');
+    document.documentElement.classList.remove('theme-arix', 'theme-nook', 'theme-liquidx', 'theme-casa', 'theme-nebula');
 
     const logoEl = document.getElementById('header-logo-img');
     const subNameEl = document.getElementById('header-sub-name');
@@ -242,7 +242,7 @@ class App {
 
     if (activeTheme === 'nebula') {
       document.documentElement.classList.add('theme-nebula');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/casa-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/casa-header-logo.webp')) {
         logoEl.src = '/assets/nebula-logo.svg';
       }
       if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Casa Hosting' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Casa Hosting'))) {
@@ -261,19 +261,19 @@ class App {
       }
     }
 
-    if (activeTheme === 'nuvyra') {
-      document.documentElement.classList.add('theme-nuvyra');
-      const nuvyraLogo = localStorage.getItem('nuvyra_header_logo') || s.nuvyra_header_logo || '/images/nuvyra-header-logo.webp';
+    if (activeTheme === 'casa') {
+      document.documentElement.classList.add('theme-casa');
+      const casaLogo = localStorage.getItem('casa_header_logo') || s.casa_header_logo || '/images/casa-header-logo.webp';
       if (logoEl) {
-        logoEl.src = nuvyraLogo;
+        logoEl.src = casaLogo;
       }
-      const nuvyraBrand = (localStorage.getItem('nuvyra_brand_name') || s.nuvyra_brand_name || 'Casa Hosting').replace(/^Nuvyra$/i, 'Casa Hosting');
+      const casaBrand = (localStorage.getItem('casa_brand_name') || s.casa_brand_name || 'Casa Hosting').replace(/^Casa$/i, 'Casa Hosting');
       if (subNameEl) {
-        subNameEl.innerText = `${nuvyraBrand} v${'2.5.3'}`;
+        subNameEl.innerText = `${casaBrand} v${'2.5.3'}`;
       }
     } else if (activeTheme === 'liquidx') {
       document.documentElement.classList.add('theme-liquidx');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/casa-logo.svg' || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/images/casa-header-logo.webp')) {
         logoEl.src = '/assets/liquidx-logo.svg';
       }
       if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Casa Hosting' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Casa Hosting'))) {
@@ -284,7 +284,7 @@ class App {
       }
     } else if (activeTheme === 'arix') {
       document.documentElement.classList.add('theme-arix');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/nuvyra-logo.svg' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/assets/casa-logo.svg' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/casa-header-logo.webp')) {
         logoEl.src = '/arix/Arix.png';
       }
       if (subNameEl && (!s.panel_name || s.panel_name === 'Angelillo15' || s.panel_name === 'Casa Hosting' || subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Server Engine') || subNameEl.innerText.includes('Casa Hosting'))) {
@@ -295,8 +295,8 @@ class App {
       }
     } else {
       document.documentElement.classList.add('theme-nook');
-      if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/nuvyra-header-logo.webp')) {
-        logoEl.src = '/assets/nuvyra-logo.svg';
+      if (logoEl && (!s.panel_logo || s.panel_logo === '/arix/Arix.png' || s.panel_logo === '/assets/liquidx-logo.svg' || s.panel_logo === '/images/casa-header-logo.webp')) {
+        logoEl.src = '/assets/casa-logo.svg';
       }
       if (subNameEl && (subNameEl.innerText.includes('Theme') || subNameEl.innerText.includes('Casa Hosting'))) {
         subNameEl.innerText = 'Casa Hosting Server Engine';
@@ -323,7 +323,7 @@ class App {
     // Auto Tutorials Page Toggle
     if (s.tutorials_enabled !== undefined) {
       const isTut = s.tutorials_enabled === '1' || s.tutorials_enabled === 1 || s.tutorials_enabled === true;
-      localStorage.setItem('nuvyra_tutorials_enabled', isTut ? '1' : '0');
+      localStorage.setItem('casa_tutorials_enabled', isTut ? '1' : '0');
       this.tutorialsEnabled = isTut;
       const tutNav = document.getElementById('nav-user-tutorials');
       if (tutNav) {
@@ -336,7 +336,7 @@ class App {
     }
 
     if (s.tutorials_autostart_enabled !== undefined) {
-      localStorage.setItem('nuvyra_tutorials_autostart_enabled', s.tutorials_autostart_enabled === '1' ? '1' : '0');
+      localStorage.setItem('casa_tutorials_autostart_enabled', s.tutorials_autostart_enabled === '1' ? '1' : '0');
     }
   }
 
@@ -549,7 +549,7 @@ class App {
     if (!validModes.includes(mode)) mode = 'auto';
 
     this.deviceMode = mode;
-    localStorage.setItem('nuvyra_device_mode', mode);
+    localStorage.setItem('casa_device_mode', mode);
     this.applyDeviceMode(mode, true);
 
     const dd = document.getElementById('header-device-dropdown');
@@ -663,12 +663,12 @@ class App {
     const isDark = document.documentElement.classList.contains('dark');
     const btn = document.getElementById('header-theme-toggle-btn');
     if (isDark) {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark', 'casa-dark-mode');
       document.documentElement.classList.add('light');
       if (btn) btn.innerHTML = '<i data-lucide="sun" class="w-4 h-4 text-amber-400"></i>';
     } else {
       document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark', 'casa-dark-mode');
       if (btn) btn.innerHTML = '<i data-lucide="moon" class="w-4 h-4"></i>';
     }
     if (window.lucide) lucide.createIcons();
@@ -918,7 +918,7 @@ class App {
           await marketplace.renderGlobalMarketplaceView();
         }
       } else if (hash === 'tutorials' || hash === 'user-tutorials' || hash === 'knowledge' || hash === 'user-knowledge') {
-        const isTut = this.settings?.tutorials_enabled !== '0' && localStorage.getItem('nuvyra_tutorials_enabled') !== '0';
+        const isTut = this.settings?.tutorials_enabled !== '0' && localStorage.getItem('casa_tutorials_enabled') !== '0';
         if (!isTut && (!this.user || this.user.role !== 'admin')) {
           this.toast('Tutorials page is currently disabled by administrator.', 'warning');
           this.navigate('user-overview');
@@ -949,7 +949,7 @@ class App {
           <div class="space-y-1">
             <span class="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">User Dashboard</span>
             <h2 class="text-2xl font-black text-white">Welcome back, ${this.user?.username || 'User'}!</h2>
-            <p class="text-xs text-slate-300 max-w-xl">Manage your Minecraft servers, Node.js, Python, and Java applications with ultra-low latency container orchestration.</p>
+            <p class="text-xs text-slate-300 max-w-xl">Manage your Minecraft servers, Node.js, Python, Java, and MTA applications with ultra-low latency container orchestration.</p>
           </div>
           ${this.user?.role === 'admin' ? `
             <button onclick="admin.showCreateServerModal()" class="btn-cyber px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg">
@@ -1047,7 +1047,7 @@ class App {
             <i data-lucide="server-off" class="w-12 h-12 text-slate-500 mx-auto mb-3"></i>
             <h4 class="text-sm font-bold text-slate-200">No servers deployed yet</h4>
             ${this.user?.role === 'admin' ? `
-              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your first Minecraft, Node.js, Python, or Java server to get started.</p>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your first Minecraft, Node.js, Python, Java, or MTA server to get started.</p>
               <button onclick="admin.showCreateServerModal()" class="btn-cyber px-4 py-2 rounded-xl text-xs font-semibold mt-4">
                 + Create Server
               </button>
@@ -1230,8 +1230,8 @@ class App {
 
   // HTML Template for Server Card
   renderServerCardHTML(s) {
-    if (this.activeTheme === 'nuvyra') {
-      return this.renderNuvyraServerCardHTML(s);
+    if (this.activeTheme === 'casa') {
+      return this.renderCasaServerCardHTML(s);
     }
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
     const statusCfg = this.getServerStatusConfig(s.status, isSuspended);
@@ -1240,6 +1240,7 @@ class App {
       minecraft: '🎮 Minecraft',
       nodejs: '⚡ Node.js',
       python: '🐍 Python',
+      mta: '🚗 Multi Theft Auto',
       java: '☕ Java Apps',
       lumenvm: '🖥️ VM - KVM',
       nokvm: '🛡️ VM - No-KVM',
@@ -1326,12 +1327,12 @@ class App {
     `;
   }
 
-  // Nuvyra Server Card HTML Template with Banner & Resource Telemetry
-  renderNuvyraServerCardHTML(s) {
+  // Casa Server Card HTML Template with Banner & Resource Telemetry
+  renderCasaServerCardHTML(s) {
     const isSuspended = !!s.is_suspended || s.status === 'suspended';
     const statusCfg = this.getServerStatusConfig(s.status, isSuspended);
 
-    const bannerImg = localStorage.getItem('nuvyra_server_banner') || '/images/server-banner.jpg';
+    const bannerImg = localStorage.getItem('casa_server_banner') || '/images/server-banner.jpg';
     const ipPort = `${s.ip || '127.0.0.1'}:${s.port || 25565}`;
 
     let statusText = statusCfg.label;
@@ -1340,11 +1341,11 @@ class App {
     const isRunning = !isSuspended && statusCfg.key === 'running';
 
     return `
-      <div data-server-id="${s.id}" class="nuvyra-server-card flex flex-col justify-between group relative">
+      <div data-server-id="${s.id}" class="casa-server-card flex flex-col justify-between group relative">
         <!-- Top Banner Header -->
-        <div class="nuvyra-server-card-banner" style="background-image: url('${bannerImg}');">
-          <div class="nuvyra-server-card-banner-overlay"></div>
-          <div class="nuvyra-server-card-top relative z-10 flex items-center justify-between">
+        <div class="casa-server-card-banner" style="background-image: url('${bannerImg}');">
+          <div class="casa-server-card-banner-overlay"></div>
+          <div class="casa-server-card-top relative z-10 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               ${window.customServerSort ? customServerSort.renderDragHandleHTML() : ''}
               <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-cyan-400 border border-cyan-500/30 backdrop-blur-sm">
@@ -1371,7 +1372,7 @@ class App {
         </div>
 
         <!-- Metrics & Telemetry Body -->
-        <div class="nuvyra-server-card-body p-4 space-y-3 flex-1 flex flex-col justify-between">
+        <div class="casa-server-card-body p-4 space-y-3 flex-1 flex flex-col justify-between">
           <div class="grid grid-cols-3 gap-2 text-center text-xs">
             <div class="bg-black/30 p-2 rounded-xl border border-white/5">
               <span class="text-[9px] uppercase tracking-wider text-slate-400 block mb-0.5">RAM</span>
@@ -1398,7 +1399,7 @@ class App {
 
           <!-- Quick Action Footer -->
           <div class="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-            <button onclick="app.navigate('server-manage/${s.id}/console')" class="nuvyra-btn-primary flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5">
+            <button onclick="app.navigate('server-manage/${s.id}/console')" class="casa-btn-primary flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5">
               <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Manage
             </button>
             ${isSuspended
@@ -1534,7 +1535,7 @@ class App {
                       <!-- Email -->
                       <td class="px-4 py-3 font-mono">
                         <div class="flex items-center gap-1.5">
-                          <span class="text-slate-300 text-xs truncate max-w-xs">${this.escapeHtml(u.email || 'user@nuvyra.local')}</span>
+                          <span class="text-slate-300 text-xs truncate max-w-xs">${this.escapeHtml(u.email || 'user@casa.local')}</span>
                           <button onclick="navigator.clipboard.writeText('${this.escapeHtml(u.email || '')}'); app.toast('Copied email: ${this.escapeHtml(u.email || '')}', 'info');" class="p-1 rounded hover:bg-white/10 text-slate-500 hover:text-slate-300 transition" title="Copy Email">
                             <i data-lucide="copy" class="w-3 h-3"></i>
                           </button>
@@ -1730,7 +1731,7 @@ class App {
   }
 
   logout() {
-    localStorage.removeItem('nuvyra_token');
+    localStorage.removeItem('casa_token');
     this.token = null;
     this.user = null;
     this.updateAuthUI(null);

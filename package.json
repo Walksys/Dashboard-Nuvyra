@@ -1,5 +1,5 @@
 {
-  "name": "nuvyra",
+  "name": "casa",
   "version": "2.5.3",
   "description": "Casa Hosting - High-Performance Game & Application Server Web Management Panel in Node.js",
   "main": "src/index.js",
@@ -13,9 +13,9 @@
     "createuser": "node bin/createuser.js",
     "menu": "bash menu.sh",
     "pm2:start": "pm2 start ecosystem.config.js",
-    "pm2:stop": "pm2 stop nuvyra",
-    "pm2:restart": "pm2 restart nuvyra",
-    "pm2:logs": "pm2 logs nuvyra"
+    "pm2:stop": "pm2 stop casa",
+    "pm2:restart": "pm2 restart casa",
+    "pm2:logs": "pm2 logs casa"
   },
   "keywords": [
     "casa-hosting",

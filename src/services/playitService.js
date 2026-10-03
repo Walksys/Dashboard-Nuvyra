@@ -4,7 +4,7 @@ const axios = require('axios');
 const fileManagerService = require('./fileManagerService');
 
 const PLAYIT_JAR_URL = 'https://github.com/playit-cloud/playit-minecraft-plugin/releases/latest/download/playit-minecraft-plugin.jar';
-const USER_AGENT = 'Nuvyra-Game-Server-Panel/2.0.0 (https://github.com/walksys/Nuvyra)';
+const USER_AGENT = 'Casa-Game-Server-Panel/2.0.0 (https://github.com/walksys/Casa)';
 
 class PlayitService {
   /**

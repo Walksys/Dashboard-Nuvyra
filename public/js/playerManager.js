@@ -1,5 +1,5 @@
 // ============================================================================
-// SAGA Minecraft Player Manager v1.4 (Authentic Nuvyra Edition)
+// SAGA Minecraft Player Manager v1.4 (Authentic Casa Edition)
 // Compatible with SAGA Player Manager v1.4 from BuiltByBit / add-thame.git
 // ============================================================================
 
@@ -212,7 +212,7 @@ class SagaPlayerManager {
 
     const motdEl = document.getElementById('saga-srv-motd');
     if (motdEl) {
-      motdEl.textContent = info.motd?.formatted || 'A Minecraft Server Powered by Nuvyra';
+      motdEl.textContent = info.motd?.formatted || 'A Minecraft Server Powered by Casa';
     }
 
     const countEl = document.getElementById('saga-stat-players-count');

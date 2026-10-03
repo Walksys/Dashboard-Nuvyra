@@ -1,4 +1,4 @@
-// Nuvyra Supported Docker Images & Templates
+// Casa Supported Docker Images & Templates
 module.exports = {
   minecraft: [
     { label: "Java 25", value: "ghcr.io/pterodactyl/yolks:java_25", defaultCmd: "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}} nogui", jarFile: "server.jar" },
@@ -7,6 +7,9 @@ module.exports = {
     { label: "Java 16", value: "ghcr.io/pterodactyl/yolks:java_16", defaultCmd: "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}} nogui", jarFile: "server.jar" },
     { label: "Java 11", value: "ghcr.io/pterodactyl/yolks:java_11", defaultCmd: "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}} nogui", jarFile: "server.jar" },
     { label: "Java 8",  value: "ghcr.io/pterodactyl/yolks:java_8",  defaultCmd: "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}} nogui", jarFile: "server.jar" }
+  ],
+  mta: [
+    { label: "Multi Theft Auto (Official Egg)", value: "ghcr.io/ptero-eggs/games:mta", defaultCmd: "./mta-server64 --port {{SERVER_PORT}} --httpport {{SERVER_WEBPORT}} -n" }
   ],
   nodejs: [
     { label: "Nodejs 25", value: "ghcr.io/ptero-eggs/yolks:nodejs_25", defaultCmd: "if [ -f package.json ]; then npm install; fi; npm start", mainFile: "index.js" },

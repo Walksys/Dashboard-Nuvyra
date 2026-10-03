@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'nuvyra',
+      name: 'casa',
       script: 'src/index.js',
       instances: 1,
       autorestart: true,

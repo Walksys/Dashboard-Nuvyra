@@ -77,9 +77,24 @@ const uploadSupportAttachment = multer({
   limits: { fileSize: 15 * 1024 * 1024 }
 });
 
+const eggStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(config.UPLOADS_DIR, 'eggs');
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${String(file.originalname || 'egg.json').replace(/[^a-zA-Z0-9._-]/g, '_')}`)
+});
+const uploadEgg = multer({
+  storage: eggStorage,
+  fileFilter: (req, file, cb) => /json|octet-stream/i.test(file.mimetype || '') || /\.json$/i.test(file.originalname || '') ? cb(null, true) : cb(new Error('Egg files must be JSON.')),
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
 module.exports = {
   uploadBranding,
   uploadServerFile,
   uploadUserAvatar,
-  uploadSupportAttachment
+  uploadSupportAttachment,
+  uploadEgg
 };

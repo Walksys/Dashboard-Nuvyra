@@ -1,4 +1,4 @@
-// Nuvyra Auto Tutorial & Interactive Tour Engine
+// Casa Auto Tutorial & Interactive Tour Engine
 // Provides automated product walkthroughs, element spotlighting, interactive simulators, and guided onboarding tours.
 
 class AutoTutorialManager {
@@ -15,12 +15,12 @@ class AutoTutorialManager {
     this.tours = {
       'panel-tour': {
         id: 'panel-tour',
-        title: 'Nuvyra Complete Platform Tour',
+        title: 'Casa Complete Platform Tour',
         badge: 'Interactive Walkthrough',
         steps: [
           {
             target: '#sidebar-portal-section',
-            title: 'Welcome to Nuvyra',
+            title: 'Welcome to Casa',
             content: 'Your high-performance game and application management dashboard. Here in the sidebar you can swiftly navigate between your servers, marketplace, tutorials, and account credentials.',
             route: 'user-overview',
             placement: 'right'
@@ -399,8 +399,8 @@ class AutoTutorialManager {
   finishTour() {
     if (this.currentTour && window.app) {
       app.toast(`🎉 You completed the ${this.currentTour.title}!`, 'success');
-      localStorage.setItem(`nuvyra_tour_${this.currentTour.id}_completed`, '1');
-      localStorage.setItem('nuvyra_autotour_done', '1');
+      localStorage.setItem(`casa_tour_${this.currentTour.id}_completed`, '1');
+      localStorage.setItem('casa_autotour_done', '1');
     }
     this.stopTour();
   }

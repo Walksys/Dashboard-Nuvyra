@@ -18,7 +18,7 @@ class SettingsManager {
       bg: '',
       bgType: 'image',
       themeMode: 'dark',
-      activeTheme: localStorage.getItem('nuvyra_active_theme') || 'arix',
+      activeTheme: localStorage.getItem('casa_active_theme') || 'arix',
       panelSoundsEnabled: localStorage.getItem('panelSounds') !== 'false',
       arixPrimaryColor: '#4A35CF',
       liquidxPrimaryColor: '#e0841b',
@@ -28,7 +28,7 @@ class SettingsManager {
 
   loadFavorites() {
     try {
-      const saved = localStorage.getItem('nuvyra_fav_wallpapers');
+      const saved = localStorage.getItem('casa_fav_wallpapers');
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
@@ -37,7 +37,7 @@ class SettingsManager {
 
   saveFavorites() {
     try {
-      localStorage.setItem('nuvyra_fav_wallpapers', JSON.stringify(this.favorites));
+      localStorage.setItem('casa_fav_wallpapers', JSON.stringify(this.favorites));
     } catch (e) {
       console.warn('Could not save favorites to localStorage', e);
     }
@@ -107,16 +107,28 @@ class SettingsManager {
                 <div class="flex items-start gap-3"><div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0"><i data-lucide="gift" class="w-5 h-5 text-cyan-300"></i></div><div><h3 class="text-sm font-bold text-white">Free Server Control</h3><p class="text-[11px] text-slate-400 mt-1">Enable Create Server Free and define fixed resources for normal accounts.</p></div></div>
                 <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="set-free-server-enabled" class="sr-only peer"><div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div></label>
               </div>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-white/5">
+              <div class="flex gap-2 pt-3 border-t border-white/5">
+                <button type="button" id="free-plan-tab-minecraft" onclick="settingsManager.switchFreePlanTab('minecraft')" class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">Minecraft</button>
+                <button type="button" id="free-plan-tab-apps" onclick="settingsManager.switchFreePlanTab('apps')" class="px-3 py-2 rounded-xl text-xs font-bold bg-white/5 text-slate-400 border border-white/10">Apps</button>
+              </div>
+              <div id="free-plan-pane-minecraft" class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <label class="text-[11px] text-slate-400">Minecraft RAM (MB)<input id="set-free-mc-ram" type="number" min="256" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
                 <label class="text-[11px] text-slate-400">Minecraft CPU (%)<input id="set-free-mc-cpu" type="number" min="1" max="100" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
                 <label class="text-[11px] text-slate-400">Minecraft Disk (MB)<input id="set-free-mc-disk" type="number" min="512" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
+              </div>
+              <div id="free-plan-pane-apps" class="hidden grid grid-cols-1 md:grid-cols-3 gap-3">
                 <label class="text-[11px] text-slate-400">Apps RAM (MB)<input id="set-free-app-ram" type="number" min="128" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
                 <label class="text-[11px] text-slate-400">Apps CPU (%)<input id="set-free-app-cpu" type="number" min="1" max="100" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
                 <label class="text-[11px] text-slate-400">Apps Disk (MB)<input id="set-free-app-disk" type="number" min="256" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
               </div>
             </div>
 
+            <!-- Pterodactyl Egg Manager -->
+            <div class="glass-panel p-6 rounded-3xl border border-amber-500/25 bg-amber-950/10 space-y-3">
+              <div class="flex items-start gap-3"><div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center"><i data-lucide="package-plus" class="w-5 h-5 text-amber-300"></i></div><div><h3 class="text-sm font-bold text-white">Pterodactyl Eggs</h3><p class="text-[11px] text-slate-400 mt-1">Upload a valid Egg JSON to make it available for Casa Hosting server templates. MTA is included as a built-in server type.</p></div></div>
+              <div class="flex flex-col sm:flex-row gap-2"><input id="set-egg-file" type="file" accept="application/json,.json" class="flex-1 text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-amber-500/20 file:text-amber-200"><button type="button" onclick="settingsManager.uploadEgg()" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-200 border border-amber-500/30 hover:bg-amber-500/30">Upload Egg</button></div>
+              <p id="set-egg-status" class="text-[10px] text-slate-500"></p>
+            </div>
             <!-- Card 0: Active Theme Selection (NookTheme vs Arix Theme v2.1.3) -->
             <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-5">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
@@ -124,10 +136,10 @@ class SettingsManager {
                   <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4 text-purple-400"></i> Panel Theme Selection
                   </h3>
-                  <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme, LiquidX, Nuvyra, and Nebula Theme v2.0</p>
+                  <p class="text-[11px] text-slate-400">Choose between NookTheme, Arix Theme, LiquidX, Casa, and Nebula Theme v2.0</p>
                 </div>
                 <span id="active-theme-badge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${this.currentTheme.activeTheme === 'nebula' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : (this.currentTheme.activeTheme === 'liquidx' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : (this.currentTheme.activeTheme === 'arix' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'))}">
-                  ${this.currentTheme.activeTheme === 'nebula' ? 'Nebula Theme v2.0 Active' : (this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : (this.currentTheme.activeTheme === 'nuvyra' ? 'Nuvyra Theme v2.0.2 Active' : 'NookTheme Active')))}
+                  ${this.currentTheme.activeTheme === 'nebula' ? 'Nebula Theme v2.0 Active' : (this.currentTheme.activeTheme === 'liquidx' ? 'LiquidX Theme v1.0 Active' : (this.currentTheme.activeTheme === 'arix' ? 'Arix Theme v2.1.3 Active' : (this.currentTheme.activeTheme === 'casa' ? 'Casa Theme v2.0.2 Active' : 'NookTheme Active')))}
                 </span>
               </div>
 
@@ -208,17 +220,17 @@ class SettingsManager {
                   </div>
                 </div>
 
-                <!-- Option D: Nuvyra Theme V2.0.2 -->
-                <div id="theme-card-nuvyra" onclick="settingsManager.selectTheme('nuvyra')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'nuvyra' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
+                <!-- Option D: Casa Theme V2.0.2 -->
+                <div id="theme-card-casa" onclick="settingsManager.selectTheme('casa')" class="theme-select-card p-5 rounded-2xl border ${this.currentTheme.activeTheme === 'casa' ? 'active bg-cyan-950/20 border-cyan-500/50' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} flex flex-col justify-between space-y-4">
                   <div class="flex items-start justify-between">
                     <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 p-2 flex items-center justify-center shadow-inner">
-                      <img src="/assets/nuvyra-preview.svg" alt="Nuvyra Theme" class="w-full h-full object-contain">
+                      <img src="/assets/casa-preview.svg" alt="Casa Theme" class="w-full h-full object-contain">
                     </div>
-                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Nuvyra v2.0.2</span>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Casa v2.0.2</span>
                   </div>
                   <div>
                     <h4 class="text-base font-bold text-white flex items-center gap-1.5">
-                      Nuvyra Theme <span class="text-xs text-cyan-400 font-normal">v2.0.2</span>
+                      Casa Theme <span class="text-xs text-cyan-400 font-normal">v2.0.2</span>
                     </h4>
                     <p class="text-xs text-slate-400 mt-1 leading-relaxed">High-velocity cyber deck with deep space #111525 shell, server banner cards, 4 independent logos, and rocket orange accents.</p>
                   </div>
@@ -228,8 +240,8 @@ class SettingsManager {
                       <span class="w-3 h-3 rounded-full bg-[#ff5108]"></span>
                       <span class="w-3 h-3 rounded-full bg-[#111525]"></span>
                     </div>
-                    <button type="button" id="btn-theme-nuvyra" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'nuvyra' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
-                      ${this.currentTheme.activeTheme === 'nuvyra' ? '✓ Active Theme' : 'Activate Nuvyra'}
+                    <button type="button" id="btn-theme-casa" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${this.currentTheme.activeTheme === 'casa' ? 'btn-cyber' : 'bg-white/5 text-slate-300 hover:bg-white/10'}">
+                      ${this.currentTheme.activeTheme === 'casa' ? '✓ Active Theme' : 'Activate Casa'}
                     </button>
                   </div>
                 </div>
@@ -308,29 +320,29 @@ class SettingsManager {
                 </div>
               </div>
 
-              <!-- Nuvyra Theme Enhancements (Branding, 4 Logos, Server Banner) -->
-              <div id="nuvyra-options-panel" class="pt-4 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'nuvyra' ? '' : 'opacity-60'}">
+              <!-- Casa Theme Enhancements (Branding, 4 Logos, Server Banner) -->
+              <div id="casa-options-panel" class="pt-4 border-t border-white/10 space-y-4 ${this.currentTheme.activeTheme === 'casa' ? '' : 'opacity-60'}">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h4 class="text-xs font-bold text-slate-200 flex items-center gap-2">
-                      <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i> Nuvyra V2 Branding &amp; Logo Suite (nuvyra.config.ts)
+                      <i data-lucide="image" class="w-4 h-4 text-cyan-400"></i> Casa V2 Branding &amp; Logo Suite (casa.config.ts)
                     </h4>
                     <p class="text-[11px] text-slate-400">Configure your Brand Name, Support Email, and all 4 independently customizable logo locations</p>
                   </div>
-                  <button type="button" onclick="settingsManager.saveNuvyraBranding()" class="btn-cyber px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <button type="button" onclick="settingsManager.saveCasaBranding()" class="btn-cyber px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
                     <i data-lucide="save" class="w-3.5 h-3.5"></i>
-                    <span>Save Nuvyra Branding</span>
+                    <span>Save Casa Branding</span>
                   </button>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
                     <label class="block font-semibold text-slate-300 mb-1">Brand Name</label>
-                    <input type="text" id="nuvyra-cfg-name" value="${(localStorage.getItem('nuvyra_brand_name') || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra')}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="Nuvyra">
+                    <input type="text" id="casa-cfg-name" value="${(localStorage.getItem('casa_brand_name') || 'Casa').replace(/^Casa$/i, 'Casa')}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="Casa">
                   </div>
                   <div>
                     <label class="block font-semibold text-slate-300 mb-1">Support Email</label>
-                    <input type="email" id="nuvyra-cfg-email" value="${localStorage.getItem('nuvyra_support_email') || 'nuvyra@webpool.tech'}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="support@domain.com">
+                    <input type="email" id="casa-cfg-email" value="${localStorage.getItem('casa_support_email') || 'casa@webpool.tech'}" class="w-full glass-input px-3.5 py-2 rounded-xl text-xs" placeholder="support@domain.com">
                   </div>
                 </div>
 
@@ -339,36 +351,36 @@ class SettingsManager {
                   <!-- Logo 1: Sidebar -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-purple-300">1. Sidebar Logo</span>
-                    <input type="text" id="nuvyra-cfg-sidebar" value="${localStorage.getItem('nuvyra_sidebar_logo') || '/images/nuvyra-sidebar-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-sidebar-logo.webp">
+                    <input type="text" id="casa-cfg-sidebar" value="${localStorage.getItem('casa_sidebar_logo') || '/images/casa-sidebar-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/casa-sidebar-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('nuvyra_sidebar_logo') || '/images/nuvyra-sidebar-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-sidebar">
+                      <img src="${localStorage.getItem('casa_sidebar_logo') || '/images/casa-sidebar-logo.webp'}" class="h-8 w-auto object-contain" id="prev-casa-sidebar">
                     </div>
                   </div>
 
                   <!-- Logo 2: Header -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-cyan-300">2. Header Logo</span>
-                    <input type="text" id="nuvyra-cfg-header" value="${localStorage.getItem('nuvyra_header_logo') || '/images/nuvyra-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-header-logo.webp">
+                    <input type="text" id="casa-cfg-header" value="${localStorage.getItem('casa_header_logo') || '/images/casa-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/casa-header-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('nuvyra_header_logo') || '/images/nuvyra-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-header">
+                      <img src="${localStorage.getItem('casa_header_logo') || '/images/casa-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-casa-header">
                     </div>
                   </div>
 
                   <!-- Logo 3: Login Main -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-emerald-300">3. Login Page Logo</span>
-                    <input type="text" id="nuvyra-cfg-login" value="${localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-login-logo.webp">
+                    <input type="text" id="casa-cfg-login" value="${localStorage.getItem('casa_login_logo') || '/images/casa-login-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/casa-login-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-login">
+                      <img src="${localStorage.getItem('casa_login_logo') || '/images/casa-login-logo.webp'}" class="h-8 w-auto object-contain" id="prev-casa-login">
                     </div>
                   </div>
 
                   <!-- Logo 4: Login Header -->
                   <div class="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
                     <span class="text-[10px] font-bold uppercase text-amber-300">4. Login Header Logo</span>
-                    <input type="text" id="nuvyra-cfg-login-header" value="${localStorage.getItem('nuvyra_login_header_logo') || '/images/nuvyra-login-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/nuvyra-login-header-logo.webp">
+                    <input type="text" id="casa-cfg-login-header" value="${localStorage.getItem('casa_login_header_logo') || '/images/casa-login-header-logo.webp'}" class="w-full glass-input px-2.5 py-1.5 rounded-lg text-[11px] font-mono" placeholder="/images/casa-login-header-logo.webp">
                     <div class="h-10 rounded-lg bg-black/40 flex items-center justify-center p-1 border border-white/5">
-                      <img src="${localStorage.getItem('nuvyra_login_header_logo') || '/images/nuvyra-login-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-nuvyra-login-header">
+                      <img src="${localStorage.getItem('casa_login_header_logo') || '/images/casa-login-header-logo.webp'}" class="h-8 w-auto object-contain" id="prev-casa-login-header">
                     </div>
                   </div>
                 </div>
@@ -812,11 +824,11 @@ class SettingsManager {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-300 mb-1">Panel Name</label>
-                  <input type="text" id="set-panel-name" oninput="settingsManager.previewPanelName(this.value)" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Nuvyra">
+                  <input type="text" id="set-panel-name" oninput="settingsManager.previewPanelName(this.value)" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Casa">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-300 mb-1">Favicon Title Name</label>
-                  <input type="text" id="set-favicon-name" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Nuvyra Server Management">
+                  <input type="text" id="set-favicon-name" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="Casa Server Management">
                 </div>
               </div>
 
@@ -919,10 +931,10 @@ class SettingsManager {
               <div id="preview-sample-card" class="glass-card p-5 rounded-2xl border border-white/15 space-y-4">
                 <div class="flex items-center gap-3">
                   <div id="preview-logo-box" class="w-10 h-10 rounded-xl bg-slate-900/80 p-1 border border-cyan-500/40 flex items-center justify-center">
-                    <img id="preview-logo-img" src="/assets/nuvyra-logo.svg" alt="Preview Logo" class="w-full h-full object-contain">
+                    <img id="preview-logo-img" src="/assets/casa-logo.svg" alt="Preview Logo" class="w-full h-full object-contain">
                   </div>
                   <div>
-                    <h4 id="preview-panel-title" class="text-sm font-bold text-white">Nuvyra</h4>
+                    <h4 id="preview-panel-title" class="text-sm font-bold text-white">Casa</h4>
                     <p class="text-[10px] text-slate-400">Glassmorphism UI Engine</p>
                   </div>
                 </div>
@@ -1028,13 +1040,25 @@ class SettingsManager {
     if (window.lucide) lucide.createIcons();
   }
 
+  switchFreePlanTab(tab) {
+    const minecraft = tab === 'minecraft';
+    document.getElementById('free-plan-pane-minecraft')?.classList.toggle('hidden', !minecraft);
+    document.getElementById('free-plan-pane-apps')?.classList.toggle('hidden', minecraft);
+    const mcBtn = document.getElementById('free-plan-tab-minecraft');
+    const appBtn = document.getElementById('free-plan-tab-apps');
+    mcBtn?.classList.toggle('bg-cyan-500/20', minecraft);
+    mcBtn?.classList.toggle('text-cyan-300', minecraft);
+    appBtn?.classList.toggle('bg-purple-500/20', !minecraft);
+    appBtn?.classList.toggle('text-purple-300', !minecraft);
+  }
+
   async loadSettingsData() {
     try {
       const data = await app.api('/api/admin/settings');
       const s = data.settings || {};
 
-      document.getElementById('set-panel-name').value = s.panel_name || 'Nuvyra';
-      document.getElementById('set-favicon-name').value = s.favicon_name || 'Nuvyra';
+      document.getElementById('set-panel-name').value = s.panel_name || 'Casa';
+      document.getElementById('set-favicon-name').value = s.favicon_name || 'Casa';
       document.getElementById('set-panel-logo').value = s.panel_logo || '';
       document.getElementById('set-favicon-logo').value = s.favicon_logo || '';
       document.getElementById('set-discord-webhook').value = s.discord_webhook_url || '';
@@ -1152,7 +1176,7 @@ class SettingsManager {
   }
 
   updateDeviceModeUI() {
-    const mode = (window.app && app.deviceMode) || localStorage.getItem('nuvyra_device_mode') || 'auto';
+    const mode = (window.app && app.deviceMode) || localStorage.getItem('casa_device_mode') || 'auto';
     const detected = (window.app && typeof app.getDetectedProfile === 'function') ? app.getDetectedProfile() : 'pc';
 
     const badge = document.getElementById('settings-device-badge');
@@ -1216,7 +1240,7 @@ class SettingsManager {
 
   selectTheme(themeName) {
     this.currentTheme.activeTheme = themeName;
-    localStorage.setItem('nuvyra_active_theme', themeName);
+    localStorage.setItem('casa_active_theme', themeName);
     this.updateThemeSelectionUI();
     app.applyBrandingAndTheme({
       active_theme: themeName,
@@ -1230,9 +1254,9 @@ class SettingsManager {
       if (window.nebulaEditor) {
         window.nebulaEditor.applyConfig();
       }
-    } else if (themeName === 'nuvyra') {
+    } else if (themeName === 'casa') {
       app.playSound('online');
-      app.toast('Nuvyra Theme V2.0.2 activated!', 'success');
+      app.toast('Casa Theme V2.0.2 activated!', 'success');
     } else if (themeName === 'liquidx') {
       app.playSound('online');
       app.toast('LiquidX Theme v1.0 activated!', 'success');
@@ -1245,29 +1269,29 @@ class SettingsManager {
     this.saveSettings(true);
   }
 
-  saveNuvyraBranding() {
-    const nameEl = document.getElementById('nuvyra-cfg-name');
-    const emailEl = document.getElementById('nuvyra-cfg-email');
-    const sidebarEl = document.getElementById('nuvyra-cfg-sidebar');
-    const headerEl = document.getElementById('nuvyra-cfg-header');
-    const loginEl = document.getElementById('nuvyra-cfg-login');
-    const loginHeaderEl = document.getElementById('nuvyra-cfg-login-header');
+  saveCasaBranding() {
+    const nameEl = document.getElementById('casa-cfg-name');
+    const emailEl = document.getElementById('casa-cfg-email');
+    const sidebarEl = document.getElementById('casa-cfg-sidebar');
+    const headerEl = document.getElementById('casa-cfg-header');
+    const loginEl = document.getElementById('casa-cfg-login');
+    const loginHeaderEl = document.getElementById('casa-cfg-login-header');
 
-    const name = nameEl ? nameEl.value.trim() : 'Nuvyra';
-    const email = emailEl ? emailEl.value.trim() : 'nuvyra@webpool.tech';
-    const sidebarLogo = sidebarEl ? sidebarEl.value.trim() : '/images/nuvyra-sidebar-logo.webp';
-    const headerLogo = headerEl ? headerEl.value.trim() : '/images/nuvyra-header-logo.webp';
-    const loginLogo = loginEl ? loginEl.value.trim() : '/images/nuvyra-login-logo.webp';
-    const loginHeaderLogo = loginHeaderEl ? loginHeaderEl.value.trim() : '/images/nuvyra-login-header-logo.webp';
+    const name = nameEl ? nameEl.value.trim() : 'Casa';
+    const email = emailEl ? emailEl.value.trim() : 'casa@webpool.tech';
+    const sidebarLogo = sidebarEl ? sidebarEl.value.trim() : '/images/casa-sidebar-logo.webp';
+    const headerLogo = headerEl ? headerEl.value.trim() : '/images/casa-header-logo.webp';
+    const loginLogo = loginEl ? loginEl.value.trim() : '/images/casa-login-logo.webp';
+    const loginHeaderLogo = loginHeaderEl ? loginHeaderEl.value.trim() : '/images/casa-login-header-logo.webp';
 
-    localStorage.setItem('nuvyra_brand_name', name);
-    localStorage.setItem('nuvyra_support_email', email);
-    localStorage.setItem('nuvyra_sidebar_logo', sidebarLogo);
-    localStorage.setItem('nuvyra_header_logo', headerLogo);
-    localStorage.setItem('nuvyra_login_logo', loginLogo);
-    localStorage.setItem('nuvyra_login_header_logo', loginHeaderLogo);
+    localStorage.setItem('casa_brand_name', name);
+    localStorage.setItem('casa_support_email', email);
+    localStorage.setItem('casa_sidebar_logo', sidebarLogo);
+    localStorage.setItem('casa_header_logo', headerLogo);
+    localStorage.setItem('casa_login_logo', loginLogo);
+    localStorage.setItem('casa_login_header_logo', loginHeaderLogo);
 
-    app.toast('Nuvyra branding configuration saved!', 'success');
+    app.toast('Casa branding configuration saved!', 'success');
     app.applyBrandingAndTheme({ active_theme: this.currentTheme.activeTheme });
   }
 
@@ -1288,17 +1312,17 @@ class SettingsManager {
     const cardArix = document.getElementById('theme-card-arix');
     const cardNook = document.getElementById('theme-card-nook');
     const cardLiquidx = document.getElementById('theme-card-liquidx');
-    const cardNuvyra = document.getElementById('theme-card-nuvyra');
+    const cardCasa = document.getElementById('theme-card-casa');
     const cardNebula = document.getElementById('theme-card-nebula');
     const btnArix = document.getElementById('btn-theme-arix');
     const btnNook = document.getElementById('btn-theme-nook');
     const btnLiquidx = document.getElementById('btn-theme-liquidx');
-    const btnNuvyra = document.getElementById('btn-theme-nuvyra');
+    const btnCasa = document.getElementById('btn-theme-casa');
     const btnNebula = document.getElementById('btn-theme-nebula');
     const badge = document.getElementById('active-theme-badge');
     const arixPanel = document.getElementById('arix-options-panel');
     const liquidxPanel = document.getElementById('liquidx-options-panel');
-    const nuvyraPanel = document.getElementById('nuvyra-options-panel');
+    const casaPanel = document.getElementById('casa-options-panel');
     const nebulaPanel = document.getElementById('nebula-options-panel');
 
     if (badge) {
@@ -1306,14 +1330,14 @@ class SettingsManager {
         nook: 'NookTheme Active',
         arix: 'Arix Theme v2.1.3 Active',
         liquidx: 'LiquidX Theme v1.0 Active',
-        nuvyra: 'Nuvyra Theme v2.0.2 Active',
+        casa: 'Casa Theme v2.0.2 Active',
         nebula: 'Nebula Theme v2.0 Active'
       };
       const badgeClasses = {
         nook: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
         arix: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
         liquidx: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-        nuvyra: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+        casa: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
         nebula: 'bg-purple-500/20 text-purple-300 border-purple-500/40'
       };
       badge.innerText = labels[theme] || `${theme} Active`;
@@ -1331,7 +1355,7 @@ class SettingsManager {
     resetCard(cardNook, btnNook, 'Nook');
     resetCard(cardArix, btnArix, 'Arix');
     resetCard(cardLiquidx, btnLiquidx, 'LiquidX');
-    resetCard(cardNuvyra, btnNuvyra, 'Nuvyra');
+    resetCard(cardCasa, btnCasa, 'Casa');
     resetCard(cardNebula, btnNebula, 'Nebula');
 
     if (theme === 'nebula') {
@@ -1342,17 +1366,17 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
+      if (casaPanel) casaPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.remove('opacity-60');
-    } else if (theme === 'nuvyra') {
-      if (cardNuvyra) cardNuvyra.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
-      if (btnNuvyra) {
-        btnNuvyra.innerText = '✓ Active Theme';
-        btnNuvyra.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
+    } else if (theme === 'casa') {
+      if (cardCasa) cardCasa.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
+      if (btnCasa) {
+        btnCasa.innerText = '✓ Active Theme';
+        btnCasa.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg btn-cyber';
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (nuvyraPanel) nuvyraPanel.classList.remove('opacity-60');
+      if (casaPanel) casaPanel.classList.remove('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else if (theme === 'liquidx') {
       if (cardLiquidx) cardLiquidx.className = 'theme-select-card p-5 rounded-2xl border active bg-amber-950/20 border-amber-500/50 flex flex-col justify-between space-y-4';
@@ -1362,7 +1386,7 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.remove('opacity-60');
-      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
+      if (casaPanel) casaPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else if (theme === 'arix') {
       if (cardArix) cardArix.className = 'theme-select-card p-5 rounded-2xl border active bg-purple-950/20 border-purple-500/50 flex flex-col justify-between space-y-4';
@@ -1372,7 +1396,7 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.remove('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
+      if (casaPanel) casaPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     } else {
       if (cardNook) cardNook.className = 'theme-select-card p-5 rounded-2xl border active bg-cyan-950/20 border-cyan-500/50 flex flex-col justify-between space-y-4';
@@ -1382,7 +1406,7 @@ class SettingsManager {
       }
       if (arixPanel) arixPanel.classList.add('opacity-60');
       if (liquidxPanel) liquidxPanel.classList.add('opacity-60');
-      if (nuvyraPanel) nuvyraPanel.classList.add('opacity-60');
+      if (casaPanel) casaPanel.classList.add('opacity-60');
       if (nebulaPanel) nebulaPanel.classList.add('opacity-60');
     }
   }
@@ -1899,11 +1923,11 @@ class SettingsManager {
     this.updateThemeModeUI(newMode);
 
     if (newMode === 'light') {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark', 'casa-dark-mode');
       document.documentElement.classList.add('light');
     } else {
       document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark', 'casa-dark-mode');
     }
 
     app.toast(`Switched to ${newMode.toUpperCase()} mode`, 'info');
@@ -1948,9 +1972,9 @@ class SettingsManager {
 
   previewPanelName(name) {
     const el = document.getElementById('preview-panel-title');
-    if (el) el.innerText = name || 'Nuvyra';
+    if (el) el.innerText = name || 'Casa';
     const headerTitle = document.getElementById('header-panel-name');
-    if (headerTitle) headerTitle.innerText = name || 'Nuvyra';
+    if (headerTitle) headerTitle.innerText = name || 'Casa';
   }
 
   previewLogo(url) {
@@ -1974,6 +1998,17 @@ class SettingsManager {
     }
   }
 
+  async uploadEgg() {
+    const input = document.getElementById('set-egg-file');
+    if (!input?.files?.[0]) return app.toast('Choose an Egg JSON file first.', 'error');
+    const form = new FormData(); form.append('egg', input.files[0]);
+    try {
+      const data = await app.api('/api/admin/settings/eggs/upload', { method: 'POST', body: form });
+      document.getElementById('set-egg-status').textContent = data.message || 'Egg uploaded.';
+      app.toast(data.message || 'Egg uploaded successfully.', 'success');
+      input.value = '';
+    } catch (e) { document.getElementById('set-egg-status').textContent = e.message; app.toast(e.message, 'error'); }
+  }
   async uploadAsset(input, type) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
@@ -2028,8 +2063,8 @@ class SettingsManager {
 
   async saveSettings(isSilent = false) {
     const payload = {
-      panel_name: document.getElementById('set-panel-name')?.value.trim() || 'Nuvyra',
-      favicon_name: document.getElementById('set-favicon-name')?.value.trim() || 'Nuvyra',
+      panel_name: document.getElementById('set-panel-name')?.value.trim() || 'Casa',
+      favicon_name: document.getElementById('set-favicon-name')?.value.trim() || 'Casa',
       panel_logo: document.getElementById('set-panel-logo')?.value.trim() || '',
       favicon_logo: document.getElementById('set-favicon-logo')?.value.trim() || '',
       discord_webhook_url: document.getElementById('set-discord-webhook')?.value.trim() || '',

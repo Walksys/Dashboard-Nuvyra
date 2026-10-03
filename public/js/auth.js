@@ -5,18 +5,18 @@ class AuthController {
     if (!modalContainer) return;
     if (document.getElementById('login-modal')) return;
 
-    const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
-    const isNuvyra = activeTheme === 'nuvyra';
-    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Casa Hosting').replace(/^Nuvyra$/i, 'Casa Hosting')) : 'Casa Hosting';
-    const loginLogo = isNuvyra ? (localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp') : null;
+    const activeTheme = localStorage.getItem('casa_active_theme') || 'arix';
+    const isCasa = activeTheme === 'casa';
+    const brandName = isCasa ? ((localStorage.getItem('casa_brand_name') || 'Casa Hosting').replace(/^Casa$/i, 'Casa Hosting')) : 'Casa Hosting';
+    const loginLogo = isCasa ? (localStorage.getItem('casa_login_logo') || '/images/casa-login-logo.webp') : null;
 
     modalContainer.innerHTML = `
-      <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isNuvyra ? 'theme-nuvyra' : ''}">
+      <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isCasa ? 'theme-casa' : ''}">
         <div class="glass-panel w-full max-w-md p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl relative">
           <div class="text-center space-y-2 mb-6">
-            ${isNuvyra && loginLogo ? `
+            ${isCasa && loginLogo ? `
               <div class="flex justify-center mb-2">
-                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/nuvyra-login-logo.webp'">
+                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/casa-login-logo.webp'">
               </div>
             ` : `
               <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-400">
@@ -35,7 +35,7 @@ class AuthController {
 
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Username or Email</label>
-              <input type="text" id="login-username" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="admin or admin@nuvyra.local" autocapitalize="none" autocorrect="off" autocomplete="username" required autofocus>
+              <input type="text" id="login-username" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs" placeholder="admin or admin@casa.local" autocapitalize="none" autocorrect="off" autocomplete="username" required autofocus>
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
@@ -80,18 +80,18 @@ class AuthController {
     const modalContainer = document.getElementById('modal-container');
     if (!modalContainer) return;
 
-    const activeTheme = localStorage.getItem('nuvyra_active_theme') || 'arix';
-    const isNuvyra = activeTheme === 'nuvyra';
-    const brandName = isNuvyra ? ((localStorage.getItem('nuvyra_brand_name') || 'Casa Hosting').replace(/^Nuvyra$/i, 'Casa Hosting')) : 'Casa Hosting';
-    const loginLogo = isNuvyra ? (localStorage.getItem('nuvyra_login_logo') || '/images/nuvyra-login-logo.webp') : null;
+    const activeTheme = localStorage.getItem('casa_active_theme') || 'arix';
+    const isCasa = activeTheme === 'casa';
+    const brandName = isCasa ? ((localStorage.getItem('casa_brand_name') || 'Casa Hosting').replace(/^Casa$/i, 'Casa Hosting')) : 'Casa Hosting';
+    const loginLogo = isCasa ? (localStorage.getItem('casa_login_logo') || '/images/casa-login-logo.webp') : null;
 
     modalContainer.innerHTML = `
-      <div id="register-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isNuvyra ? 'theme-nuvyra' : ''}">
+      <div id="register-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md ${isCasa ? 'theme-casa' : ''}">
         <div class="glass-panel w-full max-w-md p-6 sm:p-8 rounded-3xl border border-white/15 shadow-2xl relative">
           <div class="text-center space-y-2 mb-6">
-            ${isNuvyra && loginLogo ? `
+            ${isCasa && loginLogo ? `
               <div class="flex justify-center mb-2">
-                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/nuvyra-login-logo.webp'">
+                <img src="${loginLogo}" alt="${brandName}" class="h-10 object-contain drop-shadow max-w-[200px]" onerror="this.src='/images/casa-login-logo.webp'">
               </div>
             ` : `
               <div class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mx-auto text-purple-400">
@@ -224,7 +224,7 @@ class AuthController {
       }
 
       if (data.success && data.token) {
-        localStorage.setItem('nuvyra_token', data.token);
+        localStorage.setItem('casa_token', data.token);
         app.token = data.token;
         app.user = data.user;
         app.updateAuthUI(data.user);
@@ -274,7 +274,7 @@ class AuthController {
       });
 
       if (data.success && data.token) {
-        localStorage.setItem('nuvyra_token', data.token);
+        localStorage.setItem('casa_token', data.token);
         app.token = data.token;
         app.user = data.user;
         app.updateAuthUI(data.user);

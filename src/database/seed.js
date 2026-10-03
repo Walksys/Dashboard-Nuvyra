@@ -2,6 +2,23 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('crypto').randomUUID ? { v4: require('crypto').randomUUID } : { v4: () => Math.random().toString(36).substring(2, 15) };
 const { query } = require('./db');
 const config = require('../config/config');
+const os = require('os');
+
+async function resolveNodeAddress() {
+  const configured = process.env.NODE_IP || process.env.PUBLIC_IP || process.env.NODE_FQDN;
+  if (configured && configured !== '127.0.0.1' && configured !== 'localhost') return configured;
+  try {
+    const response = await fetch('https://api.ipify.org?format=text', { signal: AbortSignal.timeout(2500) });
+    const ip = (await response.text()).trim();
+    if (ip && ip.length < 128) return ip;
+  } catch (_) {}
+  for (const entries of Object.values(os.networkInterfaces())) {
+    for (const entry of entries || []) {
+      if (entry.family === 'IPv4' && !entry.internal) return entry.address;
+    }
+  }
+  return '127.0.0.1';
+}
 
 async function seedDatabase() {
   console.log('🌱 Checking seed data...');
@@ -61,12 +78,13 @@ async function seedDatabase() {
   }
 
   // Default Node
+  const nodeAddress = await resolveNodeAddress();
   const existingNode = await query.get('SELECT id FROM nodes LIMIT 1');
   let nodeId = 1;
   if (!existingNode) {
     const nodeRes = await query.run(
       'INSERT INTO nodes (name, fqdn, daemon_port, sftp_port, memory_mb, disk_mb, location_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      ['Local Node', '127.0.0.1', config.PORT_API, config.PORT_SFTP, 16384, 102400, locationId]
+      ['Local Node', nodeAddress, config.PORT_API, config.PORT_SFTP, 16384, 102400, locationId]
     );
     nodeId = nodeRes.lastID;
     console.log('✅ Created default node:', 'Local Node');
@@ -81,10 +99,14 @@ async function seedDatabase() {
     for (const port of ports) {
       await query.run(
         'INSERT INTO allocations (node_id, ip, port, assigned) VALUES (?, ?, ?, 0)',
-        [nodeId, '127.0.0.1', port]
+        [nodeId, nodeAddress, port]
       );
     }
-    console.log(`✅ Generated ${ports.length} default port allocations for Local Node.`);
+    console.log(`✅ Generated ${ports.length} default port allocations for Local Node at ${nodeAddress}.`);
+  } else {
+    await query.run(`UPDATE nodes SET fqdn = ? WHERE id = ? AND (fqdn = '127.0.0.1' OR fqdn = 'localhost' OR fqdn IS NULL)`, [nodeAddress, existingNode.id]);
+    await query.run(`UPDATE allocations SET ip = ? WHERE node_id = ? AND assigned = 0 AND (ip = '127.0.0.1' OR ip = 'localhost')`, [nodeAddress, existingNode.id]);
+    nodeId = existingNode.id;
   }
 
   // Check if admin user exists, if not create default admin: admin / admin123
@@ -95,7 +117,7 @@ async function seedDatabase() {
     const adminUuid = uuidv4();
     await query.run(
       'INSERT INTO users (uuid, username, email, password_hash, role) VALUES (?, ?, ?, ?, ?)',
-      [adminUuid, 'admin', 'admin@nuvyra.local', passwordHash, 'admin']
+      [adminUuid, 'admin', 'admin@casa.local', passwordHash, 'admin']
     );
     console.log('👑 Default Admin User created: username: "admin", password: "admin"');
   }

@@ -1,4 +1,4 @@
-// Nuvyra Minecraft World Manager Module
+// Casa Minecraft World Manager Module
 class WorldManagerController {
   constructor() {
     this.currentServerId = null;

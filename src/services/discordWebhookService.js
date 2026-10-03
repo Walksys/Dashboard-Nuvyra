@@ -28,7 +28,7 @@ async function send(payload) {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'user-agent': 'Nuvyra-Discord-Webhook/1.0' },
+        headers: { 'content-type': 'application/json', 'user-agent': 'Casa-Discord-Webhook/1.0' },
         body: JSON.stringify(payload),
         signal: controller.signal
       });
@@ -67,9 +67,9 @@ async function notifyUserRegistered({ user, provider = 'Panel', profile = null }
   }
 
   return send({
-    username: 'Nuvyra Notifications',
+    username: 'Casa Notifications',
     avatar_url: user && user.avatar ? user.avatar : undefined,
-    content: 'A new user has registered on **Nuvyra Panel**.',
+    content: 'A new user has registered on **Casa Panel**.',
     embeds: [{
       title: 'New User Registration',
       description: 'A new account was created successfully. The account details are listed below.',
@@ -77,7 +77,7 @@ async function notifyUserRegistered({ user, provider = 'Panel', profile = null }
       fields,
       thumbnail: user && user.avatar ? { url: user.avatar } : undefined,
       timestamp: new Date().toISOString(),
-      footer: { text: 'Nuvyra Panel' }
+      footer: { text: 'Casa Panel' }
     }]
   });
 }
@@ -95,9 +95,9 @@ async function notifyServerCreated({ server, actor, owner, source = 'Admin/API' 
   ];
 
   return send({
-    username: 'Nuvyra Notifications',
+    username: 'Casa Notifications',
     avatar_url: owner && owner.avatar ? owner.avatar : undefined,
-    content: `A new **${clean(server && server.server_type)}** server has been created on **Nuvyra Panel**.`,
+    content: `A new **${clean(server && server.server_type)}** server has been created on **Casa Panel**.`,
     embeds: [{
       title: 'Server Created',
       description: 'The server is now registered in the panel. Full ownership and connection details are listed below.',
@@ -105,7 +105,7 @@ async function notifyServerCreated({ server, actor, owner, source = 'Admin/API' 
       fields,
       thumbnail: owner && owner.avatar ? { url: owner.avatar } : undefined,
       timestamp: new Date().toISOString(),
-      footer: { text: 'Nuvyra Panel' }
+      footer: { text: 'Casa Panel' }
     }]
   });
 }

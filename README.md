@@ -1,16 +1,16 @@
 <!-- ============================================================================== -->
-<!--                     🎮 Nuvyra v2.5.3 - NEXT-GEN GAME & APP PANEL               -->
+<!--                     🎮 Casa v2.5.3 - NEXT-GEN GAME & APP PANEL               -->
 <!-- ============================================================================== -->
 
 <p align="center">
   <a href="https://walksys.qzz.io">
-    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20Nuvyra%20v2.5.3&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Nuvyra Header Banner" />
+    <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,6,11,16,21&height=220&section=header&text=🎮%20Casa%20v2.5.3&fontSize=42&fontAlignY=36&desc=High-Performance%20Game%20%26%20App%20Server%20Web%20Management%20Engine%20for%20Node.js&descAlignY=58&descSize=18&animation=twinkling" width="100%" alt="Casa Header Banner" />
   </a>
 </p>
 
 <p align="center">
   <a href="https://walksys.qzz.io">
-    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=22D3EE&center=true&vCenter=true&random=false&width=750&lines=⚡+Modern+Node.js+Alternative+to+Pterodactyl;🚀+Real-Time+xterm.js+Console+%26+Live+Meters;🔄+Automated+GitHub+Releases+Detector+%26+Live+Update+Terminal;🎮+Minecraft+Player+Manager+%26+Universal+Addon+Marketplace;🔒+Embedded+SFTP+(Port+3004)+%26+MariaDB+(Port+27017);🎨+Multi-Theme+Personalization%3A+Full+Black+OLED%2C+Nuvyra+V2%2C+LiquidX" alt="Typing Animation" />
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=20&pause=1000&color=22D3EE&center=true&vCenter=true&random=false&width=750&lines=⚡+Modern+Node.js+Alternative+to+Pterodactyl;🚀+Real-Time+xterm.js+Console+%26+Live+Meters;🔄+Automated+GitHub+Releases+Detector+%26+Live+Update+Terminal;🎮+Minecraft+Player+Manager+%26+Universal+Addon+Marketplace;🔒+Embedded+SFTP+(Port+3004)+%26+MariaDB+(Port+27017);🎨+Multi-Theme+Personalization%3A+Full+Black+OLED%2C+Casa+V2%2C+LiquidX" alt="Typing Animation" />
   </a>
 </p>
 
@@ -36,7 +36,7 @@
 ## 📸 3D Live Showcase
 
 <p align="center">
-  <img src="public/assets/console-preview.png" alt="Nuvyra Server Console & Live Telemetry Dashboard" style="border-radius: 16px; box-shadow: 0 0 45px rgba(34, 211, 238, 0.3), 0 20px 40px rgba(0, 0, 0, 0.85); border: 2px solid rgba(34, 211, 238, 0.25);" width="100%" />
+  <img src="public/assets/console-preview.png" alt="Casa Server Console & Live Telemetry Dashboard" style="border-radius: 16px; box-shadow: 0 0 45px rgba(34, 211, 238, 0.3), 0 20px 40px rgba(0, 0, 0, 0.85); border: 2px solid rgba(34, 211, 238, 0.25);" width="100%" />
 </p>
 
 ---
@@ -45,7 +45,7 @@
 
 ```mermaid
 graph TD
-    Client["🌐 Client Browser (Admins & Users)"] -->|Port 3001: Web UI & xterm.js WebSocket| Gateway["🚀 Nuvyra Engine (Port 3001)"]
+    Client["🌐 Client Browser (Admins & Users)"] -->|Port 3001: Web UI & xterm.js WebSocket| Gateway["🚀 Casa Engine (Port 3001)"]
     External["⚡ External Integrations / Discord Bots"] -->|Port 3003: REST & WS API| GatewayAPI["🔌 Daemon API (Port 3003)"]
     FTPClient["📁 FileZilla / WinSCP / Cyberduck"] -->|Port 3004: SSH SFTP| SFTP["🛡️ Embedded SFTP Server (Port 3004)"]
 
@@ -80,7 +80,7 @@ graph TD
 ## ✨ What is New in v2.5.3
 
 <p align="center">
-  <img src="public/assets/console-preview.png" alt="Nuvyra v2.5.3 Console & Live Parsentbar Telemetry Preview" style="border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.25); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);" width="100%" />
+  <img src="public/assets/console-preview.png" alt="Casa v2.5.3 Console & Live Parsentbar Telemetry Preview" style="border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.25); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8);" width="100%" />
 </p>
 
 ### 1. 🟢 Real-Time 5-State Server Lifecycle Engine
@@ -137,7 +137,7 @@ graph TD
 ## ✨ What is New in v2.5.0
 
 ### 1. 🔄 System Updates & Auto-Detection Engine
-- **GitHub Releases Auto-Detection**: Real-time checking against [Walksys/Dashboard-Nuvyra/releases](https://github.com/Walksys/Dashboard-Nuvyra/releases) with semver comparison.
+- **GitHub Releases Auto-Detection**: Real-time checking against [Walksys/Dashboard-Casa/releases](https://github.com/Walksys/Dashboard-Casa/releases) with semver comparison.
 - **Dedicated Updates Dashboard (`#admin-updates`)**:
   - Displays Installed Version vs Latest Release tag.
   - Formatted Markdown Changelog reader and Release History accordion.
@@ -149,7 +149,7 @@ graph TD
   - Action buttons: "Start System Update (Full Auto)", "Sync Dependencies & Schema", "Check Git Status".
 - **Global System Overview Integration (`#admin-overview`)**:
   - Titlebar Version Pill (`v2.5.0`) & dynamic Update Status Pill (`Up-to-Date` or `Update Available`).
-  - High-visibility **Nuvyra Release & Update Status Banner** with 1-click update actions.
+  - High-visibility **Casa Release & Update Status Banner** with 1-click update actions.
   - Sidebar navigation notification badge (`UPDATE`).
 
 ### 2. 🎓 Interactive Auto Tutorials Engine (No Static Pages)
@@ -166,12 +166,12 @@ graph TD
   - Toggle automatic first-login tour for new users with an instant admin "Test Tour" button.
 - **Pure Naming**: Zero references to "Knowledge Base" across all user-facing UI, database settings, and modals.
 
-### 3. 🎨 Nuvyra V2.0.2 Theme Suite
+### 3. 🎨 Casa V2.0.2 Theme Suite
 - **Complete Visual Assets**: High-resolution branding logos, status illustrations, and server card banners.
 - **Theme Palette & Layouts**: Deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 
 ### 4. 🛠️ McTools Blueprint Extension Suite
-- **Integrated Extension**: Directly ported from [`Walksys/Nuvyra-Cloud (mctools.blueprint)`](https://github.com/Walksys/Nuvyra-Cloud/blob/main/thame/Extension/mctools.blueprint).
+- **Integrated Extension**: Directly ported from [`Walksys/Casa-Cloud (mctools.blueprint)`](https://github.com/Walksys/Casa-Cloud/blob/main/thame/Extension/mctools.blueprint).
 - **Live MOTD & Colored Text Builder**: Real-time Minecraft colored text builder (Sign, Book, Chat, MOTD) with live dark preview box and instant copy in Legacy (`&`), Section (`§`), Tellraw/JSON, and MiniMessage.
 - **Color Palette & Swatches**: Official 16 Minecraft colors with hex codes, RGB picker, and Bungee hex formatting (`&x&r&r&g&g&b&b`).
 - **SmallCaps & Unicode Decorative Fonts**: Real-time styler for SmallCaps, BigCaps, Bubble, Fraktur, FullWidth, Script, and Tiny fonts.
@@ -215,7 +215,7 @@ graph TD
 
 ### 4. 🎨 Theme & Customization Engine
 - **🖤 Full Black OLED**: Pure pitch black background (`#000000`), deep black frosted glass cards, and high-contrast neon accents.
-- **🌌 Nuvyra V2**: High-tech deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
+- **🌌 Casa V2**: High-tech deep space dark mode (`#111525`), primary cyan (`#23aeea`), and accent orange (`#ff5108`).
 - **🌟 LiquidX**: Polished glassmorphism with custom gold and emerald accents.
 - **💎 Arix**: Modern streamlined layout with deep blue palette.
 - **🖼️ Integrated 4K Wallpapers Browser ([4kwallpapers.com](https://4kwallpapers.com/))**:
@@ -250,7 +250,7 @@ Staff Chat is a private human-support conversation. Each user has a separate thr
 Run the full automated installer directly from the web or locally:
 ```bash
 # Instant One-Liner from GitHub
-bash <(curl -sSL https://raw.githubusercontent.com/walksys/Nuvyra/main/menu.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/walksys/Casa/main/menu.sh)
 
 # Or locally
 ./menu.sh auto -y
@@ -274,13 +274,13 @@ bash menu.sh
 | `./menu.sh db` | Database Suite (MariaDB/MySQL Docker engine & Migrations) |
 | `./menu.sh status` | Check port listening status (`3001`, `3003`, `3004`, `27017`) and database |
 | `./menu.sh playit` | Install native Playit.gg zero-port tunnel CLI |
-| `./menu.sh uninstall`| Safely remove or clean Nuvyra deployment |
+| `./menu.sh uninstall`| Safely remove or clean Casa deployment |
 
 ### 3. 🛠️ Manual CLI Setup
 ```bash
 # 1. Clone the repository
-git clone https://github.com/walksys/Nuvyra.git
-cd Nuvyra
+git clone https://github.com/walksys/Casa.git
+cd Casa
 
 # 2. Install dependencies
 npm install
@@ -304,7 +304,7 @@ npm run pm2:logs
 │   ├── createuser.js        # Interactive CLI user creation script
 │   ├── migrate.js           # Database migration runner
 │   └── build.js             # Directory verification & preparation script
-├── nuvyra/
+├── casa/
 │   ├── servers/             # Sandboxed server directories (server1, server2, ...)
 │   └── backups/             # Server snapshot .zip archives
 ├── public/
@@ -358,7 +358,7 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 - **Host**: `localhost` (or server IP)
 - **Port**: `3004`
 - **Username**: `<username>.<server_id>` (e.g. `admin.1` for Server #1)
-- **Password**: Your Nuvyra account password
+- **Password**: Your Casa account password
 
 ---
 
@@ -377,5 +377,5 @@ Connect using any SFTP client (FileZilla, WinSCP, Cyberduck):
 </p>
 
 <p align="center">
-  <b>Nuvyra</b> &copy; 2026 • Designed &amp; Engineered with ❤️ by <a href="https://walksys.qzz.io"><b>Walksys</b> (walksys.qzz.io)</a> • Licensed under the <a href="LICENSE">MIT License</a>
+  <b>Casa</b> &copy; 2026 • Designed &amp; Engineered with ❤️ by <a href="https://walksys.qzz.io"><b>Walksys</b> (walksys.qzz.io)</a> • Licensed under the <a href="LICENSE">MIT License</a>
 </p>

@@ -1,6 +1,6 @@
 /* ==========================================================================
-   NEBULA THEME v2.0 FOR Nuvyra
-   Ported from Nebula Blueprint (prplwtf / Nuvyra-Cloud)
+   NEBULA THEME v2.0 FOR Casa
+   Ported from Nebula Blueprint (prplwtf / Casa-Cloud)
    Fully unlocked, with Live Visual Customizer & Dynamic Real-time CSS Properties
    ========================================================================== */
 
@@ -40,7 +40,7 @@ html.theme-nebula,
   --borderRadiusSidebar: 12px;
   --patternSizeDashboard: 180px;
 
-  /* Nuvyra Cyber Bridges */
+  /* Casa Cyber Bridges */
   --card-opacity: 0.9;
   --card-blur: 16px;
 }

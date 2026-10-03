@@ -1,5 +1,5 @@
 /**
- * Nuvyra - Nebula Theme Customizer & Studio Designer
+ * Casa - Nebula Theme Customizer & Studio Designer
  * Ported from Nebula Blueprint (prplwtf / walksys)
  * Provides real-time theme tweaking, presets, color pickers, sidebar styling, magic patterns & alerts.
  */
@@ -169,7 +169,7 @@ class NebulaEditor {
       magicPattern: '', // '' (none) or 'cubes', 'tiles', 'rotated-squares', 'zig-zag', etc.
       magicPatternSize: 180,
       alertEnabled: false,
-      alertText: '🚀 Welcome to Nuvyra Nebula edition! Enjoy high performance server orchestration.',
+      alertText: '🚀 Welcome to Casa Nebula edition! Enjoy high performance server orchestration.',
       alertIcon: 'megaphone',
       alertPosition: 'static',
       alertDismissible: true,

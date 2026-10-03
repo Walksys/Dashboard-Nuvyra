@@ -63,7 +63,7 @@ class AdminManager {
           </div>
         </div>
 
-        <!-- Nuvyra System Version & Auto-Detect Update Banner -->
+        <!-- Casa System Version & Auto-Detect Update Banner -->
         <div class="glass-card p-4 rounded-2xl border border-white/10 relative overflow-hidden bg-gradient-to-r from-purple-950/30 via-slate-900/60 to-cyan-950/30 shadow-lg">
           <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div class="flex items-center gap-3.5">
@@ -73,7 +73,7 @@ class AdminManager {
               <div class="space-y-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="text-sm font-black text-white flex items-center gap-1.5">
-                    Nuvyra Server Engine <span class="font-mono text-purple-300" id="adm-banner-version">v2.4.0</span>
+                    Casa Server Engine <span class="font-mono text-purple-300" id="adm-banner-version">v2.4.0</span>
                   </span>
                   <span id="adm-banner-status-tag" class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400" id="adm-banner-status-dot"></span>
@@ -81,7 +81,7 @@ class AdminManager {
                   </span>
                 </div>
                 <p class="text-xs text-slate-400" id="adm-banner-status-desc">
-                  Auto-checking updates from <span class="text-cyan-400 font-mono">github.com/walksys/Nuvyra/releases</span> &bull; Commit <span class="font-mono text-slate-300" id="adm-banner-commit">main</span>
+                  Auto-checking updates from <span class="text-cyan-400 font-mono">github.com/walksys/Casa/releases</span> &bull; Commit <span class="font-mono text-slate-300" id="adm-banner-commit">main</span>
                 </p>
               </div>
             </div>
@@ -461,7 +461,7 @@ class AdminManager {
         if (res.has_update) {
           app.toast(`New version ${res.latest_version} available!`, 'info');
         } else {
-          app.toast(`Nuvyra is up to date (${res.latest_version || 'v2.4.0'}).`, 'success');
+          app.toast(`Casa is up to date (${res.latest_version || 'v2.4.0'}).`, 'success');
         }
         await this.fetchOverviewTelemetry(true);
       }
@@ -481,13 +481,13 @@ class AdminManager {
   // 2. Server Management View
   setServerViewMode(mode) {
     this.serverViewMode = mode;
-    localStorage.setItem('nuvyra_server_view_mode', mode);
+    localStorage.setItem('casa_server_view_mode', mode);
     this.renderServersView();
   }
 
   // 2. SERVERS & SERVER ACCOUNTS MONITOR
   async renderServersView() {
-    this.serverViewMode = this.serverViewMode || localStorage.getItem('nuvyra_server_view_mode') || 'card';
+    this.serverViewMode = this.serverViewMode || localStorage.getItem('casa_server_view_mode') || 'card';
     const isCard = this.serverViewMode === 'card';
     const container = document.getElementById('view-container');
     container.innerHTML = `
@@ -1683,6 +1683,12 @@ class AdminManager {
                   <span class="text-xs font-bold text-white">Java</span>
                   <span class="text-[10px] text-slate-400 text-center">8, 11, 16-21 Apps &amp; Lavalink</span>
                 </label>
+                <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-sky-400 transition">
+                  <input type="radio" name="create_srv_type" value="mta" onchange="admin.onServerTypeChange('mta')" class="accent-sky-400">
+                  <i data-lucide="car" class="w-6 h-6 text-sky-400"></i>
+                  <span class="text-xs font-bold text-white">MTA</span>
+                  <span class="text-[10px] text-slate-400 text-center">Multi Theft Auto</span>
+                </label>
                 <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-rose-400 transition">
                   <input type="radio" name="create_srv_type" value="lavalink" onchange="admin.onServerTypeChange('lavalink')" class="accent-rose-400">
                   <i data-lucide="radio-tower" class="w-6 h-6 text-rose-400"></i>
@@ -2183,7 +2189,7 @@ class AdminManager {
     // Keep the Admin cards, engine selector, quick Minecraft versions, and Docker versions.
     // Only remove choices that a normal account is not allowed to use.
     document.querySelectorAll('input[name="create_srv_type"]').forEach(input => {
-      if (['lumenvm', 'nokvm', 'lavalink'].includes(input.value)) {
+      if (['lumenvm', 'nokvm', 'lavalink', 'mta'].includes(input.value)) {
         const card = input.closest('label');
         if (card) card.classList.add('hidden');
         input.disabled = true;
@@ -2484,7 +2490,9 @@ class AdminManager {
       { label: 'LavaLink v4 (Official) (ghcr.io/lavalink-devs/lavalink:4-alpine)', value: 'ghcr.io/lavalink-devs/lavalink:4-alpine' }
     ];
 
-    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, java: javaImages, lavalink: lavalinkImages, lumenvm: vmImages, vm: vmImages, nokvm: vmImages, lumenvm_nokvm: vmImages };
+    const mtaImages = [{ label: 'Multi Theft Auto (ghcr.io/ptero-eggs/games:mta)', value: 'ghcr.io/ptero-eggs/games:mta' }];
+
+    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, java: javaImages, lavalink: lavalinkImages, mta: mtaImages, lumenvm: vmImages, vm: vmImages, nokvm: vmImages, lumenvm_nokvm: vmImages };
     const list = map[type] || mcImages;
 
     select.innerHTML = list.map(item => `
@@ -2671,13 +2679,13 @@ class AdminManager {
 
   setUserViewMode(mode) {
     this.userViewMode = mode;
-    localStorage.setItem('nuvyra_user_view_mode', mode);
+    localStorage.setItem('casa_user_view_mode', mode);
     this.renderUsersView();
   }
 
   // 3. User & Team Management View
   async renderUsersView() {
-    this.userViewMode = this.userViewMode || localStorage.getItem('nuvyra_user_view_mode') || 'card';
+    this.userViewMode = this.userViewMode || localStorage.getItem('casa_user_view_mode') || 'card';
     const isCard = this.userViewMode === 'card';
     const container = document.getElementById('view-container');
 

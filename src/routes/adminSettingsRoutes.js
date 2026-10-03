@@ -3,12 +3,31 @@ const router = express.Router();
 const path = require('path');
 const { query } = require('../database/db');
 const { authenticate, requireAdmin } = require('../middleware/auth');
-const { uploadBranding } = require('../middleware/upload');
+const { uploadBranding, uploadEgg } = require('../middleware/upload');
+const fs = require('fs');
 const imagesConfig = require('../config/images');
 const config = require('../config/config');
 const wallpaperService = require('../services/wallpaperService');
 const { logActivity } = require('../services/activityService');
 const { validWebhookUrl } = require('../services/discordWebhookService');
+
+
+// Upload and catalog a Pterodactyl Egg (Admin only).
+router.post('/eggs/upload', authenticate, requireAdmin, uploadEgg.single('egg'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, error: 'No Egg JSON file uploaded.' });
+    const raw = fs.readFileSync(req.file.path, 'utf8');
+    const egg = JSON.parse(raw);
+    if (!egg.name && !egg.meta && !egg.variables && !egg.startup) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ success: false, error: 'This file does not look like a Pterodactyl Egg.' });
+    }
+    res.json({ success: true, message: `Egg "${egg.name || req.file.originalname}" uploaded successfully.`, egg: { name: egg.name || req.file.originalname, file: req.file.filename } });
+  } catch (err) {
+    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(400).json({ success: false, error: `Invalid Egg JSON: ${err.message}` });
+  }
+});
 
 // Get Public Settings (Accessible by all users and guests)
 router.get('/public', async (req, res) => {
@@ -160,9 +179,9 @@ router.post('/reset', authenticate, requireAdmin, async (req, res) => {
       transparency_bar: String(dt.transparency ?? 18),
       blur_bar: String(dt.blur ?? 16),
       theme_mode: 'dark',
-      panel_name: config.DEFAULT_PANEL_NAME || 'Nuvyra',
-      favicon_name: config.DEFAULT_PANEL_NAME || 'Nuvyra',
-      panel_logo: dt.logo || '/assets/nuvyra-logo.svg',
+      panel_name: config.DEFAULT_PANEL_NAME || 'Casa',
+      favicon_name: config.DEFAULT_PANEL_NAME || 'Casa',
+      panel_logo: dt.logo || '/assets/casa-logo.svg',
       favicon_logo: dt.favicon || '/assets/favicon.svg'
     };
 

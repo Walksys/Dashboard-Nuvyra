@@ -90,13 +90,13 @@ router.post('/', authenticate, async (req, res) => {
     } = req.body;
 
     if (!isAdmin) {
-      const allowedFreeTypes = ['minecraft', 'nodejs', 'python', 'java'];
+      const allowedFreeTypes = ['minecraft', 'nodejs', 'python', 'java', 'mta'];
       const enabledSetting = await query.get('SELECT `value` FROM settings WHERE `key` = ?', ['free_server_enabled']);
       if (String(enabledSetting?.value || '0') !== '1') {
         return res.status(403).json({ success: false, error: 'Free Server creation is currently disabled by the administrator.' });
       }
       if (!allowedFreeTypes.includes(server_type)) {
-        return res.status(403).json({ success: false, error: 'Free accounts may create Minecraft, Node.js, Python, or Java servers only.' });
+        return res.status(403).json({ success: false, error: 'Free accounts may create Minecraft, Node.js, Python, Java, or MTA servers only.' });
       }
 
       const owned = await query.get('SELECT COUNT(*) AS total FROM servers WHERE user_id = ?', [req.user.id]);
@@ -111,6 +111,7 @@ router.post('/', authenticate, async (req, res) => {
       node_id = 1;
       allocation_id = undefined;
       env_vars = {};
+      if (server_type === 'mta') env_vars.SERVER_WEBPORT = '22006';
       is_free = 1;
 
       const freeValue = async (key, fallback, min, max) => {
@@ -148,6 +149,14 @@ router.post('/', authenticate, async (req, res) => {
       }
     }
 
+    const selectedAllocation = allocId ? await query.get('SELECT port FROM allocations WHERE id = ?', [allocId]) : null;
+    const selectedPort = Number(selectedAllocation?.port) || 25565;
+    if (server_type === 'mta') {
+      let parsedEnv = {};
+      try { parsedEnv = typeof env_vars === 'string' ? JSON.parse(env_vars || '{}') : (env_vars || {}); } catch (e) {}
+      env_vars = { ...parsedEnv, SERVER_WEBPORT: String(selectedPort + 3) };
+    }
+
     // Determine default image & command if not provided
     let defaultImg = docker_image;
     let defaultCmd = startup_cmd;
@@ -158,6 +167,9 @@ router.post('/', authenticate, async (req, res) => {
       }
       defaultImg = defaultImg || imagesConfig.minecraft[1].value; // Java 21
       defaultCmd = defaultCmd || 'java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar server.jar nogui';
+    } else if (server_type === 'mta') {
+      defaultImg = defaultImg || imagesConfig.mta[0].value;
+      defaultCmd = defaultCmd || './mta-server64 --port {{SERVER_PORT}} --httpport {{SERVER_WEBPORT}} -n';
     } else if (server_type === 'nodejs') {
       defaultImg = defaultImg || imagesConfig.nodejs[5].value; // Node 20
       defaultCmd = defaultCmd || 'if [ -f package.json ]; then npm install; fi; npm start';
@@ -226,7 +238,7 @@ router.post('/', authenticate, async (req, res) => {
     const newServerId = insertResult.lastID;
 
     // Mark allocation as assigned and determine assigned port
-    let assignedPort = 25565;
+    let assignedPort = selectedPort;
     if (allocId) {
       await query.run('UPDATE allocations SET server_id = ?, assigned = 1 WHERE id = ?', [newServerId, allocId]);
       try {
@@ -237,7 +249,7 @@ router.post('/', authenticate, async (req, res) => {
       } catch (e) {}
     }
 
-    // Initialize server directory on disk: ./nuvyra/servers/server<id>
+    // Initialize server directory on disk: ./casa/servers/server<id>
     const serverDir = path.join(config.SERVERS_DIR, `server${newServerId}`);
     if (!fs.existsSync(serverDir)) {
       fs.mkdirSync(serverDir, { recursive: true });
@@ -251,6 +263,9 @@ router.post('/', authenticate, async (req, res) => {
       if (mc_jar_type && mc_jar_version) {
         mcjarsService.installJarToServer(newServerId, mc_jar_type, mc_jar_version).catch(e => console.warn('Async jar install warning:', e.message));
       }
+    } else if (server_type === 'mta') {
+      defaultImg = defaultImg || imagesConfig.mta[0].value;
+      defaultCmd = defaultCmd || './mta-server64 --port {{SERVER_PORT}} --httpport {{SERVER_WEBPORT}} -n';
     } else if (server_type === 'nodejs') {
       const samplePkg = {
         name: name.toLowerCase().replace(/\s+/g, '-'),
@@ -260,14 +275,16 @@ router.post('/', authenticate, async (req, res) => {
         dependencies: { express: '^4.21.2' }
       };
       fs.writeFileSync(path.join(serverDir, 'package.json'), JSON.stringify(samplePkg, null, 2), 'utf8');
-      fs.writeFileSync(path.join(serverDir, 'index.js'), `// Nuvyra Node.js Application\nconst http = require('http');\nconst port = process.env.PORT || 3000;\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'text/plain' });\n  res.end('Hello from Nuvyra Node.js Server! Port: ' + port);\n});\n\nserver.listen(port, () => {\n  console.log('App running on port ' + port);\n});\n`, 'utf8');
+      fs.writeFileSync(path.join(serverDir, 'index.js'), `// Casa Node.js Application\nconst http = require('http');\nconst port = process.env.PORT || 3000;\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'text/plain' });\n  res.end('Hello from Casa Node.js Server! Port: ' + port);\n});\n\nserver.listen(port, () => {\n  console.log('App running on port ' + port);\n});\n`, 'utf8');
     } else if (server_type === 'python') {
       fs.writeFileSync(path.join(serverDir, 'requirements.txt'), '# Add your Python dependencies here\nflask\n', 'utf8');
-      fs.writeFileSync(path.join(serverDir, 'app.py'), `# Nuvyra Python Application\nimport os\nfrom http.server import HTTPServer, BaseHTTPRequestHandler\n\nport = int(os.environ.get('PORT', 5000))\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        self.send_response(200)\n        self.send_header('Content-type', 'text/plain')\n        self.end_headers()\n        self.wfile.write(b'Hello from Nuvyra Python App!')\n\nprint(f"Starting Python server on port {port}...")\nhttpd = HTTPServer(('0.0.0.0', port), Handler)\nhttpd.serve_forever()\n`, 'utf8');
+      fs.writeFileSync(path.join(serverDir, 'app.py'), `# Casa Python Application\nimport os\nfrom http.server import HTTPServer, BaseHTTPRequestHandler\n\nport = int(os.environ.get('PORT', 5000))\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        self.send_response(200)\n        self.send_header('Content-type', 'text/plain')\n        self.end_headers()\n        self.wfile.write(b'Hello from Casa Python App!')\n\nprint(f"Starting Python server on port {port}...")\nhttpd = HTTPServer(('0.0.0.0', port), Handler)\nhttpd.serve_forever()\n`, 'utf8');
+    } else if (server_type === 'mta') {
+      fs.writeFileSync(path.join(serverDir, 'MTA_README.txt'), `Multi Theft Auto server powered by the official Pterodactyl Egg.\nGame port: {{SERVER_PORT}}\nHTTP port: {{SERVER_WEBPORT}} (game port + 3).\n`, 'utf8');
     } else if (server_type === 'lavalink') {
       fs.writeFileSync(path.join(serverDir, 'LAVALINK_README.txt'), `LavaLink v4 server. The official Docker image supplies the runtime and starts LavaLink directly.\n`, 'utf8');
     } else if (server_type === 'java') {
-      fs.writeFileSync(path.join(serverDir, 'JAVA_APP_README.txt'), `Nuvyra Java Application\n\nUpload a runnable JAR here, then set MAIN_FILE in Startup (default: app.jar).\nFor Lavalink, upload Lavalink.jar and set MAIN_FILE=Lavalink.jar.\nThe selected Docker image supplies the Java runtime version.\n`, 'utf8');
+      fs.writeFileSync(path.join(serverDir, 'JAVA_APP_README.txt'), `Casa Java Application\n\nUpload a runnable JAR here, then set MAIN_FILE in Startup (default: app.jar).\nFor Lavalink, upload Lavalink.jar and set MAIN_FILE=Lavalink.jar.\nThe selected Docker image supplies the Java runtime version.\n`, 'utf8');
     } else if (server_type === 'lumenvm' || server_type === 'vm' || server_type === 'nokvm' || server_type === 'lumenvm_nokvm') {
       const vmEnv = typeof env_vars === 'object' ? env_vars : {};
       fs.writeFileSync(path.join(serverDir, 'README.txt'), `=== LumenVM Virtual Machine ===\nOS Image: ${defaultImg}\nHostname: ${vmEnv.OS_HOSTNAME || 'lumenvm'}\nAccess Mode: ${vmEnv.DISPLAY_MODE || 'ssh'}\nKVM Mode: ${vmEnv.KVM || 'on'}\nNo-KVM Software Emulation: ${vmEnv.NOKVM === '1' ? 'Active' : 'Disabled'}\nAssigned Port: ${assignedPort}\n\nQEMU virtual disk and machine storage are managed in this directory.\n`, 'utf8');
@@ -686,7 +703,7 @@ router.delete('/:id', authenticate, requireServerAccess(), (req, res, next) => {
       } else {
         // Direct container removal fallback
         const { execSync } = require('child_process');
-        const containerName = `nuvyra-server-${serverId}-${(server.uuid || '').substring(0, 8)}`;
+        const containerName = `casa-server-${serverId}-${(server.uuid || '').substring(0, 8)}`;
         try {
           execSync(`docker rm -f ${containerName} 2>/dev/null`);
         } catch (e) {}

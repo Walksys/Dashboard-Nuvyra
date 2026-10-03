@@ -2,12 +2,12 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('⚡ Building Nuvyra...');
+console.log('⚡ Building Casa...');
 
 const dirs = [
   path.join(__dirname, '../data'),
-  path.join(__dirname, '../nuvyra/servers'),
-  path.join(__dirname, '../nuvyra/backups'),
+  path.join(__dirname, '../casa/servers'),
+  path.join(__dirname, '../casa/backups'),
   path.join(__dirname, '../public/uploads/branding'),
   path.join(__dirname, '../public/assets')
 ];
@@ -19,5 +19,5 @@ for (const dir of dirs) {
   }
 }
 
-console.log('✅ Nuvyra build and directory check complete! Ready for PM2 / production.');
+console.log('✅ Casa build and directory check complete! Ready for PM2 / production.');
 

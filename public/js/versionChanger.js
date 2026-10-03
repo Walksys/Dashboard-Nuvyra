@@ -1,4 +1,4 @@
-// Nuvyra Minecraft Version Changer Module
+// Casa Minecraft Version Changer Module
 class VersionChanger {
   constructor() {
     this.currentServerId = null;

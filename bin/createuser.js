@@ -10,7 +10,7 @@ async function askQuestion(rl, queryText) {
 
 async function main() {
   console.log('\n======================================');
-  console.log('       🛠️  Nuvyra User Creator        ');
+  console.log('       🛠️  Casa User Creator        ');
   console.log('======================================\n');
 
   await initDatabase();

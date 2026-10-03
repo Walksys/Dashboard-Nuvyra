@@ -1,7 +1,7 @@
 /**
  * McTools - Minecraft Server Utilities Suite
- * Ported from Blueprint Extension: mctools.blueprint (Walksys/Nuvyra-Cloud)
- * Author: towsifkafi | Maintained by walksys.dev for Nuvyra
+ * Ported from Blueprint Extension: mctools.blueprint (Walksys/Casa-Cloud)
+ * Author: towsifkafi | Maintained by walksys.dev for Casa
  */
 class McToolsController {
   constructor() {
@@ -141,7 +141,7 @@ class McToolsController {
               <a href="/downloads/mctools.blueprint" download="mctools.blueprint" class="btn-cyber px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-95" title="Download raw mctools.blueprint file">
                 <i data-lucide="download" class="w-4 h-4"></i> Download .blueprint
               </a>
-              <a href="https://github.com/Walksys/Nuvyra-Cloud/blob/main/thame/Extension/mctools.blueprint" target="_blank" class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 transition flex items-center gap-1.5" title="View Source on GitHub">
+              <a href="https://github.com/Walksys/Casa-Cloud/blob/main/thame/Extension/mctools.blueprint" target="_blank" class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 transition flex items-center gap-1.5" title="View Source on GitHub">
                 <i data-lucide="github" class="w-4 h-4"></i> GitHub
               </a>
             </div>
@@ -930,7 +930,7 @@ class McToolsController {
             <ul class="text-xs text-slate-300 space-y-1.5">
               <li><strong>Extension Name:</strong> McTools</li>
               <li><strong>Author:</strong> towsifkafi</li>
-              <li><strong>Nuvyra Integration:</strong> walksys.dev</li>
+              <li><strong>Casa Integration:</strong> walksys.dev</li>
               <li><strong>File:</strong> <code>mctools.blueprint</code> (352 KB)</li>
               <li><strong>Framework:</strong> Blueprint Extension Engine</li>
             </ul>
@@ -954,7 +954,7 @@ class McToolsController {
         <div class="p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div class="space-y-0.5">
             <div class="text-xs font-bold text-white">Repository Source</div>
-            <div class="text-[11px] text-slate-400 font-mono break-all">https://github.com/Walksys/Nuvyra-Cloud/blob/main/thame/Extension/mctools.blueprint</div>
+            <div class="text-[11px] text-slate-400 font-mono break-all">https://github.com/Walksys/Casa-Cloud/blob/main/thame/Extension/mctools.blueprint</div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <a href="/downloads/mctools.blueprint" download="mctools.blueprint" class="btn-cyber px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">

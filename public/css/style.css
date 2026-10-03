@@ -1518,21 +1518,21 @@ html.theme-liquidx.light .glass-input {
 }
 
 /* ==========================================================================
-   Nuvyra Theme V2.0.2 ("Deep Space / High-Velocity Cyber Deck")
+   Casa Theme V2.0.2 ("Deep Space / High-Velocity Cyber Deck")
    ========================================================================== */
-:root.theme-nuvyra, html.theme-nuvyra, .theme-nuvyra {
+:root.theme-casa, html.theme-casa, .theme-casa {
   --primary: #23aeea;
-  --nuvyra-cyan: #23aeea;
-  --nuvyra-cyan-glow: rgba(35, 174, 234, 0.4);
-  --nuvyra-orange: #ff5108;
-  --nuvyra-orange-glow: rgba(255, 81, 8, 0.4);
-  --nuvyra-bg: #111525;
-  --nuvyra-card: #171d27;
-  --nuvyra-border: #252d38;
+  --casa-cyan: #23aeea;
+  --casa-cyan-glow: rgba(35, 174, 234, 0.4);
+  --casa-orange: #ff5108;
+  --casa-orange-glow: rgba(255, 81, 8, 0.4);
+  --casa-bg: #111525;
+  --casa-card: #171d27;
+  --casa-border: #252d38;
   --card-border: #252d38;
 }
 
-html.theme-nuvyra body {
+html.theme-casa body {
   background: radial-gradient(1000px 600px at 85% 10%, rgba(35, 174, 234, 0.12), transparent 55%),
               radial-gradient(900px 700px at 15% 90%, rgba(255, 81, 8, 0.10), transparent 50%),
               #111525 !important;
@@ -1541,84 +1541,84 @@ html.theme-nuvyra body {
   font-family: 'Poppins', system-ui, sans-serif;
 }
 
-html.theme-nuvyra #overlay-layer {
+html.theme-casa #overlay-layer {
   background: radial-gradient(circle at top right, rgba(35, 174, 234, 0.08), transparent 70%), rgba(17, 21, 37, 0.85);
 }
 
-html.theme-nuvyra .glass-panel {
+html.theme-casa .glass-panel {
   background: #171d27 !important;
   border: 1px solid #252d38 !important;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45) !important;
 }
 
-html.theme-nuvyra .glass-card {
+html.theme-casa .glass-card {
   background: #171d27 !important;
   border: 1px solid #252d38 !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35) !important;
   transition: all 0.2s ease !important;
 }
 
-html.theme-nuvyra .glass-card:hover {
+html.theme-casa .glass-card:hover {
   border-color: #23aeea !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(35, 174, 234, 0.2) !important;
 }
 
-html.theme-nuvyra .btn-cyber {
+html.theme-casa .btn-cyber {
   background: linear-gradient(135deg, #0284c7 0%, #23aeea 100%) !important;
   color: white !important;
   box-shadow: 0 0 15px rgba(35, 174, 234, 0.3) !important;
 }
 
-html.theme-nuvyra .btn-cyber:hover {
+html.theme-casa .btn-cyber:hover {
   background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
   box-shadow: 0 0 25px rgba(35, 174, 234, 0.5) !important;
 }
 
-html.theme-nuvyra .btn-cyber-orange {
+html.theme-casa .btn-cyber-orange {
   background: linear-gradient(135deg, #ff6b2b 0%, #ff5108 100%) !important;
   color: white !important;
   box-shadow: 0 0 15px rgba(255, 81, 8, 0.3) !important;
 }
 
-html.theme-nuvyra .btn-cyber-orange:hover {
+html.theme-casa .btn-cyber-orange:hover {
   background: linear-gradient(135deg, #ea4a00 0%, #d43d00 100%) !important;
   box-shadow: 0 0 25px rgba(255, 81, 8, 0.5) !important;
 }
 
-html.theme-nuvyra .glass-input {
+html.theme-casa .glass-input {
   background: #0f141f !important;
   border: 1px solid #252d38 !important;
   color: #ffffff !important;
 }
 
-html.theme-nuvyra .glass-input:focus {
+html.theme-casa .glass-input:focus {
   border-color: #23aeea !important;
   box-shadow: 0 0 0 2px rgba(35, 174, 234, 0.25) !important;
 }
 
-html.theme-nuvyra .nook-sidebar {
+html.theme-casa .nook-sidebar {
   background: #171d27 !important;
   border-right: 1px solid #252d38 !important;
 }
 
-html.theme-nuvyra .nook-topbar {
+html.theme-casa .nook-topbar {
   background: #171d27 !important;
   border-bottom: 1px solid #252d38 !important;
 }
 
-html.theme-nuvyra .nook-nav-item.active {
+html.theme-casa .nook-nav-item.active {
   background: rgba(35, 174, 234, 0.12) !important;
   border-color: rgba(35, 174, 234, 0.4) !important;
   color: #23aeea !important;
 }
 
-html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
+html.theme-casa .nook-nav-item.active .nook-icon-box {
   background: rgba(35, 174, 234, 0.2) !important;
   color: #23aeea !important;
 }
 
-/* Nuvyra Server Banner Card System */
-.nuvyra-server-card {
+/* Casa Server Banner Card System */
+.casa-server-card {
   background: #171d27;
   border: 1px solid #252d38;
   border-radius: 12px;
@@ -1630,13 +1630,13 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-.nuvyra-server-card:hover {
+.casa-server-card:hover {
   border-color: #23aeea;
   transform: translateY(-3px);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(35, 174, 234, 0.2);
 }
 
-.nuvyra-server-banner {
+.casa-server-banner {
   position: relative;
   height: 90px;
   background-size: cover;
@@ -1648,13 +1648,13 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   text-decoration: none;
 }
 
-.nuvyra-server-banner-overlay {
+.casa-server-banner-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(23, 29, 39, 0.2) 0%, rgba(23, 29, 39, 0.95) 100%);
 }
 
-.nuvyra-server-title {
+.casa-server-title {
   position: relative;
   z-index: 2;
   font-family: 'Poppins', sans-serif;
@@ -1664,7 +1664,7 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
-.nuvyra-server-info {
+.casa-server-info {
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -1673,13 +1673,13 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   color: #94a3b8;
 }
 
-.nuvyra-server-info .stats-row {
+.casa-server-info .stats-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.nuvyra-server-actions {
+.casa-server-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1689,8 +1689,8 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   background: rgba(0, 0, 0, 0.2);
 }
 
-.nuvyra-server-actions a,
-.nuvyra-server-actions button {
+.casa-server-actions a,
+.casa-server-actions button {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -1703,15 +1703,15 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   font-size: 13px;
 }
 
-.nuvyra-server-actions a:hover,
-.nuvyra-server-actions button:hover {
+.casa-server-actions a:hover,
+.casa-server-actions button:hover {
   background: #23aeea;
   color: #ffffff;
   box-shadow: 0 0 12px rgba(35, 174, 234, 0.4);
 }
 
-/* Status indicator in Nuvyra */
-.nuvyra-status-indicator {
+/* Status indicator in Casa */
+.casa-status-indicator {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1719,7 +1719,7 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   font-weight: 600;
 }
 
-.nuvyra-online-dot {
+.casa-online-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -1728,47 +1728,47 @@ html.theme-nuvyra .nook-nav-item.active .nook-icon-box {
   animation: pulse-green 2s infinite;
 }
 
-.nuvyra-offline-dot {
+.casa-offline-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: #ef4444;
 }
 
-/* Accent Color Mapping for Cyan in Nuvyra */
-html.theme-nuvyra .text-cyan-400,
-html.theme-nuvyra .text-cyan-300 {
+/* Accent Color Mapping for Cyan in Casa */
+html.theme-casa .text-cyan-400,
+html.theme-casa .text-cyan-300 {
   color: #23aeea !important;
 }
 
-html.theme-nuvyra .theme-select-card.active {
+html.theme-casa .theme-select-card.active {
   border-color: #23aeea !important;
   box-shadow: 0 0 24px rgba(35, 174, 234, 0.45) !important;
 }
 
-html.theme-nuvyra .device-select-card.active {
+html.theme-casa .device-select-card.active {
   border-color: #23aeea !important;
   box-shadow: 0 0 20px rgba(35, 174, 234, 0.35) !important;
 }
 
-/* Light mode support for Nuvyra */
-html.theme-nuvyra.light body {
+/* Light mode support for Casa */
+html.theme-casa.light body {
   background: #f1f5f9 !important;
   color: #0f172a !important;
 }
 
-html.theme-nuvyra.light .glass-panel {
+html.theme-casa.light .glass-panel {
   background: #ffffff !important;
   border-color: #cbd5e1 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
 }
 
-html.theme-nuvyra.light .glass-card {
+html.theme-casa.light .glass-card {
   background: #ffffff !important;
   border-color: #e2e8f0 !important;
 }
 
-html.theme-nuvyra.light .glass-input {
+html.theme-casa.light .glass-input {
   background: #f8fafc !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
@@ -2013,7 +2013,7 @@ html.theme-arix .device-select-card.active {
    🔒 PERMANENT NON-REMOVABLE DEVELOPER WATERMARK (walksys / walksys.qzz.io)
    ============================================================================== */
 #sidebar-permanent-watermark,
-#nuvyra-global-footer-watermark {
+#casa-global-footer-watermark {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -2043,3 +2043,11 @@ html.theme-arix .device-select-card.active {
   display: inline-block;
   animation: eq-bounce 0.8s ease-in-out infinite alternate;
 }
+
+/* Casa Hosting monochrome dark mode */
+html.casa-dark-mode { --casa-accent: #d1d5db; --casa-accent-strong: #f3f4f6; }
+html.casa-dark-mode body { background: #090909 !important; color: #e5e5e5 !important; }
+html.casa-dark-mode .glass-panel, html.casa-dark-mode .glass-card, html.casa-dark-mode .nook-stat-card-mini { background: rgba(24,24,24,.94) !important; border-color: rgba(255,255,255,.14) !important; box-shadow: none !important; }
+html.casa-dark-mode .text-cyan-300, html.casa-dark-mode .text-cyan-400, html.casa-dark-mode .text-purple-300, html.casa-dark-mode .text-purple-400, html.casa-dark-mode .text-indigo-300, html.casa-dark-mode .text-amber-300, html.casa-dark-mode .text-emerald-300, html.casa-dark-mode .text-sky-400 { color: #d4d4d4 !important; }
+html.casa-dark-mode [class*="bg-cyan-"], html.casa-dark-mode [class*="bg-purple-"], html.casa-dark-mode [class*="bg-indigo-"], html.casa-dark-mode [class*="bg-amber-"], html.casa-dark-mode [class*="bg-emerald-"] { background-color: rgba(255,255,255,.08) !important; }
+html.casa-dark-mode [class*="border-cyan-"], html.casa-dark-mode [class*="border-purple-"], html.casa-dark-mode [class*="border-indigo-"], html.casa-dark-mode [class*="border-amber-"] { border-color: rgba(255,255,255,.2) !important; }

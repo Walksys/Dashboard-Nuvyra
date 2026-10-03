@@ -16,8 +16,8 @@ module.exports = {
   // Storage Paths
   BASE_DIR: path.resolve(__dirname, '../../'),
   DATA_DIR: path.resolve(__dirname, '../../data'),
-  SERVERS_DIR: path.resolve(__dirname, '../../nuvyra/servers'),
-  BACKUPS_DIR: path.resolve(__dirname, '../../nuvyra/backups'),
+  SERVERS_DIR: path.resolve(__dirname, '../../casa/servers'),
+  BACKUPS_DIR: path.resolve(__dirname, '../../casa/backups'),
   UPLOADS_DIR: path.resolve(__dirname, '../../public/uploads'),
 
   // Database Configuration (MariaDB / MySQL)
@@ -34,7 +34,7 @@ module.exports = {
     blur: 16,        // 0 - 40px
     wallpaper: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=3840&q=90', // Full pitch black minimalist OLED
     wallpaperCategory: 'black-dark',
-    logo: '/assets/nuvyra-logo.svg',
+    logo: '/assets/casa-logo.svg',
     favicon: '/assets/favicon.svg',
     themeMode: 'dark',
     musicUrl: '',

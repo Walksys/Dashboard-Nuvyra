@@ -267,7 +267,8 @@ router.post('/:id/allocations', authenticate, requireAdmin, async (req, res) => 
   try {
     const nodeId = req.params.id;
     const { ip, ports, startPort, endPort } = req.body;
-    const targetIp = ip || '127.0.0.1';
+    const node = await query.get('SELECT fqdn FROM nodes WHERE id = ?', [nodeId]);
+    const targetIp = ip || node?.fqdn || '127.0.0.1';
 
     let portsToAdd = [];
     if (startPort && endPort) {

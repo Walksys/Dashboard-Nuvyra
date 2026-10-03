@@ -1,5 +1,5 @@
 /**
- * AutoBackups Client Extension Module for Nuvyra
+ * AutoBackups Client Extension Module for Casa
  * Ported from autobackups.blueprint (v1.0 by makkmarci13)
  */
 class AutoBackupsClient {
