@@ -32,7 +32,11 @@ module.exports = {
     { label: "Python 3.7",  value: "ghcr.io/ptero-eggs/yolks:python_3.7",  defaultCmd: "if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python3 app.py", mainFile: "app.py" },
     { label: "Python 2.7",  value: "ghcr.io/ptero-eggs/yolks:python_2.7",  defaultCmd: "if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python2 app.py", mainFile: "app.py" }
   ],
+  lavalink: [
+    { label: "LavaLink v4 (Official)", value: "ghcr.io/lavalink-devs/lavalink:4-alpine", defaultCmd: "", mainFile: "" }
+  ],
   java: [
+    { label: "Java 25", value: "ghcr.io/pterodactyl/yolks:java_25", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
     { label: "Java 21", value: "ghcr.io/pterodactyl/yolks:java_21", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
     { label: "Java 19", value: "ghcr.io/pterodactyl/yolks:java_19", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },
     { label: "Java 18", value: "ghcr.io/pterodactyl/yolks:java_18", defaultCmd: "java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}", mainFile: "app.jar" },

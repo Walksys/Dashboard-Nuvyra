@@ -269,7 +269,7 @@ class App {
       }
       const nuvyraBrand = (localStorage.getItem('nuvyra_brand_name') || s.nuvyra_brand_name || 'Nuvyra').replace(/^Nuvyra$/i, 'Nuvyra');
       if (subNameEl) {
-        subNameEl.innerText = `${nuvyraBrand} v${s.panel_version || '2.5.3'}`;
+        subNameEl.innerText = `${nuvyraBrand} v${'2.5.3'}`;
       }
     } else if (activeTheme === 'liquidx') {
       document.documentElement.classList.add('theme-liquidx');
