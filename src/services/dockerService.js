@@ -182,7 +182,7 @@ class DockerService {
       Image: server.docker_image,
       User: '0:0',
       WorkingDir: '/home/container',
-      Cmd: cmdParts,
+      ...(server.server_type === 'lavalink' ? {} : { Cmd: cmdParts }),
       Env: envArray,
       Tty: true,
       OpenStdin: true,

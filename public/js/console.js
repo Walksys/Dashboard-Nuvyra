@@ -1913,7 +1913,7 @@ class ServerConsole {
         cmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}';
       } else if (this.serverData?.server_type === 'python') {
         cmd = 'python3 {{MAIN_FILE}}';
-      } else if (this.serverData?.server_type === 'java') {
+      } else if ((this.serverData?.server_type === 'java' || this.serverData?.server_type === 'lavalink')) {
         cmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
       } else {
         cmd = 'node {{MAIN_FILE}}';
@@ -1921,7 +1921,7 @@ class ServerConsole {
     }
 
     const jarFile = envVars.SERVER_JARFILE || 'server.jar';
-    const mainFile = envVars.MAIN_FILE || (this.serverData?.server_type === 'python' ? 'app.py' : (this.serverData?.server_type === 'java' ? 'app.jar' : 'index.js'));
+    const mainFile = envVars.MAIN_FILE || (this.serverData?.server_type === 'python' ? 'app.py' : ((this.serverData?.server_type === 'java' || this.serverData?.server_type === 'lavalink') ? 'app.jar' : 'index.js'));
     const memory = this.serverData?.memory_mb || 1024;
     const port = this.serverData?.port || 25565;
 

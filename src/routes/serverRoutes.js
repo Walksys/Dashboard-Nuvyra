@@ -164,6 +164,9 @@ router.post('/', authenticate, async (req, res) => {
     } else if (server_type === 'python') {
       defaultImg = defaultImg || imagesConfig.python[1].value; // Python 3.12
       defaultCmd = defaultCmd || 'if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; python3 app.py';
+    } else if (server_type === 'lavalink') {
+      defaultImg = defaultImg || imagesConfig.lavalink[0].value;
+      defaultCmd = defaultCmd || '';
     } else if (server_type === 'java') {
       defaultImg = defaultImg || imagesConfig.java[1].value; // Java 21
       defaultCmd = defaultCmd || 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
@@ -261,6 +264,8 @@ router.post('/', authenticate, async (req, res) => {
     } else if (server_type === 'python') {
       fs.writeFileSync(path.join(serverDir, 'requirements.txt'), '# Add your Python dependencies here\nflask\n', 'utf8');
       fs.writeFileSync(path.join(serverDir, 'app.py'), `# Nuvyra Python Application\nimport os\nfrom http.server import HTTPServer, BaseHTTPRequestHandler\n\nport = int(os.environ.get('PORT', 5000))\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        self.send_response(200)\n        self.send_header('Content-type', 'text/plain')\n        self.end_headers()\n        self.wfile.write(b'Hello from Nuvyra Python App!')\n\nprint(f"Starting Python server on port {port}...")\nhttpd = HTTPServer(('0.0.0.0', port), Handler)\nhttpd.serve_forever()\n`, 'utf8');
+    } else if (server_type === 'lavalink') {
+      fs.writeFileSync(path.join(serverDir, 'LAVALINK_README.txt'), `LavaLink v4 server. The official Docker image supplies the runtime and starts LavaLink directly.\n`, 'utf8');
     } else if (server_type === 'java') {
       fs.writeFileSync(path.join(serverDir, 'JAVA_APP_README.txt'), `Nuvyra Java Application\n\nUpload a runnable JAR here, then set MAIN_FILE in Startup (default: app.jar).\nFor Lavalink, upload Lavalink.jar and set MAIN_FILE=Lavalink.jar.\nThe selected Docker image supplies the Java runtime version.\n`, 'utf8');
     } else if (server_type === 'lumenvm' || server_type === 'vm' || server_type === 'nokvm' || server_type === 'lumenvm_nokvm') {

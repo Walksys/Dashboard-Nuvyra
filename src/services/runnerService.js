@@ -360,7 +360,7 @@ class RunnerService {
         startupCmd = `java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}`;
       } else if (server.server_type === 'python') {
         startupCmd = 'python3 {{MAIN_FILE}}';
-      } else if (server.server_type === 'java') {
+      } else if ((server.server_type === 'java' || server.server_type === 'lavalink')) {
         startupCmd = 'java -Xms128M -XX:MaxRAMPercentage=95.0 -jar {{MAIN_FILE}}';
       } else if (server.server_type === 'lumenvm' || server.server_type === 'vm' || server.server_type === 'nokvm' || server.server_type === 'lumenvm_nokvm') {
         startupCmd = '/start.sh';
@@ -404,7 +404,7 @@ class RunnerService {
     }
 
     const jarFile = envVars.SERVER_JARFILE || 'server.jar';
-    const mainFile = envVars.MAIN_FILE || (server.server_type === 'python' ? 'app.py' : (server.server_type === 'java' ? 'app.jar' : 'index.js'));
+    const mainFile = envVars.MAIN_FILE || (server.server_type === 'python' ? 'app.py' : ((server.server_type === 'java' || server.server_type === 'lavalink') ? 'app.jar' : 'index.js'));
     const mcVersion = envVars.MINECRAFT_VERSION || server.jar_version || '1.21.4';
     const buildNumber = envVars.BUILD_NUMBER || 'latest';
 

@@ -129,7 +129,6 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       'free_app_ram_mb',
       'free_app_cpu',
       'free_app_disk_mb',
-      'panel_version'
     ];
 
     for (const [key, value] of Object.entries(updates)) {

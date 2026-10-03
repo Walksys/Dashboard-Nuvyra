@@ -115,7 +115,6 @@ class SettingsManager {
                 <label class="text-[11px] text-slate-400">Apps CPU (%)<input id="set-free-app-cpu" type="number" min="1" max="100" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
                 <label class="text-[11px] text-slate-400">Apps Disk (MB)<input id="set-free-app-disk" type="number" min="256" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs"></label>
               </div>
-              <label class="block text-[11px] text-slate-400">Panel Version<input id="set-panel-version" type="text" class="w-full glass-input mt-1 px-3 py-2 rounded-xl text-xs font-mono" placeholder="2.5.3"></label>
             </div>
 
             <!-- Card 0: Active Theme Selection (NookTheme vs Arix Theme v2.1.3) -->
@@ -1046,7 +1045,6 @@ class SettingsManager {
       document.getElementById('set-free-app-ram').value = s.free_app_ram_mb || '512';
       document.getElementById('set-free-app-cpu').value = s.free_app_cpu || '50';
       document.getElementById('set-free-app-disk').value = s.free_app_disk_mb || '1024';
-      document.getElementById('set-panel-version').value = s.panel_version || '2.5.3';
 
       const bgUrl = s.panel_bg || '';
       const bgType = s.panel_bg_type || (/\.(mp4|webm|mkv|mov)($|\?)/i.test(bgUrl) ? 'video' : 'image');
@@ -2042,7 +2040,6 @@ class SettingsManager {
       free_app_ram_mb: document.getElementById('set-free-app-ram')?.value || '512',
       free_app_cpu: document.getElementById('set-free-app-cpu')?.value || '50',
       free_app_disk_mb: document.getElementById('set-free-app-disk')?.value || '1024',
-      panel_version: document.getElementById('set-panel-version')?.value.trim() || '2.5.3',
       panel_bg: this.currentTheme.bg || '',
       panel_bg_type: this.currentTheme.bgType || 'image',
       panel_bg_category: this.activeCategory || 'all',

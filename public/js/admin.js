@@ -1683,6 +1683,12 @@ class AdminManager {
                   <span class="text-xs font-bold text-white">Java</span>
                   <span class="text-[10px] text-slate-400 text-center">8, 11, 16-21 Apps &amp; Lavalink</span>
                 </label>
+                <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-rose-400 transition">
+                  <input type="radio" name="create_srv_type" value="lavalink" onchange="admin.onServerTypeChange('lavalink')" class="accent-rose-400">
+                  <i data-lucide="radio-tower" class="w-6 h-6 text-rose-400"></i>
+                  <span class="text-xs font-bold text-white">LavaLink</span>
+                  <span class="text-[10px] text-slate-400 text-center">Official audio node v4</span>
+                </label>
                 <label class="glass-card p-3 rounded-xl border border-white/10 flex flex-col items-center gap-2 cursor-pointer hover:border-amber-400 transition">
                   <input type="radio" name="create_srv_type" value="lumenvm" onchange="admin.onServerTypeChange('lumenvm')" class="accent-amber-400">
                   <i data-lucide="server" class="w-6 h-6 text-amber-400"></i>
@@ -2177,7 +2183,7 @@ class AdminManager {
     // Keep the Admin cards, engine selector, quick Minecraft versions, and Docker versions.
     // Only remove choices that a normal account is not allowed to use.
     document.querySelectorAll('input[name="create_srv_type"]').forEach(input => {
-      if (['lumenvm', 'nokvm'].includes(input.value)) {
+      if (['lumenvm', 'nokvm', 'lavalink'].includes(input.value)) {
         const card = input.closest('label');
         if (card) card.classList.add('hidden');
         input.disabled = true;
@@ -2202,10 +2208,10 @@ class AdminManager {
       select.insertAdjacentElement('afterend', cards);
     }
     select.classList.add('hidden');
-    const palettes = { minecraft: ['border-cyan-400/40', 'bg-cyan-500/10', 'text-cyan-300'], nodejs: ['border-purple-400/40', 'bg-purple-500/10', 'text-purple-300'], python: ['border-emerald-400/40', 'bg-emerald-500/10', 'text-emerald-300'], java: ['border-amber-400/40', 'bg-amber-500/10', 'text-amber-300'] };
+    const palettes = { minecraft: ['border-cyan-400/40', 'bg-cyan-500/10', 'text-cyan-300'], nodejs: ['border-purple-400/40', 'bg-purple-500/10', 'text-purple-300'], python: ['border-emerald-400/40', 'bg-emerald-500/10', 'text-emerald-300'], java: ['border-amber-400/40', 'bg-amber-500/10', 'text-amber-300'], lavalink: ['border-rose-400/40', 'bg-rose-500/10', 'text-rose-300'] };
     const [border, bg, text] = palettes[type] || palettes.minecraft;
     const options = Array.from(select.options);
-    cards.innerHTML = `<div class="flex items-center justify-between mb-2 mt-3"><span class="text-xs font-semibold text-slate-300">Choose ${type === 'nodejs' ? 'Node.js' : type === 'python' ? 'Python' : type === 'java' ? 'Java' : 'Java Runtime'} Version</span><span class="text-[10px] text-slate-500">${options.length} available</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${options.map((option, index) => { const label = option.textContent.split(' (')[0]; const selected = option.value === select.value || (!select.value && index === 0); return `<button type="button" onclick="admin.selectFreeRuntime('${option.value}')" class="p-3 rounded-xl text-left border ${selected ? `${border} ${bg} ring-1 ring-current` : 'border-white/10 bg-slate-900/50 hover:border-white/30'} transition"><span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${selected ? bg.replace('/10', '') : 'bg-slate-600'}"></span><strong class="text-xs ${selected ? text : 'text-slate-200'}">${label}</strong></span><span class="block text-[9px] text-slate-500 mt-1 truncate">Docker runtime</span></button>`; }).join('')}</div>`;
+    cards.innerHTML = `<div class="flex items-center justify-between mb-2 mt-3"><span class="text-xs font-semibold text-slate-300">Choose ${type === 'nodejs' ? 'Node.js' : type === 'python' ? 'Python' : type === 'java' ? 'Java' : type === 'lavalink' ? 'LavaLink' : 'Java Runtime'} Version</span><span class="text-[10px] text-slate-500">${options.length} available</span></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${options.map((option, index) => { const label = option.textContent.split(' (')[0]; const selected = option.value === select.value || (!select.value && index === 0); return `<button type="button" onclick="admin.selectFreeRuntime('${option.value}')" class="p-3 rounded-xl text-left border ${selected ? `${border} ${bg} ring-1 ring-current` : 'border-white/10 bg-slate-900/50 hover:border-white/30'} transition"><span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${selected ? bg.replace('/10', '') : 'bg-slate-600'}"></span><strong class="text-xs ${selected ? text : 'text-slate-200'}">${label}</strong></span><span class="block text-[9px] text-slate-500 mt-1 truncate">Docker runtime</span></button>`; }).join('')}</div>`;
   }
 
   selectFreeRuntime(value) {
@@ -2445,6 +2451,7 @@ class AdminManager {
     ];
 
     const javaImages = [
+      { label: 'Java 25 (ghcr.io/pterodactyl/yolks:java_25)', value: 'ghcr.io/pterodactyl/yolks:java_25' },
       { label: 'Java 21 (ghcr.io/pterodactyl/yolks:java_21)', value: 'ghcr.io/pterodactyl/yolks:java_21' },
       { label: 'Java 19 (ghcr.io/pterodactyl/yolks:java_19)', value: 'ghcr.io/pterodactyl/yolks:java_19' },
       { label: 'Java 18 (ghcr.io/pterodactyl/yolks:java_18)', value: 'ghcr.io/pterodactyl/yolks:java_18' },
@@ -2473,13 +2480,17 @@ class AdminManager {
       { label: 'Shell (Debug / Rescue Mode)', value: 'ghcr.io/sosuku325/aerovm:shell' }
     ];
 
-    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, java: javaImages, lumenvm: vmImages, vm: vmImages, nokvm: vmImages, lumenvm_nokvm: vmImages };
+    const lavalinkImages = [
+      { label: 'LavaLink v4 (Official) (ghcr.io/lavalink-devs/lavalink:4-alpine)', value: 'ghcr.io/lavalink-devs/lavalink:4-alpine' }
+    ];
+
+    const map = { minecraft: mcImages, nodejs: nodeImages, python: pyImages, java: javaImages, lavalink: lavalinkImages, lumenvm: vmImages, vm: vmImages, nokvm: vmImages, lumenvm_nokvm: vmImages };
     const list = map[type] || mcImages;
 
     select.innerHTML = list.map(item => `
       <option value="${item.value}">${item.label}</option>
     `).join('');
-    this.renderFreeImageCards(type);
+    if (this.freeDeployMode) this.renderFreeImageCards(type);
   }
 
   onServerTypeChange(type) {

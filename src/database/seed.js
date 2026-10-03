@@ -34,7 +34,6 @@ async function seedDatabase() {
     { key: 'free_app_ram_mb', value: '512', description: 'Free Node.js, Python and Java RAM in MB' },
     { key: 'free_app_cpu', value: '50', description: 'Free Node.js, Python and Java CPU percentage' },
     { key: 'free_app_disk_mb', value: '1024', description: 'Free Node.js, Python and Java disk in MB' },
-    { key: 'panel_version', value: '2.5.3', description: 'Displayed panel version' }
   ];
 
   for (const s of defaultSettings) {
