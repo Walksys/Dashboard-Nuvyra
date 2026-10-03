@@ -16,8 +16,8 @@ module.exports = {
   // Storage Paths
   BASE_DIR: path.resolve(__dirname, '../../'),
   DATA_DIR: path.resolve(__dirname, '../../data'),
-  SERVERS_DIR: path.resolve(__dirname, '../../casa/servers'),
-  BACKUPS_DIR: path.resolve(__dirname, '../../casa/backups'),
+  SERVERS_DIR: path.resolve(__dirname, '../../nuvyra/servers'),
+  BACKUPS_DIR: path.resolve(__dirname, '../../nuvyra/backups'),
   UPLOADS_DIR: path.resolve(__dirname, '../../public/uploads'),
 
   // Database Configuration (MariaDB / MySQL)
